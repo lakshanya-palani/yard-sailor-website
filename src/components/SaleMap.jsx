@@ -5,12 +5,11 @@ import { supabase } from '../lib/supabase'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
 
-function Home() {
+function SaleMap() {
   const mapContainer = useRef(null)
   const mapRef = useRef(null)
   const [sales, setSales] = useState([])
 
-  // Fetch sales from Supabase once on load
   useEffect(() => {
     async function fetchSales() {
       const { data, error } = await supabase
@@ -27,7 +26,6 @@ function Home() {
     fetchSales()
   }, [])
 
-  // Set up the map once
   useEffect(() => {
     mapRef.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -39,13 +37,10 @@ function Home() {
     return () => mapRef.current.remove()
   }, [])
 
-  // Add pins whenever sales data changes
   useEffect(() => {
     if (!mapRef.current || sales.length === 0) return
 
     sales.forEach((sale) => {
-      // location comes back from Supabase as GeoJSON: { type: 'Point', coordinates: [lng, lat] }
-      const coords = sale.location?.coordinates
       if (!sale.lat || !sale.lng) return
 
       new mapboxgl.Marker()
@@ -55,12 +50,7 @@ function Home() {
     })
   }, [sales])
 
-  return (
-    <div>
-      <h1 style={{ padding: '1rem', fontFamily: 'sans-serif' }}>Yard Sailor</h1>
-      <div ref={mapContainer} style={{ width: '100%', height: '500px' }} />
-    </div>
-  )
+  return <div ref={mapContainer} style={{ width: '100%', height: '500px' }} />
 }
 
-export default Home
+export default SaleMap
