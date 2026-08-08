@@ -1,16 +1,17 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
-import SaleDetail from './pages/SaleDetail'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import SaleDetail from "./pages/SaleDetail";
+import "./App.css";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/sale/:id" element={<SaleDetail />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/sales/:id" element={<SaleDetail />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
