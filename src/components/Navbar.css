@@ -85,16 +85,8 @@
     height: 114px;
   
     display: grid;
-    grid-template-columns:
-      1fr
-      auto
-      auto
-      auto
-      1fr;
-  
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-  
-    gap: 38px;
   
     padding: 0 30px;
   
@@ -108,14 +100,30 @@
      NAV LINKS
   ========================= */
   
-  .navbar-links {
+  .navbar-center {
+    grid-column: 2;
+  
     display: flex;
     align-items: center;
   
-    gap: 32px;
+    gap: 40px;
   
-    /* moves both link groups to the right */
-    transform: translateX(60px);
+    transform: translateX(40px);
+  }
+  
+  .navbar-center a {
+    color: white;
+  
+    text-decoration: none;
+  
+    font-size: 21px;
+    font-weight: 500;
+  
+    white-space: nowrap;
+  }
+  
+  .navbar-center a:hover {
+    opacity: 0.75;
   }
   
   .navbar a {
@@ -144,9 +152,6 @@
     justify-content: center;
   
     overflow: hidden;
-  
-    /* keeps logo aligned with nav links */
-    transform: translateX(60px);
   }
   
   .navbar-logo img {
