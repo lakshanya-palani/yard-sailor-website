@@ -20,7 +20,10 @@ function LanguageDropdown() {
     <div className="language-menu">
       <button
         className="language-selector"
-        onClick={() => setLanguageOpen(!languageOpen)}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={languageOpen}
+        onClick={() => setLanguageOpen((isOpen) => !isOpen)}
       >
         <span>{language}</span>
 
@@ -32,10 +35,12 @@ function LanguageDropdown() {
       </button>
 
       {languageOpen && (
-        <div className="language-dropdown">
+        <div className="language-dropdown" role="menu">
           {languages.map((item) => (
             <button
               key={item}
+              type="button"
+              role="menuitem"
               onClick={() => {
                 setLanguage(item);
                 setLanguageOpen(false);

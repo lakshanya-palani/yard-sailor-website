@@ -4,6 +4,8 @@
   
   /* English button */
   .language-selector {
+    appearance: none;
+    -webkit-appearance: none;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -73,6 +75,8 @@
   
   /* Dropdown options */
   .language-dropdown button {
+    appearance: none;
+    -webkit-appearance: none;
     width: 100%;
   
     padding: 10px 14px;
@@ -98,6 +102,7 @@
   
   .language-dropdown button:focus,
   .language-dropdown button:active {
+    background-color: white;
     outline: none;
     box-shadow: none;
   }
