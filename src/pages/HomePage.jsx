@@ -12,6 +12,16 @@ function HomePage() {
       <main>
         <Hero />
         <Products />
+        <h2
+          style={{
+            textAlign: "center",
+            fontFamily: "sans-serif",
+            marginTop: "2rem",
+            marginBottom: "1rem",
+          }}
+        >
+          MAP!
+        </h2>
         <SaleMap />
       </main>
 

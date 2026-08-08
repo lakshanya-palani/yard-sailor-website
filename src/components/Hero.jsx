@@ -10,12 +10,12 @@ function Hero() {
       </h1>
 
       <div className="hero-buttons">
-        <a href="/post-sale" className="hero-button post-button">
+        <a href="/post-sale" className="hero-button map-button">
           Post a Sale
         </a>
 
-        <a href="/map" className="hero-button map-button">
-          Browse the Map
+        <a href="/map" className="hero-button post-button">
+          Find a Sale
         </a>
       </div>
     </section>
