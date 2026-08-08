@@ -1,0 +1,82 @@
+.signup-wrapper {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+  
+    width: 175px;
+    height: 145px;
+  
+    z-index: 1000;
+  
+    font-family: "League Spartan", sans-serif;
+  }
+  
+  /* GRAY TRIANGLE */
+  
+  .signup-triangle {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+  
+    width: 165px;
+    height: 135px;
+  
+    background-color: #a6a6a6;
+  
+    clip-path: polygon(
+      0 0,
+      100% 100%,
+      0 100%
+    );
+  }
+  
+  /* SIGN UP TEXT */
+  
+  .signup-triangle span {
+    position: absolute;
+  
+    left: 27px;
+    bottom: 34px;
+  
+    color: black;
+  
+    font-size: 21px;
+    font-weight: 800;
+  
+    white-space: nowrap;
+  
+    transform: rotate(39deg);
+    transform-origin: center;
+  }
+  
+  /* CLOSE BUTTON */
+  
+  .signup-close {
+    position: absolute;
+  
+    right: -10px;
+    bottom: 10px;
+  
+    width: 27px;
+    height: 27px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    padding: 0;
+  
+    border: 2px solid black;
+    border-radius: 50%;
+  
+    background-color: #fff3df;
+    color: black;
+  
+    font-size: 24px;
+    font-family: Arial, sans-serif;
+    line-height: 1;
+  
+    cursor: pointer;
+  
+    z-index: 5;
+  }
