@@ -24,8 +24,8 @@ function Navbar() {
       {/* MAIN NAVBAR */}
       <header className="navbar">
         <button className="search-button" aria-label="Search">
-          Search
-        </button>
+          <img src="/images/search.svg" alt="Search"/>
+         </button>
 
         <nav className="navbar-links">
           <a href="/">Home</a>
