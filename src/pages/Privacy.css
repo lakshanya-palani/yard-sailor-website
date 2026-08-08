@@ -1,0 +1,70 @@
+.privacy-page {
+    min-height: calc(100vh - 178px);
+    padding: 60px 24px 80px;
+  
+    background-color: #fff3df;
+  
+    font-family: "League Spartan", sans-serif;
+    color: #1c2a39;
+  }
+  
+  .privacy-container {
+    width: min(850px, 100%);
+    margin: 0 auto;
+  }
+  
+  .privacy-container h1 {
+    margin: 0 0 8px;
+  
+    font-size: 42px;
+    font-weight: 800;
+  
+    color: #ef403a;
+  }
+  
+  .privacy-updated {
+    margin: 0 0 100px;
+  
+    color: #777;
+    font-size: 15px;
+  }
+  
+  .privacy-container section {
+    margin-bottom: 32px;
+  }
+  
+  .privacy-container h2 {
+    margin: 0 0 10px;
+  
+    font-size: 22px;
+    font-weight: 700;
+  
+    color: #1c2a39;
+  }
+  
+  .privacy-container p {
+    margin: 0;
+  
+    font-size: 17px;
+    line-height: 1.6;
+  
+    color: #444;
+  }
+  
+  @media (max-width: 600px) {
+    .privacy-page {
+      padding: 40px 20px 60px;
+    }
+  
+    .privacy-container h1 {
+      font-size: 34px;
+    }
+  
+    .privacy-container h2 {
+      font-size: 20px;
+    }
+  
+    .privacy-container p {
+      font-size: 16px;
+    }
+  }

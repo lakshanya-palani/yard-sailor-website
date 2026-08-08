@@ -1,7 +1,9 @@
+import { useState } from "react";
 import Navbar from "../components/Navbar";
 import "./Login.css";
 
 function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <>
       <Navbar />
@@ -16,8 +18,8 @@ function Login() {
 
           <form className="login-form">
             <div className="login-input">
-              <span className="input-icon">✉</span>
-
+              <img src="/images/email.svg" alt="Email" className="email-icon"/>
+        
               <input
                 type="email"
                 placeholder="Email"
@@ -26,20 +28,28 @@ function Login() {
             </div>
 
             <div className="login-input">
-              <span className="input-icon">⌑</span>
+              <img
+                src="/images/lock.svg"
+                alt="Lock"
+                className="input-icon"/>
 
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 required
               />
 
-              <button
+            <button
                 type="button"
                 className="password-toggle"
-                aria-label="Show password"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                ◉
+                <img
+                  src="/images/view.svg"
+                  alt=""
+                  className="view-password-icon"
+                />
               </button>
             </div>
 
@@ -69,14 +79,18 @@ function Login() {
               <img
                 src="/images/Google.svg"
                 alt="Google"
-                className="social-icon"
+                className="google-icon"
               />
               Google
             </button>
 
             <button type="button" className="social-button">
-              <span className="apple-icon">●</span>
-              Apple
+              <img
+                src="/images/fbicon.png"
+                alt="Google"
+                className="facebook-icon"
+              />
+              Facebook
             </button>
           </div>
 
@@ -88,7 +102,7 @@ function Login() {
             href="/register"
             className="registration-button"
           >
-            Registration
+            Sign Up
           </a>
 
           <a
