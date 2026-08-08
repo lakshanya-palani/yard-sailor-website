@@ -197,13 +197,9 @@
   .cart-button {
     width: 32px;
     height: 32px;
-  
     padding: 0;
-  
-    border: none;
-  
+    border: none;  
     background: transparent;
-  
     cursor: pointer;
   }
   
@@ -212,6 +208,8 @@
     height: 100%;
   
     object-fit: contain;
+    position: relative;
+    top: -2px;
   }
   
   /* =========================

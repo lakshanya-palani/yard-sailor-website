@@ -1,0 +1,299 @@
+.login-page {
+    min-height: calc(100vh - 178px);
+  
+    position: relative;
+  
+    padding: 28px 30px 80px;
+  
+    background-color: #fff3df;
+  
+    font-family: "League Spartan", sans-serif;
+  }
+  
+  /* Yard Sailor title */
+  
+  .login-brand {
+    position: absolute;
+  
+    top: 22px;
+    left: 32px;
+  
+    color: #ef403a;
+  
+    font-size: 46px;
+    font-weight: 800;
+  }
+  
+  /* Center login content */
+  
+  .login-card {
+    width: min(390px, calc(100% - 40px));
+  
+    margin: 75px auto 0;
+  
+    text-align: center;
+  }
+  
+  .login-card h1 {
+    margin: 0 0 16px;
+  
+    color: #111;
+  
+    font-size: 25px;
+    font-weight: 800;
+  }
+  
+  /* Form */
+  
+  .login-form {
+    width: 100%;
+  }
+  
+  .login-input {
+    width: 100%;
+    height: 44px;
+  
+    display: flex;
+    align-items: center;
+  
+    margin-bottom: 16px;
+  
+    border: 1px solid #cfcfcf;
+    border-radius: 9px;
+  
+    background: transparent;
+  }
+  
+  .login-input:focus-within {
+    border-color: #999;
+  }
+  
+  .input-icon {
+    width: 42px;
+  
+    color: #8e8e8e;
+  
+    font-size: 21px;
+  }
+  
+  .login-input input {
+    flex: 1;
+  
+    height: 100%;
+  
+    padding: 0 10px 0 0;
+  
+    border: none;
+    outline: none;
+  
+    background: transparent;
+  
+    font-family: "League Spartan", sans-serif;
+    font-size: 16px;
+  
+    color: #222;
+  }
+  
+  .login-input input::placeholder {
+    color: #999;
+  }
+  
+  .password-toggle {
+    width: 42px;
+  
+    border: none;
+  
+    background: transparent;
+  
+    color: #888;
+  
+    font-size: 18px;
+  
+    cursor: pointer;
+  }
+  
+  /* Forgot password */
+  
+  .forgot-password {
+    display: block;
+  
+    margin-top: 4px;
+  
+    color: #6f6df6;
+  
+    text-align: right;
+  
+    font-size: 15px;
+  
+    text-decoration: none;
+  }
+  
+  /* Login button */
+  
+  .login-submit {
+    width: 100%;
+    height: 44px;
+  
+    margin-top: 36px;
+  
+    border: none;
+    border-radius: 22px;
+  
+    background-color: #ef403a;
+    color: white;
+  
+    font-family: "League Spartan", sans-serif;
+    font-size: 16px;
+  
+    cursor: pointer;
+  }
+  
+  .login-submit:hover {
+    background-color: #da3530;
+  }
+  
+  /* Divider */
+  
+  .login-divider {
+    display: flex;
+    align-items: center;
+  
+    gap: 10px;
+  
+    margin: 8px 0;
+  }
+  
+  .login-divider span {
+    flex: 1;
+  
+    height: 1px;
+  
+    background-color: #ddd;
+  }
+  
+  .login-divider p {
+    margin: 0;
+  
+    color: #8a8a8a;
+  
+    font-size: 15px;
+  }
+  
+  /* Social login */
+  
+  .social-login {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .social-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    position: relative;
+    top: -2px;
+  }
+  
+  .social-button {
+    height: 44px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1px solid #545bd8;
+    border-radius: 22px;
+    background: transparent;
+  
+    color: #4250b7;
+  
+    font-family: "League Spartan", sans-serif;
+    font-size: 15px;
+  
+    cursor: pointer;
+  }
+  
+  .google-icon {
+    color: #4285f4;
+  
+    font-size: 19px;
+    font-weight: 800;
+  }
+  
+  .apple-icon {
+    color: black;
+  
+    font-size: 18px;
+  }
+  
+  /* Registration */
+  
+  .no-account {
+    margin: 28px 0 16px;
+  
+    color: #8a8a8a;
+  
+    font-size: 15px;
+  }
+  
+  .registration-button {
+    width: 100%;
+    height: 44px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    border: 1px solid #545bd8;
+    border-radius: 22px;
+  
+    color: #4250b7;
+  
+    font-size: 15px;
+  
+    text-decoration: none;
+  }
+  
+  /* Privacy */
+  
+  .privacy-button {
+    width: 165px;
+    height: 45px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    margin: 20px auto 0;
+  
+    border-radius: 14px;
+  
+    background-color: #35393d;
+    color: white;
+  
+    font-size: 14px;
+    font-weight: 600;
+  
+    text-decoration: none;
+  }
+  
+  /* Mobile */
+  
+  @media (max-width: 600px) {
+    .login-brand {
+      position: static;
+  
+      margin-bottom: 30px;
+  
+      font-size: 36px;
+    }
+  
+    .login-card {
+      margin-top: 0;
+    }
+  
+    .social-login {
+      grid-template-columns: 1fr;
+    }
+  }
