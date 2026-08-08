@@ -1,0 +1,108 @@
+.language-menu {
+    position: relative;
+  }
+  
+  /* English button */
+  .language-selector {
+    appearance: none;
+    -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  
+    padding: 0;
+    border: none;
+    outline: none;
+  
+    background: transparent;
+    color: white;
+  
+    font-family: "League Spartan", sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+  
+    cursor: pointer;
+  }
+  
+  /* Prevent highlight/background */
+  .language-selector:hover,
+  .language-selector:focus,
+  .language-selector:active {
+    background: transparent;
+    outline: none;
+    box-shadow: none;
+  }
+  
+  /* Arrow */
+  .language-arrow {
+    width: 10px;
+    height: 10px;
+  
+    border-right: 2px solid white;
+    border-bottom: 2px solid white;
+  
+    transform: rotate(45deg);
+    margin-top: -5px;
+  
+    transition: transform 0.2s ease;
+  }
+  
+  .language-arrow.arrow-up {
+    transform: rotate(225deg);
+    margin-top: 5px;
+  }
+  
+  /* Dropdown menu */
+  .language-dropdown {
+    position: absolute;
+    top: 32px;
+    right: 0;
+  
+    width: 145px;
+  
+    display: flex;
+    flex-direction: column;
+  
+    padding: 6px 0;
+  
+    background-color: white;
+    border-radius: 6px;
+  
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  
+    z-index: 2000;
+  }
+  
+  /* Dropdown options */
+  .language-dropdown button {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+  
+    padding: 10px 14px;
+  
+    border: none;
+    outline: none;
+  
+    background: white;
+    color: #1c2a39;
+  
+    text-align: left;
+  
+    font-family: "League Spartan", sans-serif;
+    font-size: 16px;
+  
+    cursor: pointer;
+  }
+  
+  /* Subtle hover only */
+  .language-dropdown button:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .language-dropdown button:focus,
+  .language-dropdown button:active {
+    background-color: white;
+    outline: none;
+    box-shadow: none;
+  }
