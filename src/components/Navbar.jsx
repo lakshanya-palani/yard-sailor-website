@@ -1,4 +1,5 @@
 import "./Navbar.css";
+import LanguageDropdown from "./LanguageDropdown";
 
 function Navbar() {
   return (
@@ -14,18 +15,15 @@ function Navbar() {
           <img src="/images/facebook.svg" alt="Facebook" />
           <img src="/images/discord.svg" alt="Discord" />
 
-          <div className="language-selector">
-            <span>English</span>
-            <span className="language-arrow"></span>
-          </div>
+          <LanguageDropdown />
         </div>
       </div>
 
       {/* MAIN NAVBAR */}
       <header className="navbar">
         <button className="search-button" aria-label="Search">
-          <img src="/images/search.svg" alt="Search"/>
-         </button>
+          <img src="/images/search.svg" alt="Search" />
+        </button>
 
         <nav className="navbar-links">
           <a href="/">Home</a>

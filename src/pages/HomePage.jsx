@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Products from "../components/Products";
 import SignupPopup from "../components/SignupPopup";
+import LanguageDropdown from "./LanguageDropdown";
 
 function HomePage() {
   return (
