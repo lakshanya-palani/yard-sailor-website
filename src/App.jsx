@@ -3,7 +3,7 @@ import HomePage from "./pages/HomePage";
 import SaleDetail from "./pages/SaleDetail";
 import Login from "./pages/Login";
 import Privacy from "./pages/Privacy";
-
+import Contact from "./pages/Contact";
 import "./App.css";
 
 function App() {
@@ -25,6 +25,11 @@ function App() {
         <Route
           path="/Privacy"
           element={<Privacy />}
+        />
+
+        <Route
+          path="/contact"
+          element={<Contact />}
         />
       </Routes>
     </BrowserRouter>
