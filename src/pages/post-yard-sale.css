@@ -1,0 +1,473 @@
+/* ===========================================================
+   Yard Sailor — Post a Yard Sale Page Stylesheet
+   Shares the same design system as contact.css (same navbar,
+   header, brand, and card shell) — this file adds the
+   price/description/photo-upload specific styles.
+   Fonts: League Spartan (nav/headings/brand), Lexend Deca (form)
+   Import first in your HTML/JSX:
+   https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;700&family=Lexend+Deca:wght@300;500;600&display=swap
+   =========================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: #FBF0DD;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* ===== Scale wrapper: keeps the 1440x875 canvas pixel-perfect at any viewport width ===== */
+#scale-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+#canvas {
+  position: relative;
+  width: 1440px;
+  height: 875px;
+  background: #FBF0DD;
+  transform-origin: top left;
+  font-family: 'League Spartan', sans-serif;
+}
+
+/* ===== Top black promo bar ===== */
+.top-header {
+  position: absolute;
+  width: 1440px;
+  height: 65px;
+  left: 0;
+  top: 0;
+  background: #000000;
+}
+
+.promo-text {
+  position: absolute;
+  width: 260px;
+  left: 590px;
+  top: 23px;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 18px;
+  text-align: center;
+  color: #FFFFFF;
+  white-space: nowrap;
+}
+
+.top-icons {
+  position: absolute;
+  top: 22px;
+  left: 1170px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.top-icons svg {
+  width: 19px;
+  height: 19px;
+  fill: #FFFFFF;
+}
+
+.lang-select {
+  position: absolute;
+  left: 1299px;
+  top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #FFFFFF;
+}
+
+.lang-select svg {
+  width: 12px;
+  height: 12px;
+  fill: #FFFFFF;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+  position: absolute;
+  width: 1440px;
+  height: 120px;
+  left: 0;
+  top: 63px;
+  background: #1E2A38;
+  filter: drop-shadow(0px 0px 5px rgba(200, 224, 212, 0.25));
+}
+
+.nav-item {
+  position: absolute;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 22px;
+  text-align: center;
+  color: #FFFFFF;
+  white-space: nowrap;
+}
+
+.nav-home    { left: 460px;  top: 41px; width: 140px; }
+.nav-shop    { left: 545px;  top: 41px; width: 140px; }
+.nav-pys     { left: 786px;  top: 43px; width: 160px; }
+.nav-contact { left: 923px;  top: 43px; width: 160px; }
+
+.nav-login {
+  left: 1203px;
+  top: 43px;
+  width: 160px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.nav-login svg {
+  width: 16px;
+  height: 16px;
+}
+
+.nav-logo {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  left: 688px;
+  top: 25px;
+  background: #6FA97A;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-search {
+  position: absolute;
+  left: 32px;
+  top: 41px;
+  width: 22px;
+  height: 22px;
+}
+
+.nav-cart {
+  position: absolute;
+  left: 1374px;
+  top: 33px;
+  width: 35px;
+  height: 35px;
+}
+
+/* ===== Content frame ===== */
+.frame-content {
+  position: absolute;
+  width: 1440px;
+  height: 692px;
+  left: 0;
+  top: 183px;
+  background: #FBF0DD;
+}
+
+.brand {
+  position: absolute;
+  left: 18px;
+  top: 27px;
+  width: 320px;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 700;
+  font-size: 52px;
+  line-height: 48px;
+  color: #E8453C;
+}
+
+.page-heading {
+  position: absolute;
+  width: 600px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 86px;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 400;
+  font-size: 56px;
+  line-height: 59px;
+  text-align: center;
+  color: #000000;
+  white-space: nowrap;
+}
+
+/* ===== Listing card ===== */
+.contact-card {
+  position: absolute;
+  width: 551.92px;
+  height: 358.75px;
+  left: 444px;
+  top: 188px;
+  background: #201F1F;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.form-side {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 276px;
+  height: 100%;
+}
+
+.form-heading {
+  position: absolute;
+  left: 27.46px;
+  top: 48px;
+  width: 196px;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 700;
+  font-size: 17.25px;
+  line-height: 16px;
+  letter-spacing: 0.03em;
+  color: #FFFFFF;
+}
+
+.field-label {
+  position: absolute;
+  left: 27.46px;
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 300;
+  font-size: 6.04px;
+  line-height: 150%;
+  letter-spacing: 0.03em;
+  color: #CCC6C6;
+}
+
+.label-price       { top: 80.47px; }
+.label-description { top: 126.64px; }
+
+/* ----- Price field ----- */
+.price-input-wrap {
+  position: absolute;
+  left: 27.46px;
+  top: 93.6px;
+  width: 100px;
+  height: 23.83px;
+  background: #343333;
+  border: 0.37px solid #8D8D8D;
+  border-radius: 2.2px;
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+}
+
+.price-input-wrap.error {
+  border-color: #FF5F5F;
+}
+
+.price-dollar {
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 500;
+  font-size: 6px;
+  color: #8D8D8D;
+  margin-right: 3px;
+}
+
+.price-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 500;
+  font-size: 5.15px;
+  color: #FFFFFF;
+}
+
+.price-input::-webkit-outer-spin-button,
+.price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ----- Description field ----- */
+.field-textarea {
+  position: absolute;
+  left: 27.46px;
+  top: 139.76px;
+  width: 217.96px;
+  height: 129px;
+  background: #343333;
+  border: 0.37px solid #8D8D8D;
+  border-radius: 2.2px;
+  padding: 7.35px 11.76px;
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 300;
+  font-size: 5.15px;
+  color: #FFFFFF;
+  outline: none;
+  resize: none;
+}
+
+.field-textarea::placeholder {
+  color: #8D8D8D;
+}
+
+.field-textarea:focus {
+  border-color: #6088EE;
+}
+
+.field-textarea.error {
+  border-color: #FF5F5F;
+}
+
+.error-msg {
+  position: absolute;
+  left: 27.46px;
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 300;
+  font-size: 5px;
+  color: #FF5F5F;
+  display: none;
+}
+
+.error-msg.visible {
+  display: block;
+}
+
+.err-price       { top: 118px; }
+.err-description { top: 271.5px; }
+
+/* ----- Post button ----- */
+.send-btn {
+  position: absolute;
+  left: 27.46px;
+  top: 284.01px;
+  width: 106.12px;
+  height: 20.37px;
+  background: #6088EE;
+  border: none;
+  border-radius: 1.72px;
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 300;
+  font-size: 6.04px;
+  letter-spacing: 0.03em;
+  color: #FFFEFE;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.send-btn:hover {
+  background: #5279D8;
+}
+
+.send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status-msg {
+  position: absolute;
+  left: 27.46px;
+  top: 312px;
+  width: 217.96px;
+  font-family: 'Lexend Deca', sans-serif;
+  font-size: 6px;
+  display: none;
+}
+
+.status-msg.success {
+  color: #7fd99a;
+  display: block;
+}
+
+.status-msg.failure {
+  color: #FF5F5F;
+  display: block;
+}
+
+/* ===== Photo upload panel (replaces the map from the contact page) ===== */
+.photo-area {
+  position: absolute;
+  width: 276px;
+  height: 359px;
+  left: 276px;
+  top: 0;
+  background: #2A2A2A;
+}
+
+.dropzone {
+  position: absolute;
+  inset: 12px;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  border: 1.4px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.dropzone.error {
+  border-color: #FF5F5F;
+}
+
+.dropzone svg {
+  width: 28px;
+  height: 28px;
+}
+
+.dropzone-text {
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 500;
+  font-size: 6.5px;
+  color: #DADADA;
+}
+
+.dropzone-subtext {
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 300;
+  font-size: 5px;
+  color: #7a7a7a;
+}
+
+.photo-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.change-photo-btn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border: none;
+  border-radius: 20px;
+  font-family: 'Lexend Deca', sans-serif;
+  font-weight: 500;
+  font-size: 5.5px;
+  color: #FFFFFF;
+  cursor: pointer;
+}
+
+.change-photo-btn svg {
+  width: 11px;
+  height: 11px;
+}
