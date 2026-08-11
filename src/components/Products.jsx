@@ -1,40 +1,143 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Products.css";
 
-const products = [
-  { id: 1, name: "Product 1", image: "/images/product-1.jpg" },
-  { id: 2, name: "Product 2", image: "/images/product-2.jpg" },
-  { id: 3, name: "Product 3", image: "/images/product-3.jpg" },
-  { id: 4, name: "Product 4", image: "/images/product-4.jpg" },
-  { id: 5, name: "Product 5", image: "/images/product-5.jpg" },
-  { id: 6, name: "Product 6", image: "/images/product-6.jpg" },
-  { id: 7, name: "Product 7", image: "/images/product-7.jpg" },
-  { id: 8, name: "Product 8", image: "/images/product-8.jpg" },
-  { id: 9, name: "Product 9", image: "/images/product-9.jpg" },
-  { id: 10, name: "Product 10", image: "/images/product-10.jpg" },
-];
-
 function Products() {
+  const [sales, setSales] = useState([]);
+  const navigate = useNavigate();
+
+  const loadSales = () => {
+    const storedSales =
+      JSON.parse(localStorage.getItem("yardSailorSales")) || [];
+
+    setSales(storedSales);
+  };
+
+  useEffect(() => {
+    loadSales();
+
+    window.addEventListener(
+      "yardSailorSalesUpdated",
+      loadSales
+    );
+
+    window.addEventListener("storage", loadSales);
+
+    return () => {
+      window.removeEventListener(
+        "yardSailorSalesUpdated",
+        loadSales
+      );
+
+      window.removeEventListener("storage", loadSales);
+    };
+  }, []);
+
+  const cancelSale = (id) => {
+    const updatedSales = sales.filter(
+      (sale) => sale.id !== id
+    );
+
+    localStorage.setItem(
+      "yardSailorSales",
+      JSON.stringify(updatedSales)
+    );
+
+    setSales(updatedSales);
+  };
+
+  const placeholdersNeeded = Math.max(
+    0,
+    10 - sales.slice(0, 10).length
+  );
+
+  const placeholders = Array.from(
+    { length: placeholdersNeeded },
+    (_, index) => index
+  );
+
   return (
     <section className="products-section">
-      <h2 className="products-title">
-        // NEWEST SAILOR PRODUCTS!
-      </h2>
+      <div className="products-heading">
+        <h2>Newest Sailor Products</h2>
+      </div>
 
       <div className="products-grid">
-        {products.map((product) => (
-          <a
-            href={`/shop/${product.id}`}
+        {sales.slice(0, 10).map((sale) => (
+          <article
             className="product-card"
-            key={product.id}
+            key={sale.id}
           >
-            <img src={product.image} alt={product.name} />
-          </a>
+            <div className="product-image-container">
+              <img
+                src={sale.images[0]}
+                alt={sale.title}
+                className="product-image"
+              />
+            </div>
+
+            <div className="product-information">
+              <h3>{sale.title}</h3>
+
+              <p className="product-description">
+                {sale.description}
+              </p>
+
+              <div className="delivery-tags">
+                {sale.pickup && (
+                  <span>Pickup</span>
+                )}
+
+                {sale.shipping && (
+                  <span>Shipping</span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="cancel-sale-button"
+                onClick={() => cancelSale(sale.id)}
+              >
+                Cancel Sale
+              </button>
+            </div>
+          </article>
+        ))}
+
+        {placeholders.map((placeholder) => (
+          <article
+            className="product-card placeholder-card"
+            key={`placeholder-${placeholder}`}
+          >
+            <div className="product-image-container placeholder-image">
+              <span>Coming Soon</span>
+            </div>
+
+            <div className="product-information">
+              <div className="placeholder-line placeholder-title"></div>
+
+              <div className="placeholder-line"></div>
+
+              <div className="placeholder-line short"></div>
+
+              <div className="placeholder-tags">
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </article>
         ))}
       </div>
 
-      <a href="/shop" className="view-all-button">
-        VIEW ALL
-      </a>
+      <div className="view-all-container">
+        <button
+          type="button"
+          className="view-all-button"
+          onClick={() => navigate("/shop")}
+        >
+          View All
+        </button>
+      </div>
     </section>
   );
 }

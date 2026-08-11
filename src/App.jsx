@@ -1,14 +1,24 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import HomePage from "./pages/HomePage";
 import SaleDetail from "./pages/SaleDetail";
 import Login from "./pages/Login";
 import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
+import PostSale from "./pages/PostSale";
+import Register from "./pages/Register";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Profile from "./pages/Profile";
+
 import "./App.css";
 
 function App() {
   return (
     <BrowserRouter>
+      <Navbar />
+
       <Routes>
         <Route path="/" element={<HomePage />} />
 
@@ -23,7 +33,7 @@ function App() {
         />
 
         <Route
-          path="/Privacy"
+          path="/privacy"
           element={<Privacy />}
         />
 
@@ -31,7 +41,31 @@ function App() {
           path="/contact"
           element={<Contact />}
         />
+
+        <Route
+          path="/post-sale"
+          element={
+            <ProtectedRoute>
+              <PostSale />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route 
+          path="/register" 
+          element={<Register />} />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
+
+      <Footer />
     </BrowserRouter>
   );
 }

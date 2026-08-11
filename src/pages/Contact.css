@@ -1,27 +1,20 @@
 .contact-page {
-    min-height: calc(100vh - 178px);
-  
+    min-height: calc(100vh - 178px); 
     padding: 30px 30px 90px;
-  
     background-color: #fbf0dd;
-  
     font-family: "League Spartan", sans-serif;
-  
     color: #111;
   }
   
   .contact-brand {
     color: #e8453c;
-  
     font-size: 46px;
     font-weight: 800;
   }
   
   .contact-title {
     margin: 30px 0 40px;
-  
     text-align: center;
-  
     font-size: 48px;
     font-weight: 500;
   }
