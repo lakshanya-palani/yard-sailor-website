@@ -12,6 +12,14 @@ import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
 import ProfileSetup from "./pages/ProfileSetup";
+import MyPostings from "./pages/MyPostings";
+import EditProduct from "./pages/EditProduct";
+import MyYardSales from "./pages/MyYardSales";
+import EditYardSale from "./pages/EditYardSale";
+import SavedItems from "./pages/SavedItems";
+import AccountSettings from "./pages/AccountSettings";
+import HelpSupport from "./pages/HelpSupport";
+import ProductDetail from "./pages/ProductDetail";
 
 import "./App.css";
 
@@ -73,6 +81,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/my-postings" element={<ProtectedRoute><MyPostings /></ProtectedRoute>} />
+        <Route path="/products/:id" element={<ProductDetail />} />
+        <Route path="/products/:id/edit" element={<ProtectedRoute><EditProduct /></ProtectedRoute>} />
+        <Route path="/my-yard-sales" element={<ProtectedRoute><MyYardSales /></ProtectedRoute>} />
+        <Route path="/yard-sales/:id/edit" element={<ProtectedRoute><EditYardSale /></ProtectedRoute>} />
+        <Route path="/saved" element={<ProtectedRoute><SavedItems /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+        <Route path="/help" element={<HelpSupport />} />
       </Routes>
 
       <Footer />

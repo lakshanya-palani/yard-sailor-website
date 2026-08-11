@@ -4,58 +4,103 @@ import { supabase } from "../lib/supabase";
 
 function ProtectedRoute({ children, requireProfile = false }) {
   const [user, setUser] = useState(null);
-  const [hasProfile, setHasProfile] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(null);
+  const [profileCheckError, setProfileCheckError] = useState(null);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
   useEffect(() => {
     let active = true;
+    let checkNumber = 0;
+    const timers = new Set();
 
-    async function applySession(session) {
-      const currentUser = session?.user ?? null;
-      let profileComplete = false;
+    async function checkAccess() {
+      const currentCheck = ++checkNumber;
+      const {
+        data: { user: currentUser },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      if (currentUser && requireProfile) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("username")
-          .eq("id", currentUser.id)
-          .maybeSingle();
+      console.log("Authenticated user:", currentUser?.id);
+      console.log("Requested route:", location.pathname);
 
-        if (error) {
-          console.error("Unable to check profile completion:", error);
-        }
+      if (!active || currentCheck !== checkNumber) return;
 
-        profileComplete = Boolean(data?.username?.trim());
+      if (userError) {
+        console.error("Unable to check authenticated user:", userError);
       }
 
-      if (active) {
-        setUser(currentUser);
-        setHasProfile(profileComplete);
+      if (!currentUser) {
+        setUser(null);
+        setProfileComplete(false);
+        setProfileCheckError(null);
         setLoading(false);
+        return;
       }
+
+      if (!requireProfile) {
+        setUser(currentUser);
+        setProfileComplete(true);
+        setProfileCheckError(null);
+        setLoading(false);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      console.log("Profile check result:", profile);
+      console.log("Username:", profile?.username);
+      console.log(
+        "Profile complete:",
+        Boolean(profile?.username?.trim())
+      );
+
+      if (!active || currentCheck !== checkNumber) return;
+
+      setUser(currentUser);
+
+      if (profileError) {
+        console.error("Profile completion check failed:", profileError);
+        setProfileCheckError(profileError);
+        setProfileComplete(null);
+      } else {
+        setProfileCheckError(null);
+        setProfileComplete(Boolean(profile?.username?.trim()));
+      }
+
+      setLoading(false);
     }
 
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (error) {
-        console.error("Unable to read auth session:", error);
-      }
-      applySession(data?.session);
-    });
+    function scheduleCheck() {
+      const timer = window.setTimeout(() => {
+        timers.delete(timer);
+        if (active) {
+          checkAccess();
+        }
+      }, 0);
+      timers.add(timer);
+    }
+
+    scheduleCheck();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        applySession(session);
-      }
-    );
+    } = supabase.auth.onAuthStateChange(() => scheduleCheck());
+
+    window.addEventListener("yardSailorProfileUpdated", scheduleCheck);
 
     return () => {
       active = false;
+      checkNumber += 1;
+      timers.forEach((timer) => window.clearTimeout(timer));
       subscription.unsubscribe();
+      window.removeEventListener("yardSailorProfileUpdated", scheduleCheck);
     };
-  }, [requireProfile]);
+  }, [location.pathname, requireProfile]);
 
   if (loading) {
     return null;
@@ -72,7 +117,11 @@ function ProtectedRoute({ children, requireProfile = false }) {
     );
   }
 
-  if (requireProfile && !hasProfile) {
+  if (requireProfile && profileCheckError) {
+    return null;
+  }
+
+  if (requireProfile && profileComplete === false) {
     const destination = `${location.pathname}${location.search}`;
     return (
       <Navigate

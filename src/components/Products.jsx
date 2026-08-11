@@ -87,8 +87,17 @@ function Products() {
       <div className="products-grid">
         {sales.slice(0, 10).map((sale) => (
           <article
-            className="product-card"
+            className="product-card real-product-card"
             key={sale.id}
+            role="link"
+            tabIndex={0}
+            onClick={() => navigate(`/products/${sale.id}`)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                navigate(`/products/${sale.id}`);
+              }
+            }}
           >
             <div className="product-image-container">
               <img
@@ -129,7 +138,11 @@ function Products() {
                 <button
                   type="button"
                   className="cancel-sale-button"
-                  onClick={() => cancelSale(sale)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    cancelSale(sale);
+                  }}
+                  onKeyDown={(event) => event.stopPropagation()}
                 >
                   Cancel Sale
                 </button>

@@ -192,19 +192,21 @@
     object-fit: contain;
   }
 
-  .authenticated-account,
-  .profile-link {
+  .profile-menu-container {
+    position: relative;
+  }
+
+  .profile-menu-trigger {
+    gap: 9px;
     display: flex;
     align-items: center;
-  }
-
-  .authenticated-account {
-    gap: 14px;
-  }
-
-  .profile-link {
-    gap: 9px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: white;
+    font: 500 18px "League Spartan", sans-serif;
     white-space: nowrap;
+    cursor: pointer;
   }
 
   .navbar-avatar {
@@ -230,22 +232,121 @@
     object-position: center;
   }
 
-  .logout-button {
-    padding: 0;
-    border: none;
-    background: transparent;
+  .profile-menu-arrow {
+    font-size: 9px;
+    opacity: 0.8;
+  }
+
+  .profile-dropdown {
+    position: absolute;
+    z-index: 1000;
+    top: calc(100% + 16px);
+    right: 0;
+    width: 275px;
+    overflow: hidden;
+    border: 1px solid rgb(28 42 57 / 12%);
+    border-radius: 14px;
+    background: white;
+    color: #1c2a39;
+    box-shadow: 0 14px 35px rgb(0 0 0 / 18%);
+  }
+
+  .profile-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 16px;
+    border-bottom: 1px solid #ece7df;
+    background: #fff8ec;
+  }
+
+  .dropdown-avatar {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: #ef403a;
     color: white;
-    font-family: "League Spartan", sans-serif;
-    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .dropdown-avatar img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .profile-dropdown-header div {
+    min-width: 0;
+  }
+
+  .profile-dropdown-header strong,
+  .profile-dropdown-header span {
+    display: block;
+  }
+
+  .profile-dropdown-header strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 16px;
+  }
+
+  .profile-dropdown-header div span {
+    margin-top: 3px;
+    overflow: hidden;
+    color: #6d7379;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .profile-dropdown-links {
+    padding: 7px;
+  }
+
+  .navbar .profile-dropdown-links a {
+    display: block;
+    padding: 10px 11px;
+    border-radius: 8px;
+    color: #1c2a39;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .navbar .profile-dropdown-links a:hover {
+    background: #fff3df;
+    color: #ef403a;
+    opacity: 1;
+  }
+
+  .profile-dropdown-footer {
+    padding: 8px;
+    border-top: 1px solid #ece7df;
+  }
+
+  .profile-dropdown-footer button {
+    width: 100%;
+    padding: 10px 11px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #ef403a;
+    font: 700 15px "League Spartan", sans-serif;
+    text-align: left;
     cursor: pointer;
   }
 
-  .logout-button:hover {
-    opacity: 0.75;
+  .profile-dropdown-footer button:hover {
+    background: #fff0ee;
   }
 
-  .logout-button:disabled {
+  .profile-dropdown-footer button:disabled {
     opacity: 0.55;
     cursor: wait;
   }

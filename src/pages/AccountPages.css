@@ -1,0 +1,198 @@
+.account-page {
+  min-height: calc(100vh - 178px);
+  padding: 60px 24px 90px;
+  background: #fff3df;
+  color: #1c2a39;
+  font-family: "League Spartan", sans-serif;
+}
+
+.account-container {
+  width: min(1050px, 100%);
+  margin: 0 auto;
+}
+
+.account-heading {
+  margin-bottom: 28px;
+}
+
+.account-heading h1 {
+  margin: 0 0 8px;
+  font-size: 38px;
+}
+
+.account-heading p,
+.account-empty,
+.account-status {
+  color: #697078;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.account-card,
+.account-form-card,
+.account-placeholder-card {
+  overflow: hidden;
+  border-radius: 15px;
+  background: white;
+  box-shadow: 0 5px 18px rgb(0 0 0 / 9%);
+}
+
+.account-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: block;
+  object-fit: cover;
+  background: #ececec;
+}
+
+.account-card-body,
+.account-form-card,
+.account-placeholder-card {
+  padding: 20px;
+}
+
+.account-card-body h2,
+.account-placeholder-card h2 {
+  margin: 0 0 8px;
+  font-size: 21px;
+}
+
+.account-card-body p {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.account-card-meta {
+  color: #687078;
+  font-size: 14px;
+}
+
+.account-price {
+  color: #ef403a;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.account-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.account-tags span {
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #eef5df;
+  color: #55751d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.account-actions {
+  display: flex;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.account-button,
+.account-button-secondary,
+.account-button-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  border-radius: 9px;
+  font: 700 14px "League Spartan", sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.account-button {
+  border: 1px solid #ef403a;
+  background: #ef403a;
+  color: white;
+}
+
+.account-button-secondary {
+  border: 1px solid #1c2a39;
+  background: white;
+  color: #1c2a39;
+}
+
+.account-button-danger {
+  border: 1px solid #ef403a;
+  background: white;
+  color: #ef403a;
+}
+
+.account-form {
+  display: grid;
+  gap: 15px;
+}
+
+.account-form label {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+}
+
+.account-form input,
+.account-form textarea,
+.account-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  border: 1px solid #d2d4d5;
+  border-radius: 9px;
+  background: white;
+  color: #1c2a39;
+  font: 16px "League Spartan", sans-serif;
+}
+
+.account-form textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.account-form input:disabled {
+  background: #f2f2f2;
+  color: #777;
+}
+
+.settings-list {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.settings-option {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f8f6f1;
+  color: #636a70;
+}
+
+@media (max-width: 850px) {
+  .account-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .account-page {
+    padding: 40px 18px 65px;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-actions {
+    flex-direction: column;
+  }
+}
