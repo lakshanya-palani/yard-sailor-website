@@ -1,3 +1,15 @@
+.product-price {
+  margin: 6px 0;
+  color: #ef403a;
+  font-weight: 700;
+}
+
+.product-meta {
+  margin: 0 0 8px;
+  color: #60656a;
+  font-size: 14px;
+}
+
 .view-all-container {
   display: flex;
   justify-content: center;

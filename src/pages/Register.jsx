@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Register.css";
 
@@ -17,6 +17,19 @@ function Register() {
   async function handleRegister(event) {
     event.preventDefault();
 
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName) {
+      alert("Please enter your full name.");
+      return;
+    }
+
+    if (!trimmedEmail) {
+      alert("Please enter your email.");
+      return;
+    }
+
     if (password !== confirmPassword) {
       alert("Passwords do not match.");
       return;
@@ -30,11 +43,11 @@ function Register() {
     setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: trimmedEmail,
       password,
       options: {
         data: {
-          name: name.trim(),
+          name: trimmedName,
         },
       },
     });
@@ -47,7 +60,7 @@ function Register() {
     }
 
     if (data.session) {
-      navigate("/");
+      navigate("/profile/setup", { replace: true });
     } else {
       alert(
         "Account created! Check your email to confirm your account, then log in."
@@ -87,6 +100,8 @@ function Register() {
           <div className="register-input">
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -97,6 +112,8 @@ function Register() {
           <div className="register-input">
             <input
               type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="new-password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -107,6 +124,8 @@ function Register() {
           <div className="register-input">
             <input
               type={showPassword ? "text" : "password"}
+              name="confirmPassword"
+              autoComplete="new-password"
               placeholder="Confirm password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -137,12 +156,12 @@ function Register() {
           Already have an account?
         </p>
 
-        <a
-          href="/login"
+        <Link
+          to="/login"
           className="login-link-button"
         >
           Log In
-        </a>
+        </Link>
 
         <a
           href="/privacy"
