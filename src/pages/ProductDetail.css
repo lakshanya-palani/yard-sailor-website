@@ -1,0 +1,289 @@
+.product-detail-page {
+  min-height: calc(100vh - 178px);
+  padding: 60px 24px 90px;
+  background: #fff3df;
+  color: #1c2a39;
+  font-family: "League Spartan", sans-serif;
+}
+
+.product-detail-layout {
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  gap: 34px;
+  margin: 0 auto;
+}
+
+.product-gallery,
+.product-detail-information,
+.product-detail-message {
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 9%);
+}
+
+.product-gallery {
+  padding: 20px;
+}
+
+.product-main-image-container {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f0eee9;
+}
+
+.product-detail-main-image {
+  width: 100%;
+  max-height: 600px;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+}
+
+.product-no-image {
+  color: #777;
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: rgb(28 42 57 / 85%);
+  color: white;
+  font-size: 34px;
+  cursor: pointer;
+}
+
+.gallery-arrow-previous {
+  left: 14px;
+}
+
+.gallery-arrow-next {
+  right: 14px;
+}
+
+.product-thumbnails {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-top: 16px;
+}
+
+.product-thumbnail-button {
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.product-thumbnail-button.selected {
+  border-color: #ef403a;
+}
+
+.product-thumbnail {
+  width: 75px;
+  height: 75px;
+  display: block;
+  border-radius: 7px;
+  object-fit: cover;
+}
+
+.product-detail-information {
+  align-self: start;
+  padding: 30px;
+}
+
+.product-detail-information h1 {
+  margin: 0 0 10px;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.05;
+}
+
+.product-detail-price {
+  margin: 0 0 24px;
+  color: #ef403a;
+  font-size: 29px;
+  font-weight: 800;
+}
+
+.product-detail-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 18px 0;
+  border-block: 1px solid #ece7df;
+}
+
+.product-detail-meta dt {
+  color: #737980;
+}
+
+.product-detail-meta dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.product-detail-description {
+  margin: 24px 0;
+}
+
+.product-detail-description h2 {
+  margin: 0 0 9px;
+  font-size: 20px;
+}
+
+.product-detail-description p {
+  margin: 0;
+  color: #565e65;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.product-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.product-detail-tags span {
+  padding: 7px 11px;
+  border-radius: 20px;
+  background: #eef5df;
+  color: #55751d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.product-seller {
+  margin: 26px 0;
+  padding-top: 22px;
+  border-top: 1px solid #ece7df;
+}
+
+.product-seller > p {
+  margin: 0 0 10px;
+  color: #737980;
+  font-size: 13px;
+}
+
+.product-seller > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.product-seller-avatar {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #ef403a;
+  color: white;
+  font-weight: 800;
+}
+
+.product-seller-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.product-owner-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.product-owner-actions a,
+.product-owner-actions button,
+.contact-seller-placeholder {
+  padding: 12px 15px;
+  border-radius: 10px;
+  font: 700 15px "League Spartan", sans-serif;
+  text-align: center;
+}
+
+.product-owner-actions a {
+  border: 1px solid #1c2a39;
+  color: #1c2a39;
+  text-decoration: none;
+}
+
+.product-owner-actions button {
+  border: 1px solid #ef403a;
+  background: white;
+  color: #ef403a;
+  cursor: pointer;
+}
+
+.contact-seller-placeholder {
+  width: 100%;
+  border: 0;
+  background: #1c2a39;
+  color: white;
+  opacity: 0.7;
+}
+
+.product-detail-status,
+.product-detail-message {
+  width: min(600px, 100%);
+  box-sizing: border-box;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.product-detail-message {
+  padding: 45px 25px;
+}
+
+.product-detail-message a {
+  color: #ef403a;
+  font-weight: 700;
+}
+
+@media (max-width: 850px) {
+  .product-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .product-main-image-container {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 520px) {
+  .product-detail-page {
+    padding: 35px 16px 65px;
+  }
+
+  .product-gallery,
+  .product-detail-information {
+    padding: 16px;
+  }
+
+  .product-main-image-container {
+    min-height: 250px;
+  }
+
+  .product-owner-actions {
+    grid-template-columns: 1fr;
+  }
+}

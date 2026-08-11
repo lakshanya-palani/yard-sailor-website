@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Navbar.css";
@@ -9,6 +9,8 @@ function Navbar() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
 
   const loadProfile = useCallback(async (currentUser) => {
@@ -80,7 +82,30 @@ function Navbar() {
     };
   }, [loadProfile]);
 
+  useEffect(() => {
+    function handleOutsideClick(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setProfileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   async function handleLogout() {
+    setProfileMenuOpen(false);
     setLoggingOut(true);
     const { error } = await supabase.auth.signOut();
     setLoggingOut(false);
@@ -142,8 +167,14 @@ function Navbar() {
 
         <div className="navbar-account">
           {user ? (
-            <div className="authenticated-account">
-              <Link to="/profile" className="profile-link">
+            <div className="profile-menu-container" ref={menuRef}>
+              <button
+                type="button"
+                className="profile-menu-trigger"
+                onClick={() => setProfileMenuOpen((open) => !open)}
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="menu"
+              >
                 <span className="navbar-avatar" aria-hidden="true">
                   {profile?.avatar_url ? (
                     <img
@@ -155,16 +186,59 @@ function Navbar() {
                   )}
                 </span>
                 <span>{displayName}</span>
-              </Link>
-
-              <button
-                type="button"
-                className="logout-button"
-                onClick={handleLogout}
-                disabled={loggingOut}
-              >
-                {loggingOut ? "Logging Out..." : "Log Out"}
+                <span className="profile-menu-arrow" aria-hidden="true">
+                  {profileMenuOpen ? "▲" : "▼"}
+                </span>
               </button>
+
+              {profileMenuOpen && (
+                <div className="profile-dropdown" role="menu">
+                  <div className="profile-dropdown-header">
+                    <span className="dropdown-avatar" aria-hidden="true">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="" />
+                      ) : (
+                        fallbackLetter
+                      )}
+                    </span>
+                    <div>
+                      <strong>{displayName}</strong>
+                      <span>{user.email}</span>
+                    </div>
+                  </div>
+
+                  <div className="profile-dropdown-links">
+                    <Link to="/profile" onClick={() => setProfileMenuOpen(false)}>
+                      Edit Profile
+                    </Link>
+                    <Link to="/my-postings" onClick={() => setProfileMenuOpen(false)}>
+                      My Postings
+                    </Link>
+                    <Link to="/my-yard-sales" onClick={() => setProfileMenuOpen(false)}>
+                      My Yard Sale Listings
+                    </Link>
+                    <Link to="/saved" onClick={() => setProfileMenuOpen(false)}>
+                      Saved Items
+                    </Link>
+                    <Link to="/settings" onClick={() => setProfileMenuOpen(false)}>
+                      Account Settings
+                    </Link>
+                    <Link to="/help" onClick={() => setProfileMenuOpen(false)}>
+                      Help &amp; Support
+                    </Link>
+                  </div>
+
+                  <div className="profile-dropdown-footer">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      disabled={loggingOut}
+                    >
+                      {loggingOut ? "Logging Out..." : "Log Out"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <Link to="/login" className="login-link">

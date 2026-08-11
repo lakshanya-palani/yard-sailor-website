@@ -57,6 +57,15 @@
   box-shadow: 0 10px 24px rgb(0 0 0 / 15%);
 }
 
+.real-product-card {
+  cursor: pointer;
+}
+
+.real-product-card:focus-visible {
+  outline: 3px solid #ef403a;
+  outline-offset: 4px;
+}
+
 /* =========================
    PRODUCT IMAGE
 ========================= */
