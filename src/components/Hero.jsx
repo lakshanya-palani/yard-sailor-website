@@ -1,6 +1,20 @@
+import { useNavigate } from "react-router-dom";
 import "./Hero.css";
 
 function Hero() {
+  const navigate = useNavigate();
+
+  const handlePostSale = () => {
+    const isLoggedIn =
+      localStorage.getItem("yardSailorLoggedIn") === "true";
+
+    if (isLoggedIn) {
+      navigate("/post-sale");
+    } else {
+      navigate("/login?redirect=/post-sale");
+    }
+  };
+
   return (
     <section className="hero">
       <h1>
@@ -10,12 +24,16 @@ function Hero() {
       </h1>
 
       <div className="hero-buttons">
-        <a href="/post-sale" className="hero-button map-button">
+        <button
+          type="button"
+          className="hero-button map-button"
+          onClick={handlePostSale}
+        >
           Post a Sale
-        </a>
+        </button>
 
         <a href="/map" className="hero-button post-button">
-          Find a Sale
+          Find a Yard Sale
         </a>
       </div>
     </section>

@@ -1,77 +1,82 @@
+@import url("https://fonts.googleapis.com/css2?family=Bowlby+One+SC&family=League+Spartan:wght@400;500;600;700;800&display=swap");
+
 .hero {
-    width: 100%;
-    padding: 36px 20px 24px;
-    background-color: #fff3df;
-    text-align: center;
-    font-family: "League Spartan", sans-serif;
-  }
-  
+  width: 100%;
+  padding: 36px 20px 24px;
+  background-color: #fff3df;
+  text-align: center;
+  font-family: "League Spartan", sans-serif;
+}
+
+.hero h1 {
+  margin: 0;
+  color: #575957;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 0.95;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  margin-top: 34px;
+}
+
+.hero-button {
+  width: 256px;
+  min-height: 54px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #111;
+  border-radius: 13px;
+
+  color: #111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.hero-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 rgb(0 0 0 / 15%);
+}
+
+.post-button {
+  background-color: white;
+}
+
+.map-button {
+  background-color: #ef403a;
+}
+
+@media (max-width: 650px) {
   .hero h1 {
-    margin: 0;
-    color: #575957;
-    font-size: 40px;
-    font-weight: 800;
-    line-height: 0.95;
+    font-size: 32px;
+    line-height: 1.05;
   }
-  
+
+  .hero h1 br {
+    display: none;
+  }
+
   .hero-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 60px;
-    margin-top: 34px;
-  }
-  
-  .hero-button {
-    width: 256px;
-    min-height: 54px;
-    display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-  
-    border: 2px solid #111;
-    border-radius: 13px;
-  
-    color: #111;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 20px;
-    font-weight: 700;
-    text-decoration: none;
-  
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
+    gap: 16px;
   }
-  
-  .hero-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 0 rgb(0 0 0 / 15%);
+
+  .hero-button {
+    width: min(280px, 100%);
   }
-  
-  .post-button {
-    background-color: white;
-  }
-  
-  .map-button {
-    background-color: #ef403a;
-  }
-  
-  @media (max-width: 650px) {
-    .hero h1 {
-      font-size: 32px;
-      line-height: 1.05;
-    }
-  
-    .hero h1 br {
-      display: none;
-    }
-  
-    .hero-buttons {
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-  
-    .hero-button {
-      width: min(280px, 100%);
-    }
-  }
+}

@@ -7,7 +7,7 @@ function Navbar() {
     <>
       <div className="top-bar">
         <div className="top-bar-center">
-          NEW DROP NOW LIVE
+          YARD SAILOR NOW LIVE
         </div>
 
         <div className="top-bar-right">
