@@ -23,6 +23,21 @@ function PostSale() {
   const handleImageUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
 
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const invalidFile = selectedFiles.find(
+      (file) =>
+        !allowedTypes.includes(file.type) ||
+        file.size > 5 * 1024 * 1024
+    );
+
+    if (invalidFile) {
+      alert(
+        "Each image must be a JPEG, PNG, or WebP file no larger than 5 MB."
+      );
+      e.target.value = "";
+      return;
+    }
+
     const remainingSlots = 8 - images.length;
 
     if (remainingSlots <= 0) return;
@@ -108,12 +123,14 @@ function PostSale() {
       }
 
       const imageUrls = [];
+      console.log(`Using bucket: ${SALE_IMAGES_BUCKET}`);
 
       for (const image of images) {
         const extension = (image.file.name.split(".").pop() || "jpg")
           .toLowerCase();
         const filePath =
           `${user.id}/${crypto.randomUUID()}.${extension}`;
+        console.log("Uploading path:", filePath);
 
         const { error: uploadError } = await supabase.storage
           .from(SALE_IMAGES_BUCKET)
@@ -125,7 +142,12 @@ function PostSale() {
 
         if (uploadError) {
           console.error("Sale image upload failed:", uploadError);
-          alert(`Unable to upload an image: ${uploadError.message}`);
+          const bucketHelp = uploadError.message
+            .toLowerCase()
+            .includes("bucket not found")
+            ? " Create a public Supabase Storage bucket named sale-images."
+            : "";
+          alert(`Unable to upload image: ${uploadError.message}.${bucketHelp}`);
           return;
         }
 
@@ -139,11 +161,13 @@ function PostSale() {
           return;
         }
 
-        imageUrls.push(urlData.publicUrl);
+        const publicUrl = urlData.publicUrl;
+        console.log("Product image URL:", publicUrl);
+        imageUrls.push(publicUrl);
       }
 
-      const { error: insertError } = await supabase
-        .from("sales")
+      const { data: insertedProduct, error: insertError } = await supabase
+        .from("products")
         .insert({
           user_id: user.id,
           title: title.trim(),
@@ -154,15 +178,22 @@ function PostSale() {
           pickup,
           shipping,
           image_urls: imageUrls,
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) {
-        console.error("Sale insert failed:", insertError);
+        console.error("Product insert failed:", insertError);
         alert(insertError.message);
         return;
       }
 
-      window.dispatchEvent(new Event("yardSailorSalesUpdated"));
+      console.log("Product posted:", insertedProduct.id);
+      window.dispatchEvent(
+        new CustomEvent("yardSailorProductsUpdated", {
+          detail: insertedProduct,
+        })
+      );
       navigate("/");
     } catch (error) {
       console.error("Unexpected error while posting sale:", error);
@@ -228,7 +259,7 @@ function PostSale() {
 
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     multiple
                     onChange={handleImageUpload}
                   />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import "./Products.css";
+import "./products.css";
 
 function Products() {
   const [sales, setSales] = useState([]);
@@ -11,10 +11,8 @@ function Products() {
   const loadSales = async () => {
     const [{ data, error }, { data: authData }] = await Promise.all([
       supabase
-        .from("sales")
-        .select(
-          "id, user_id, title, price, brand, condition, description, pickup, shipping, image_urls, created_at"
-        )
+        .from("products")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(10),
       supabase.auth.getSession(),
@@ -34,14 +32,14 @@ function Products() {
     const initialLoad = window.setTimeout(loadSales, 0);
 
     window.addEventListener(
-      "yardSailorSalesUpdated",
+      "yardSailorProductsUpdated",
       loadSales
     );
 
     return () => {
       window.clearTimeout(initialLoad);
       window.removeEventListener(
-        "yardSailorSalesUpdated",
+        "yardSailorProductsUpdated",
         loadSales
       );
     };
@@ -54,7 +52,7 @@ function Products() {
     }
 
     const { error } = await supabase
-      .from("sales")
+      .from("products")
       .delete()
       .eq("id", sale.id)
       .eq("user_id", currentUserId);
