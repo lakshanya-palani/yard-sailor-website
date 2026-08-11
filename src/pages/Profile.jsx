@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Profile.css";
 
-function Profile() {
+function Profile({ setup = false }) {
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -10,6 +11,9 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [avatarUploadFailed, setAvatarUploadFailed] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     loadProfile();
@@ -22,7 +26,7 @@ function Profile() {
     } = await supabase.auth.getUser();
 
     if (userError) {
-      console.error(userError);
+      console.error("Unable to load authenticated user:", userError);
       setLoading(false);
       return;
     }
@@ -41,7 +45,8 @@ function Profile() {
       .maybeSingle();
 
     if (error) {
-      console.error(error);
+      console.error("Unable to load profile:", error);
+      alert("Your profile could not be loaded. Please try again.");
     }
 
     if (data) {
@@ -59,65 +64,155 @@ function Profile() {
       return;
     }
 
+    console.log("Selected avatar file:", file);
+
     if (!file.type.startsWith("image/")) {
       alert("Please choose an image file.");
       return;
     }
 
-    setUploading(true);
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Profile pictures must be 5 MB or smaller.");
+      event.target.value = "";
+      return;
+    }
 
-    const fileExtension =
-      file.name.split(".").pop() || "jpg";
+    setUploading(true);
+    setAvatarUploadFailed(false);
+
+    const fileExtension = (file.name.split(".").pop() || "jpg")
+      .toLowerCase();
 
     const filePath =
-      `${user.id}/avatar-${Date.now()}.${fileExtension}`;
+      `${user.id}/${crypto.randomUUID()}.${fileExtension}`;
 
     const { error: uploadError } =
       await supabase.storage
         .from("avatars")
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type,
+        });
 
     if (uploadError) {
       setUploading(false);
+      setAvatarUploadFailed(true);
+      console.error("Avatar upload failed:", uploadError);
       alert(uploadError.message);
+      event.target.value = "";
       return;
     }
 
-    const { data } = supabase.storage
+    console.log("Uploaded avatar path:", filePath);
+
+    const { data: urlData } = supabase.storage
       .from("avatars")
       .getPublicUrl(filePath);
 
-    setAvatarUrl(data.publicUrl);
+    const publicUrl = urlData?.publicUrl;
+
+    if (!publicUrl) {
+      setUploading(false);
+      setAvatarUploadFailed(true);
+      console.error("Supabase did not return a public URL for:", filePath);
+      alert("The picture uploaded, but its public URL could not be created.");
+      event.target.value = "";
+      return;
+    }
+
+    console.log("Supabase public avatar URL:", publicUrl);
+    setAvatarUrl(publicUrl);
     setUploading(false);
+    event.target.value = "";
   }
 
   async function handleSaveProfile(event) {
     event.preventDefault();
 
+    const cleanUsername = username.trim();
+
     if (!user) {
+      alert("Your session has expired. Please log in again.");
       return;
     }
 
-    if (!username.trim()) {
+    if (!cleanUsername) {
       alert("Please enter a username.");
+      return;
+    }
+
+    const usernameRegex = /^[A-Za-z0-9_]{3,20}$/;
+
+    if (!usernameRegex.test(cleanUsername)) {
+      alert(
+        "Username must be 3–20 characters and contain only letters, numbers, and underscores."
+      );
+      return;
+    }
+
+    if (uploading) {
+      alert("Please wait for your profile picture to finish uploading.");
+      return;
+    }
+
+    if (avatarUploadFailed) {
+      alert("Your profile picture did not upload. Please select it again before saving.");
       return;
     }
 
     setSaving(true);
 
+    // Escape LIKE wildcards so underscores are checked as literal characters.
+    const usernamePattern = cleanUsername.replace(
+      /[\\%_]/g,
+      "\\$&"
+    );
+
+    const { data: existingUser, error: usernameCheckError } =
+      await supabase
+        .from("profiles")
+        .select("id")
+        .ilike("username", usernamePattern)
+        .neq("id", user.id)
+        .limit(1)
+        .maybeSingle();
+
+    if (usernameCheckError) {
+      setSaving(false);
+      console.error("Username check failed:", usernameCheckError);
+      alert("Unable to check username availability. Please try again.");
+      return;
+    }
+
+    if (existingUser) {
+      setSaving(false);
+      alert("This username is already taken. Please choose another.");
+      return;
+    }
+
+    const finalAvatarUrl = avatarUrl;
+    console.log("Saving avatar_url:", finalAvatarUrl);
+
     const { error } = await supabase
       .from("profiles")
       .upsert({
         id: user.id,
-        username: username.trim(),
-        avatar_url: avatarUrl,
+        email: user.email,
+        username: cleanUsername,
+        avatar_url: finalAvatarUrl,
         updated_at: new Date().toISOString(),
       });
 
     setSaving(false);
 
     if (error) {
-      alert(error.message);
+      console.error("Profile save failed:", error);
+      if (error.code === "23505") {
+        alert("This username is already taken. Please choose another.");
+      } else {
+        alert(error.message);
+      }
       return;
     }
 
@@ -125,7 +220,15 @@ function Profile() {
       new Event("yardSailorProfileUpdated")
     );
 
-    alert("Profile saved!");
+    if (setup) {
+      const requestedRedirect = searchParams.get("redirect");
+      const redirect = requestedRedirect?.startsWith("/")
+        ? requestedRedirect
+        : "/";
+      navigate(redirect, { replace: true });
+    } else {
+      navigate("/");
+    }
   }
 
   if (loading) {
@@ -142,11 +245,12 @@ function Profile() {
     <main className="profile-page">
       <section className="profile-card">
         <div className="profile-heading">
-          <h1>Your Profile</h1>
+          <h1>{setup ? "Set Up Your Profile" : "Your Profile"}</h1>
 
           <p>
-            Add a profile picture and choose the username
-            other sailors will see.
+            {setup
+              ? "Choose the username other sailors will see. You can add a profile picture now or later."
+              : "Add a profile picture and choose the username other sailors will see."}
           </p>
         </div>
 
@@ -213,11 +317,13 @@ function Profile() {
           <button
             type="submit"
             className="profile-save-button"
-            disabled={saving}
+            disabled={saving || uploading}
           >
             {saving
               ? "Saving..."
-              : "Save Profile"}
+              : setup
+                ? "Complete Profile"
+                : "Save Profile"}
           </button>
         </form>
       </section>

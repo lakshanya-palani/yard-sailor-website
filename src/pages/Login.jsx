@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Login.css";
 
@@ -14,27 +14,84 @@ function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  useEffect(() => {
+    console.log("Login page mounted");
+  }, []);
+
   async function handleLogin(event) {
     event.preventDefault();
 
-    setLoading(true);
+    if (loading) return;
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const formData = new FormData(event.currentTarget);
+    const submittedEmail = String(formData.get("email") || "").trim();
+    const submittedPassword = String(formData.get("password") || "");
 
-    setLoading(false);
-
-    if (error) {
-      alert(error.message);
+    if (!submittedEmail || !submittedPassword) {
+      alert("Please enter your email and password.");
       return;
     }
 
-    const redirect =
-      searchParams.get("redirect") || "/";
+    console.log("Submitted email:", submittedEmail);
+    console.log("Password length:", submittedPassword.length);
+    console.log("Submitting login");
+    setLoading(true);
 
-    navigate(redirect);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: submittedEmail,
+        password: submittedPassword,
+      });
+
+      console.log("Login response user:", data?.user);
+
+      if (error) {
+        console.error("Login response error:", error);
+        console.error("Login error:", error);
+        alert(error.message);
+        return;
+      }
+
+      console.log("Login successful:", data.user);
+
+      const requestedRedirect = searchParams.get("redirect");
+      const redirect = requestedRedirect?.startsWith("/")
+        ? requestedRedirect
+        : "/";
+      console.log("Redirect target:", redirect);
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("username, avatar_url")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      console.log("Logged-in profile:", profile);
+
+      if (profileError) {
+        console.error("Profile lookup error:", profileError);
+        navigate(
+          `/profile/setup?redirect=${encodeURIComponent(redirect)}`,
+          { replace: true }
+        );
+        return;
+      }
+
+      if (!profile?.username?.trim()) {
+        navigate(
+          `/profile/setup?redirect=${encodeURIComponent(redirect)}`,
+          { replace: true }
+        );
+        return;
+      }
+
+      navigate(redirect, { replace: true });
+    } catch (unexpectedError) {
+      console.error("Unexpected login error:", unexpectedError);
+      alert("Unable to log in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -59,6 +116,8 @@ function Login() {
 
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="Email"
               value={email}
               onChange={(e) =>
@@ -81,6 +140,8 @@ function Login() {
                   ? "text"
                   : "password"
               }
+              name="password"
+              autoComplete="current-password"
               placeholder="Password"
               value={password}
               onChange={(e) =>
@@ -161,12 +222,12 @@ function Login() {
           Have no account yet?
         </p>
 
-        <a
-          href="/register"
+        <Link
+          to="/register"
           className="registration-button"
         >
           Sign Up
-        </a>
+        </Link>
 
         <a
           href="/privacy"

@@ -1,20 +1,42 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 import "./PostSale.css";
+
+const SALE_IMAGES_BUCKET = "sale-images";
 
 function PostSale() {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
+  const [brand, setBrand] = useState("");
+  const [condition, setCondition] = useState("");
   const [description, setDescription] = useState("");
 
   const [pickup, setPickup] = useState(true);
   const [shipping, setShipping] = useState(false);
 
   const [images, setImages] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleImageUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const invalidFile = selectedFiles.find(
+      (file) =>
+        !allowedTypes.includes(file.type) ||
+        file.size > 5 * 1024 * 1024
+    );
+
+    if (invalidFile) {
+      alert(
+        "Each image must be a JPEG, PNG, or WebP file no larger than 5 MB."
+      );
+      e.target.value = "";
+      return;
+    }
 
     const remainingSlots = 8 - images.length;
 
@@ -31,6 +53,7 @@ function PostSale() {
           {
             id: crypto.randomUUID(),
             src: reader.result,
+            file,
           },
         ]);
       };
@@ -47,11 +70,25 @@ function PostSale() {
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (submitting) return;
+
+    const numericPrice = Number(price);
 
     if (!title.trim()) {
       alert("Please enter a title.");
+      return;
+    }
+
+    if (price === "" || !Number.isFinite(numericPrice) || numericPrice < 0) {
+      alert("Please enter a valid, non-negative price.");
+      return;
+    }
+
+    if (!condition) {
+      alert("Please select a condition.");
       return;
     }
 
@@ -70,29 +107,100 @@ function PostSale() {
       return;
     }
 
-    const newSale = {
-      id: crypto.randomUUID(),
-      title: title.trim(),
-      description: description.trim(),
-      images: images.map((image) => image.src),
-      pickup,
-      shipping,
-      createdAt: new Date().toISOString(),
-    };
+    setSubmitting(true);
 
-    const existingSales =
-      JSON.parse(localStorage.getItem("yardSailorSales")) || [];
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    const updatedSales = [newSale, ...existingSales];
+      if (userError || !user) {
+        console.error("Unable to verify sale owner:", userError);
+        alert("Your session has expired. Please log in again.");
+        navigate("/login?redirect=/post-sale", { replace: true });
+        return;
+      }
 
-    localStorage.setItem(
-      "yardSailorSales",
-      JSON.stringify(updatedSales)
-    );
+      const imageUrls = [];
+      console.log(`Using bucket: ${SALE_IMAGES_BUCKET}`);
 
-    window.dispatchEvent(new Event("yardSailorSalesUpdated"));
+      for (const image of images) {
+        const extension = (image.file.name.split(".").pop() || "jpg")
+          .toLowerCase();
+        const filePath =
+          `${user.id}/${crypto.randomUUID()}.${extension}`;
+        console.log("Uploading path:", filePath);
 
-    navigate("/");
+        const { error: uploadError } = await supabase.storage
+          .from(SALE_IMAGES_BUCKET)
+          .upload(filePath, image.file, {
+            cacheControl: "3600",
+            contentType: image.file.type,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error("Sale image upload failed:", uploadError);
+          const bucketHelp = uploadError.message
+            .toLowerCase()
+            .includes("bucket not found")
+            ? " Create a public Supabase Storage bucket named sale-images."
+            : "";
+          alert(`Unable to upload image: ${uploadError.message}.${bucketHelp}`);
+          return;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from(SALE_IMAGES_BUCKET)
+          .getPublicUrl(filePath);
+
+        if (!urlData?.publicUrl) {
+          console.error("No public URL returned for sale image:", filePath);
+          alert("An image uploaded, but its public URL could not be created.");
+          return;
+        }
+
+        const publicUrl = urlData.publicUrl;
+        console.log("Product image URL:", publicUrl);
+        imageUrls.push(publicUrl);
+      }
+
+      const { data: insertedProduct, error: insertError } = await supabase
+        .from("products")
+        .insert({
+          user_id: user.id,
+          title: title.trim(),
+          price: numericPrice,
+          brand: brand.trim() || null,
+          condition,
+          description: description.trim(),
+          pickup,
+          shipping,
+          image_urls: imageUrls,
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error("Product insert failed:", insertError);
+        alert(insertError.message);
+        return;
+      }
+
+      console.log("Product posted:", insertedProduct.id);
+      window.dispatchEvent(
+        new CustomEvent("yardSailorProductsUpdated", {
+          detail: insertedProduct,
+        })
+      );
+      navigate("/");
+    } catch (error) {
+      console.error("Unexpected error while posting sale:", error);
+      alert("Unable to post your sale. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -151,12 +259,72 @@ function PostSale() {
 
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     multiple
                     onChange={handleImageUpload}
                   />
                 </label>
               )}
+            </div>
+          </div>
+
+          <div className="sale-details-grid form-section">
+            <div>
+              <label className="input-label" htmlFor="sale-price">
+                Price
+              </label>
+
+              <input
+                id="sale-price"
+                className="sale-input"
+                type="number"
+                name="price"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="input-label" htmlFor="sale-brand">
+                Brand
+              </label>
+
+              <input
+                id="sale-brand"
+                className="sale-input"
+                type="text"
+                name="brand"
+                placeholder="Brand (optional)"
+                value={brand}
+                maxLength={60}
+                onChange={(e) => setBrand(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="input-label" htmlFor="sale-condition">
+                Condition
+              </label>
+
+              <select
+                id="sale-condition"
+                className="sale-input sale-select"
+                name="condition"
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+                required
+              >
+                <option value="">Select condition</option>
+                <option value="New">New</option>
+                <option value="Like New">Like New</option>
+                <option value="Good">Good</option>
+                <option value="Fair">Fair</option>
+                <option value="Poor">Poor</option>
+              </select>
             </div>
           </div>
 
@@ -254,8 +422,9 @@ function PostSale() {
             <button
               type="submit"
               className="publish-sale-button"
+              disabled={submitting}
             >
-              Post Sale
+              {submitting ? "Posting..." : "Post Sale"}
             </button>
           </div>
         </form>

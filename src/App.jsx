@@ -11,6 +11,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
+import ProfileSetup from "./pages/ProfileSetup";
 
 import "./App.css";
 
@@ -45,7 +46,7 @@ function App() {
         <Route
           path="/post-sale"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireProfile>
               <PostSale />
             </ProtectedRoute>
           }
@@ -60,6 +61,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile/setup"
+          element={
+            <ProtectedRoute>
+              <ProfileSetup />
             </ProtectedRoute>
           }
         />

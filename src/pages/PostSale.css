@@ -202,6 +202,16 @@
       border-color 0.2s ease,
       box-shadow 0.2s ease;
   }
+
+  .sale-details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .sale-select {
+    min-height: 50px;
+  }
   
   .sale-input:focus,
   .sale-textarea:focus {
@@ -341,6 +351,12 @@
     color: #0d1b2a;
     transform: translateY(-2px);
   }
+
+  .publish-sale-button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+  }
   
   @media (max-width: 700px) {
     .post-sale-form {
@@ -352,6 +368,10 @@
     }
   
     .delivery-options {
+      grid-template-columns: 1fr;
+    }
+
+    .sale-details-grid {
       grid-template-columns: 1fr;
     }
   

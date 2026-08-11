@@ -5,14 +5,7 @@ function Hero() {
   const navigate = useNavigate();
 
   const handlePostSale = () => {
-    const isLoggedIn =
-      localStorage.getItem("yardSailorLoggedIn") === "true";
-
-    if (isLoggedIn) {
-      navigate("/post-sale");
-    } else {
-      navigate("/login?redirect=/post-sale");
-    }
+    navigate("/post-sale");
   };
 
   return (

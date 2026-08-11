@@ -1,49 +1,71 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Products.css";
+import { supabase } from "../lib/supabase";
+import "./products.css";
 
 function Products() {
   const [sales, setSales] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
 
-  const loadSales = () => {
-    const storedSales =
-      JSON.parse(localStorage.getItem("yardSailorSales")) || [];
+  const loadSales = async () => {
+    const [{ data, error }, { data: authData }] = await Promise.all([
+      supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase.auth.getSession(),
+    ]);
 
-    setSales(storedSales);
+    if (error) {
+      console.error("Unable to load sales:", error);
+      setSales([]);
+    } else {
+      setSales(data || []);
+    }
+
+    setCurrentUserId(authData?.session?.user?.id || null);
   };
 
   useEffect(() => {
-    loadSales();
+    const initialLoad = window.setTimeout(loadSales, 0);
 
     window.addEventListener(
-      "yardSailorSalesUpdated",
+      "yardSailorProductsUpdated",
       loadSales
     );
 
-    window.addEventListener("storage", loadSales);
-
     return () => {
+      window.clearTimeout(initialLoad);
       window.removeEventListener(
-        "yardSailorSalesUpdated",
+        "yardSailorProductsUpdated",
         loadSales
       );
-
-      window.removeEventListener("storage", loadSales);
     };
   }, []);
 
-  const cancelSale = (id) => {
-    const updatedSales = sales.filter(
-      (sale) => sale.id !== id
-    );
+  const cancelSale = async (sale) => {
+    if (!currentUserId || sale.user_id !== currentUserId) {
+      alert("Only the seller can cancel this sale.");
+      return;
+    }
 
-    localStorage.setItem(
-      "yardSailorSales",
-      JSON.stringify(updatedSales)
-    );
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", sale.id)
+      .eq("user_id", currentUserId);
 
-    setSales(updatedSales);
+    if (error) {
+      console.error("Unable to cancel sale:", error);
+      alert(error.message);
+      return;
+    }
+
+    setSales((currentSales) =>
+      currentSales.filter((currentSale) => currentSale.id !== sale.id)
+    );
   };
 
   const placeholdersNeeded = Math.max(
@@ -70,7 +92,7 @@ function Products() {
           >
             <div className="product-image-container">
               <img
-                src={sale.images[0]}
+                src={sale.image_urls?.[0]}
                 alt={sale.title}
                 className="product-image"
               />
@@ -78,6 +100,16 @@ function Products() {
 
             <div className="product-information">
               <h3>{sale.title}</h3>
+
+              <p className="product-price">
+                ${Number(sale.price).toFixed(2)}
+              </p>
+
+              {(sale.brand || sale.condition) && (
+                <p className="product-meta">
+                  {[sale.brand, sale.condition].filter(Boolean).join(" · ")}
+                </p>
+              )}
 
               <p className="product-description">
                 {sale.description}
@@ -93,13 +125,15 @@ function Products() {
                 )}
               </div>
 
-              <button
-                type="button"
-                className="cancel-sale-button"
-                onClick={() => cancelSale(sale.id)}
-              >
-                Cancel Sale
-              </button>
+              {sale.user_id === currentUserId && (
+                <button
+                  type="button"
+                  className="cancel-sale-button"
+                  onClick={() => cancelSale(sale)}
+                >
+                  Cancel Sale
+                </button>
+              )}
             </div>
           </article>
         ))}
