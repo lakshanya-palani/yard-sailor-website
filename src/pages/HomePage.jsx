@@ -14,12 +14,12 @@ function HomePage() {
         <h2
           style={{
             textAlign: "center",
-            fontFamily: "sans-serif",
+            fontFamily: "league-spartan",
             marginTop: "2rem",
             marginBottom: "1rem",
           }}
         >
-          MAP!
+          Nearby Yard Sales!
         </h2>
 
         <SaleMap />
