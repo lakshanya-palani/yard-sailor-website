@@ -211,20 +211,6 @@ function Contact() {
           </form>
         </div>
 
-        <div className="contact-map">
-          <iframe
-            src="https://maps.google.com/maps?q=Santa%20Cruz%2C%20CA&t=&z=13&ie=UTF8&iwloc=&output=embed"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Yard Sailor location"
-          />
-
-          <div className="map-address">
-            Yard Sailor
-            <span>Santa Cruz, CA</span>
-          </div>
-        </div>
       </section>
     </main>
   );

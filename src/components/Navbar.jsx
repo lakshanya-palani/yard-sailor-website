@@ -149,6 +149,8 @@ function Navbar() {
 
           <Link to="/shop">Shop</Link>
 
+          <Link to="/find-yard-sale">Find a Yard Sale</Link>
+
           <Link to="/" className="navbar-logo">
             <img
               src="/images/logo_bubble_green.png"
@@ -157,8 +159,10 @@ function Navbar() {
           </Link>
 
           <Link to="/post-sale">
-            Post Yard Sale
+            Post a Sale
           </Link>
+
+          <Link to="/about">About</Link>
 
           <Link to="/contact">
             Contact

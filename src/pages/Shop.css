@@ -1,0 +1,25 @@
+.shop-page { min-height: calc(100vh - 178px); padding: 52px 24px 85px; background: #fff3df; color: #1c2a39; font-family: "League Spartan", sans-serif; }
+.shop-container { width: min(1250px, 100%); margin: 0 auto; }
+.shop-heading h1 { margin: 0 0 7px; font-size: clamp(40px, 6vw, 58px); }
+.shop-heading p { margin: 0; color: #687078; font-size: 18px; }
+.shop-controls { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; margin: 28px 0 30px; }
+.shop-controls input, .shop-controls select { min-width: 0; padding: 13px 15px; border: 1px solid #cbc8c2; border-radius: 10px; background: white; color: #1c2a39; font: 16px "League Spartan", sans-serif; }
+.shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+.shop-card { min-width: 0; overflow: hidden; border-radius: 14px; background: white; box-shadow: 0 5px 18px rgb(0 0 0 / 10%); cursor: pointer; transition: transform .2s ease, box-shadow .2s ease; }
+.shop-card:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgb(0 0 0 / 15%); }
+.shop-card:focus-visible { outline: 3px solid #ef403a; outline-offset: 4px; }
+.shop-card-image { width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #ececec; color: #777; }
+.shop-card-image img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.shop-card-info { padding: 14px; }
+.shop-card-info h2 { margin: 0 0 7px; overflow: hidden; font-size: 18px; text-overflow: ellipsis; white-space: nowrap; }
+.shop-card-price { margin: 0 0 12px; color: #ef403a; font-size: 18px; font-weight: 800; }
+.shop-card-seller { display: flex; align-items: center; gap: 8px; color: #555e65; font-size: 13px; }
+.shop-card-seller span { width: 28px; height: 28px; flex: 0 0 28px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 50%; background: #1c2a39; color: white; font-weight: 700; }
+.shop-card-seller img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.shop-message, .shop-error, .shop-empty { padding: 40px 0; text-align: center; }
+.shop-error { color: #c93631; }
+.shop-empty h2 { margin-bottom: 7px; }
+.shop-empty p { color: #687078; }
+@media (max-width: 1000px) { .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .shop-page { padding: 38px 14px 65px; } .shop-controls { grid-template-columns: 1fr; } .shop-grid { gap: 12px; } .shop-card-info { padding: 11px; } }

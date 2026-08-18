@@ -1,0 +1,26 @@
+.yard-sale-detail-page { min-height: calc(100vh - 178px); padding: 60px 24px 90px; background: #fff3df; color: #1c2a39; font-family: "League Spartan", sans-serif; }
+.yard-sale-detail-layout { width: min(1150px, 100%); display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(330px, .8fr); gap: 30px; margin: 0 auto; }
+.yard-sale-gallery, .yard-sale-detail-card { padding: 22px; border-radius: 18px; background: white; box-shadow: 0 8px 28px rgb(0 0 0 / 9%); }
+.yard-sale-main-image { min-height: 430px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 13px; background: #eee9df; color: #777; }
+.yard-sale-main-image img { width: 100%; max-height: 600px; display: block; object-fit: contain; }
+.yard-sale-thumbnails { display: flex; gap: 9px; overflow-x: auto; padding-top: 14px; }
+.yard-sale-thumbnails button { padding: 0; border: 3px solid transparent; border-radius: 9px; background: transparent; cursor: pointer; }
+.yard-sale-thumbnails button.selected { border-color: #ef403a; }
+.yard-sale-thumbnails img { width: 72px; height: 72px; display: block; border-radius: 6px; object-fit: cover; }
+.yard-sale-detail-eyebrow { margin: 0 0 8px; color: #6d8f25; font-size: 13px; font-weight: 800; letter-spacing: 2px; }
+.yard-sale-detail-card h1 { margin: 0 0 10px; font-size: clamp(32px, 4vw, 46px); line-height: 1.05; }
+.yard-sale-distance { margin: 0 0 20px; color: #ef403a; font-size: 19px; font-weight: 800; }
+.yard-sale-detail-meta { display: grid; gap: 14px; padding-block: 20px; border-block: 1px solid #ece7df; }
+.yard-sale-detail-meta strong, .yard-sale-detail-meta span { display: block; }
+.yard-sale-detail-meta span { margin-top: 4px; color: #616970; }
+.yard-sale-description { margin: 24px 0; }
+.yard-sale-description h2 { margin: 0 0 8px; font-size: 20px; }
+.yard-sale-description p { margin: 0; color: #555e65; line-height: 1.55; white-space: pre-wrap; }
+.yard-sale-host { display: flex; align-items: center; gap: 10px; padding-top: 20px; border-top: 1px solid #ece7df; }
+.yard-sale-host > span { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 50%; background: #ef403a; color: white; font-weight: 800; }
+.yard-sale-host img { width: 100%; height: 100%; object-fit: cover; }
+.yard-sale-host small, .yard-sale-host strong { display: block; }
+.yard-sale-host small { color: #737980; }
+.yard-sale-detail-status { text-align: center; }
+@media (max-width: 850px) { .yard-sale-detail-layout { grid-template-columns: 1fr; } .yard-sale-main-image { min-height: 300px; } }
+@media (max-width: 520px) { .yard-sale-detail-page { padding: 35px 16px 65px; } .yard-sale-gallery, .yard-sale-detail-card { padding: 16px; } .yard-sale-main-image { min-height: 230px; } }
