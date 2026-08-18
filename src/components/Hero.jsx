@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Hero.css";
 
 function Hero() {
@@ -25,9 +25,9 @@ function Hero() {
           Post a Sale
         </button>
 
-        <a href="/map" className="hero-button post-button">
+        <Link to="/find-yard-sale" className="hero-button post-button">
           Find a Yard Sale
-        </a>
+        </Link>
       </div>
     </section>
   );

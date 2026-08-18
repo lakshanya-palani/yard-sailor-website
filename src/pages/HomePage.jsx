@@ -2,6 +2,7 @@ import Hero from "../components/Hero";
 import Products from "../components/Products";
 import SignupPopup from "../components/SignupPopup";
 import SaleMap from "../components/SaleMap";
+import NearbyYardSales from "../components/NearbyYardSales";
 
 function HomePage() {
   return (
@@ -11,18 +12,9 @@ function HomePage() {
 
         <Products />
 
-        <h2
-          style={{
-            textAlign: "center",
-            fontFamily: "league-spartan",
-            marginTop: "2rem",
-            marginBottom: "1rem",
-          }}
-        >
-          Nearby Yard Sales!
-        </h2>
+        <NearbyYardSales />
 
-        <SaleMap />
+        <SaleMap className="homepage-sale-map" />
       </main>
 
       <SignupPopup />

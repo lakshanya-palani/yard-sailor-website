@@ -1,0 +1,100 @@
+.nearby-sales-section {
+  padding: 45px 0 55px;
+  background: #fff3df;
+  color: #1c2a39;
+  font-family: "League Spartan", sans-serif;
+}
+
+.nearby-sales-heading,
+.nearby-sales-grid,
+.nearby-sales-message {
+  width: min(1200px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.nearby-sales-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.nearby-sales-heading h2 {
+  margin: 0 0 5px;
+  font-size: 32px;
+}
+
+.nearby-sales-heading p {
+  margin: 0;
+  color: #687078;
+}
+
+.nearby-sales-heading a {
+  padding: 10px 15px;
+  border-radius: 9px;
+  background: #ef403a;
+  color: white;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nearby-sales-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.nearby-sale-card {
+  overflow: hidden;
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 5px 18px rgb(0 0 0 / 10%);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.nearby-sale-card:hover {
+  transform: translateY(-3px);
+}
+
+.nearby-sale-image {
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eee9df;
+  color: #777;
+}
+
+.nearby-sale-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.nearby-sale-info {
+  padding: 15px;
+}
+
+.nearby-sale-info h3 {
+  margin: 0 0 7px;
+  overflow: hidden;
+  font-size: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nearby-sale-info p {
+  margin: 0 0 6px;
+  color: #687078;
+}
+
+.nearby-sale-info strong {
+  color: #ef403a;
+}
+
+@media (max-width: 900px) { .nearby-sales-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .nearby-sales-heading { align-items: flex-start; flex-direction: column; } .nearby-sales-grid { grid-template-columns: 1fr; } }

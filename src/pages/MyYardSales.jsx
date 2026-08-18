@@ -55,7 +55,7 @@ function MyYardSales() {
   return (
     <main className="account-page">
       <div className="account-container">
-        <div className="account-heading"><h1>My Yard Sale Listings</h1><p>Manage the yard sale events you host.</p></div>
+        <div className="account-heading"><h1>My Yard Sale Listings</h1><p>Manage the yard sale events you host.</p><Link className="account-button" to="/post-yard-sale">Post a Yard Sale</Link></div>
         {loading ? <p className="account-status">Loading your yard sales...</p> : sales.length === 0 ? (
           <div className="account-placeholder-card"><h2>No yard sales yet</h2><p className="account-empty">Your hosted yard sale events will appear here.</p></div>
         ) : (
@@ -66,7 +66,7 @@ function MyYardSales() {
                   <h2>{sale.title}</h2>
                   <p><strong>{sale.address}</strong></p>
                   <p className="account-card-meta">{sale.start_time ? new Date(sale.start_time).toLocaleString() : "Date not set"}</p>
-                  <p className="account-card-meta">Status: {sale.status || "active"}</p>
+                  <p className="account-card-meta">Status: {sale.status || "upcoming"}</p>
                   <p>{sale.description}</p>
                   <div className="account-actions">
                     <Link className="account-button-secondary" to={`/yard-sales/${sale.id}/edit`}>Edit</Link>

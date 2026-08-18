@@ -20,6 +20,10 @@ import SavedItems from "./pages/SavedItems";
 import AccountSettings from "./pages/AccountSettings";
 import HelpSupport from "./pages/HelpSupport";
 import ProductDetail from "./pages/ProductDetail";
+import PostYardSale from "./pages/PostYardSale";
+import FindYardSale from "./pages/FindYardSale";
+import Shop from "./pages/Shop";
+import About from "./pages/About";
 
 import "./App.css";
 
@@ -30,11 +34,15 @@ function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/find-yard-sale" element={<FindYardSale />} />
+        <Route path="/about" element={<About />} />
 
         <Route
           path="/sales/:id"
           element={<SaleDetail />}
         />
+        <Route path="/yard-sale/:id" element={<SaleDetail />} />
 
         <Route
           path="/login"
@@ -59,6 +67,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/post-yard-sale" element={<ProtectedRoute requireProfile><PostYardSale /></ProtectedRoute>} />
 
         <Route 
           path="/register" 
