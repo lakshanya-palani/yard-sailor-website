@@ -1,0 +1,28 @@
+.marketplace-visual { position: relative; padding: 24px 28px 30px; background: #dce9c7; color: #1c2a39; border: 1px solid #1c2a39; border-radius: 16px; }
+.marketplace-caption { display: flex; justify-content: space-between; gap: 16px; font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+.marketplace-stack { display: flex; align-items: center; justify-content: center; min-height: 310px; padding: 34px 0; }
+.marketplace-item { width: 32%; min-width: 0; background: white; padding: 9px; border: 1px solid #1c2a39; border-radius: 10px; text-decoration: none; color: #1c2a39; --scene-travel: 60px; }
+.marketplace-item-0 { rotate: -7deg; margin-right: -10px; }
+.marketplace-item-1 { rotate: 3deg; z-index: 1; --scene-travel: -45px; }
+.marketplace-item-2 { rotate: 9deg; margin-left: -10px; --scene-travel: 85px; }
+.marketplace-item img, .marketplace-no-image { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; background: #fff3df; }
+.marketplace-item > div:last-child { display: grid; gap: 8px; padding: 14px 4px 5px; font-size: 16px; }
+.marketplace-item strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.marketplace-item span { font-weight: 600; }
+.marketplace-item:hover { border-color: #ef403a; }
+.marketplace-local { display: flex; align-items: center; gap: 14px; width: fit-content; max-width: 100%; padding: 15px 20px; background: #fff3df; border: 1px solid #1c2a39; border-radius: 10px; color: #1c2a39; text-decoration: none; --scene-travel: -35px; }
+.marketplace-local > span { font-size: 36px; color: #b52c26; }
+.marketplace-local div { display: grid; gap: 6px; font-size: 16px; }
+.marketplace-empty { text-align: center; padding: 20px; }
+.marketplace-empty img { width: 72px; height: 72px; }
+.marketplace-empty p { font-size: 32px; font-weight: 700; margin: 16px 0; }
+.marketplace-empty a { color: #1c2a39; }
+.marketplace-no-image { padding: 20px; }
+@media (max-width: 600px) {
+  .marketplace-visual { padding: 18px 14px 22px; }
+  .marketplace-caption { font-size: 12px; letter-spacing: .5px; }
+  .marketplace-stack { min-height: 255px; }
+  .marketplace-item { padding: 5px; width: 34%; }
+  .marketplace-item > div:last-child { font-size: 14px; padding-inline: 1px; }
+  .marketplace-local { padding: 12px; }
+}

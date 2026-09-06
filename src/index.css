@@ -21,6 +21,11 @@ body {
   background-color: #fff3df;
 }
 
+a:focus-visible, button:focus-visible {
+  outline: 3px solid #b52c26;
+  outline-offset: 4px;
+}
+
 #root {
   width: 100%;
   min-height: 100vh;

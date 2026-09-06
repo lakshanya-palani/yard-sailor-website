@@ -1,0 +1,10 @@
+.scroll-scene { --scene-progress: .5; }
+@media (prefers-reduced-motion: no-preference) {
+  .scene-layer { transform: translate3d(0, calc((.5 - var(--scene-progress)) * var(--scene-travel, 40px)), 0); }
+  .scene-active .scene-reveal { animation: scene-arrive .7s ease-out both; }
+  @keyframes scene-arrive { from { opacity: .75; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-scene *, .scroll-scene *::before, .scroll-scene *::after { animation: none !important; transition: none !important; }
+  .scene-layer { transform: none !important; }
+}

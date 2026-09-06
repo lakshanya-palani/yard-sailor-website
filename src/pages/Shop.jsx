@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Shop.css";
 
@@ -7,7 +7,17 @@ function Shop() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [sellers, setSellers] = useState({});
-  const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get("q") ?? searchParams.get("search") ?? "";
+  const updateSearch = (value) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.delete("search");
+      if (value.trim()) next.set("q", value);
+      else next.delete("q");
+      return next;
+    }, { replace: true });
+  };
   const [sort, setSort] = useState("newest");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -68,7 +78,7 @@ function Shop() {
       <div className="shop-container">
         <div className="shop-heading"><h1>Shop</h1><p>Discover items from sellers near you.</p></div>
         <div className="shop-controls">
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products..." aria-label="Search products" />
+          <input value={search} onChange={(event) => updateSearch(event.target.value)} onBlur={() => updateSearch(search.trim())} onKeyDown={(event) => { if (event.key === "Enter") updateSearch(search.trim()); }} placeholder="Search products..." aria-label="Search products" />
           <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort products">
             <option value="newest">Newest</option>
             <option value="price-low">Price: Low to High</option>
