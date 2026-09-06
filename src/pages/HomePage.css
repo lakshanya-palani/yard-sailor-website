@@ -1,0 +1,12 @@
+.home-page { overflow: clip; }
+.home-products { scroll-margin-top: 24px; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-opening + .home-products { transition: opacity .35s ease-out, transform .35s ease-out; }
+  .hero-opening[data-sailing] + .home-products:not(:focus-within) { opacity: 0; transform: translateY(18px); pointer-events: none; }
+}
+.home-page .products-heading { text-align: left; width: min(1200px, calc(100% - 40px)); margin-inline: auto; }
+.home-page .products-section { padding-block: 48px 72px; }
+.home-page .nearby-sales-section { border-top: 1px solid #c8c6b8; }
+.home-map-heading { width: min(1200px, calc(100% - 40px)); margin: 0 auto; padding: 25px 0 32px; color: #1c2a39; }
+.home-map-heading p { font-size: 14px; letter-spacing: 2px; color: #b52c26; font-weight: 700; }
+.home-map-heading h2 { font-size: clamp(30px, 4vw, 46px); margin: 0; }

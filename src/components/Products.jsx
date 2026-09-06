@@ -1,14 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./products.css";
 
-function Products() {
+function Products({ onProductsLoaded }) {
   const [sales, setSales] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
 
-  const loadSales = async () => {
+  useEffect(() => {
+    onProductsLoaded?.(sales);
+  }, [sales, onProductsLoaded]);
+
+  const loadSales = useCallback(async () => {
     const [{ data, error }, { data: authData }] = await Promise.all([
       supabase
         .from("products")
@@ -26,7 +30,7 @@ function Products() {
     }
 
     setCurrentUserId(authData?.session?.user?.id || null);
-  };
+  }, []);
 
   useEffect(() => {
     const initialLoad = window.setTimeout(loadSales, 0);
@@ -43,7 +47,7 @@ function Products() {
         loadSales
       );
     };
-  }, []);
+  }, [loadSales]);
 
   const cancelSale = async (sale) => {
     if (!currentUserId || sale.user_id !== currentUserId) {

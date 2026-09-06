@@ -59,6 +59,7 @@
   }
   
   .search-box input {
+    min-width: 0;
     flex: 1;
     height: 100%;
   
@@ -84,7 +85,7 @@
   
     border: none;
   
-    background-color: #5bab65;
+    background-color: #1c2a39;
     color: white;
   
     font-family: "League Spartan", sans-serif;
@@ -92,4 +93,10 @@
     font-weight: 600;
   
     cursor: pointer;
+  }
+
+  .search-container :focus-visible { outline: 3px solid #b7e35a; outline-offset: 3px; }
+  .search-box:focus-within { outline: 2px solid #b7e35a; }
+  @media (max-width: 650px) {
+    .search-box { left: 0; top: calc(100% + 12px); transform: none; width: min(300px, calc(100vw - 32px)); }
   }

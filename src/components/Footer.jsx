@@ -3,27 +3,6 @@ import "./Footer.css";
 function Footer() {
   return (
     <footer className="footer">
-      {/* Top newsletter section */}
-      <div className="footer-newsletter">
-        <h2>STAY IN THE LOOP</h2>
-
-        <p>
-          Sign up for updates on new yard sales, local finds, and more.
-        </p>
-
-        <form className="footer-newsletter-form">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            aria-label="Email address"
-          />
-
-          <button type="submit">
-            SUBSCRIBE
-          </button>
-        </form>
-      </div>
-
       {/* Bottom footer section */}
       <div className="footer-bottom">
         {/* Links */}
@@ -36,7 +15,7 @@ function Footer() {
 
         {/* Signup + social */}
         <div className="footer-info">
-          <h3>SIGN UP & SAVE</h3>
+          <h3>STAY IN THE LOOP</h3>
 
           <p>
             Get updates on nearby yard sales, special finds, and Yard Sailor

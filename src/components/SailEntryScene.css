@@ -1,0 +1,53 @@
+.sail-scene { position: absolute; inset: 0; pointer-events: none; overflow: clip; perspective: 900px; }
+.sail-water { position: absolute; width: 88%; height: 40%; left: 6%; bottom: 9%; opacity: .65; transform-origin: 50% 0; }
+.sail-destination { position: absolute; left: 50%; top: 53%; translate: -50% 0; width: 80px; text-align: center; transform-origin: center; }
+.sail-treasure > svg { display: block; width: 100%; }
+.sail-destination > span { display: block; margin-top: 4px; font-size: 10px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
+.sail-boat { position: absolute; width: 130px; left: calc(50% - 65px); top: 69%; transform-origin: center; }
+.sail-boat > svg { width: 100%; display: block; }
+.sail-find { position: absolute; width: clamp(110px, 12vw, 170px); padding: 7px; background: white; border: 1px solid #1c2a39; border-radius: 5px; --travel-x: -200px; --travel-y: 120px; rotate: -9deg; }
+.sail-find img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.sail-find strong, .sail-find span { display: block; font-size: 13px; margin-top: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sail-find-0 { left: 9%; top: 28%; }
+.sail-find-1 { right: 9%; top: 34%; rotate: 10deg; --travel-x: 200px; --travel-y: 100px; }
+.sail-find-2 { left: 24%; top: 66%; rotate: 5deg; --travel-x: -130px; --travel-y: 140px; }
+.sail-marker { position: absolute; font-size: 40px; color: #b52c26; }
+.sail-marker-left { left: 17%; top: 65%; }
+.sail-marker-right { right: 23%; top: 69%; }
+.sail-compass { position: absolute; right: 5%; bottom: 15%; text-align: center; font-size: 16px; line-height: 1.4; color: #596168; }
+@media (prefers-reduced-motion: no-preference) {
+  .sail-scene { opacity: clamp(0, calc((1 - var(--sail-progress)) * 12), 1); }
+  .sail-water { transform: scale(calc(1 + var(--sail-progress) * .55)); }
+  .sail-boat { transform: translate3d(0, calc(var(--sail-progress) * -145px), 0) scale(calc(1 - var(--sail-progress) * .35)); }
+  .sail-destination { transform: translate3d(0, calc(var(--sail-progress) * 32px), 0) scale(calc(1 + var(--sail-progress) * 1.15)); }
+  .sail-find { transform: translate3d(calc(var(--sail-progress) * var(--travel-x)), calc(var(--sail-progress) * var(--travel-y)), calc(var(--sail-progress) * 180px)); opacity: calc(1 - var(--sail-progress) * .85); }
+  .sail-marker-left { transform: translate3d(calc(var(--sail-progress) * -120px), calc(var(--sail-progress) * 60px), 0); }
+  .sail-marker-right { transform: translate3d(calc(var(--sail-progress) * 120px), calc(var(--sail-progress) * 60px), 0); }
+}
+@media (max-width: 900px) {
+  .sail-find { width: 110px; }
+  .sail-find-0 { left: 3%; top: 47%; }
+  .sail-find-1 { right: 3%; top: 50%; }
+  .sail-find-2 { display: none; }
+}
+@media (max-width: 600px) {
+  .sail-scene { perspective: none; }
+  .sail-find { width: 76px; padding: 5px; --travel-x: -40px; --travel-y: 35px; }
+  .sail-find-0 { left: 4%; top: 58%; }
+  .sail-find-1 { right: 4%; top: 61%; --travel-x: 40px; }
+  .sail-find strong { font-size: 11px; }
+  .sail-find span, .sail-marker, .sail-compass { display: none; }
+  .sail-destination { top: 56%; width: 60px; }
+  .sail-boat { width: 100px; left: calc(50% - 50px); top: 71%; }
+  .sail-water { width: 100%; left: 0; height: 29%; }
+}
+@media (max-width: 360px) {
+  .sail-destination { top: 64%; }
+  .sail-find-0, .sail-find-1 { top: 68%; }
+  .sail-boat { top: 77%; }
+}
+@media (prefers-reduced-motion: no-preference) and (max-width: 600px) {
+  .sail-boat { transform: translate3d(0, calc(var(--sail-progress) * -70px), 0) scale(calc(1 - var(--sail-progress) * .15)); }
+  .sail-destination { transform: scale(calc(1 + var(--sail-progress) * .6)); }
+  .sail-find { transform: translate3d(calc(var(--sail-progress) * var(--travel-x)), calc(var(--sail-progress) * 35px), 0); }
+}

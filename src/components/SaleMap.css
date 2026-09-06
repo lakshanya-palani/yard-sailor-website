@@ -11,7 +11,9 @@
   max-width: none;
   margin-inline: 0;
   margin-bottom: 0;
-  border-radius: 0;
+  border: 1.5px solid #000000; /* Border pixel */
+  border-radius: 0px; /* Changes the edges of the map border */ 
+  overflow: hidden;
 }
 
 .yard-sale-popup {

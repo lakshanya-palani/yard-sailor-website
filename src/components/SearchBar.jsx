@@ -29,11 +29,8 @@ function SearchBar() {
   const handleSearch = (event) => {
     event.preventDefault();
 
-    if (!searchTerm.trim()) {
-      return;
-    }
-
-    navigate(`/shop?search=${encodeURIComponent(searchTerm.trim())}`);
+    const query = searchTerm.trim();
+    navigate(query ? `/shop?q=${encodeURIComponent(query)}` : "/shop");
 
     setSearchOpen(false);
     setSearchTerm("");
@@ -45,15 +42,18 @@ function SearchBar() {
         className="search-button"
         type="button"
         aria-label="Search"
+        aria-expanded={searchOpen}
+        aria-controls="navbar-search"
         onClick={() => setSearchOpen(!searchOpen)}
       >
         <img src="/images/search.svg" alt="" />
       </button>
 
       {searchOpen && (
-        <form className="search-box" onSubmit={handleSearch}>
+        <form id="navbar-search" role="search" className="search-box" onSubmit={handleSearch}>
           <input
             type="text"
+            aria-label="Search products"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
