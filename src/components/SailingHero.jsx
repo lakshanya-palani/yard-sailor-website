@@ -19,8 +19,8 @@ const clamp = (value, min = 0, max = 1) =>
 const SUN_DIRECTION = new THREE.Vector3()
   .setFromSphericalCoords(
     1,
-    THREE.MathUtils.degToRad(87),
-    THREE.MathUtils.degToRad(180)
+    THREE.MathUtils.degToRad(73),
+    THREE.MathUtils.degToRad(80)
   )
   .normalize();
 
@@ -56,153 +56,166 @@ function Boat({ progress }) {
 
 
 function Ocean() {
-    const material = useMemo(() => {
-      return new THREE.ShaderMaterial({
-        uniforms: {
-          uTime: { value: 0 },
-          uSunDirection: { value: SUN_DIRECTION.clone() },
-          uDeepColor: { value: new THREE.Color("#061e46") },
-          uMidColor: { value: new THREE.Color("#145b98") },
-          uSkyBlue: { value: new THREE.Color("#6f91b4") },
-          uHorizonColor: { value: new THREE.Color("#c5a5a0") },
-          uSunColor: { value: new THREE.Color("#ffd5a3") },
-        },
-  
-        vertexShader: `
-          uniform float uTime;
-  
-          varying vec3 vWorldPosition;
-          varying vec3 vWorldNormal;
-          varying float vWaveHeight;
-  
-          float waveHeight(vec2 p, float t) {
-            float h = 0.0;
-  
-            // Broad ocean swells.
-            h += 0.28 * sin(dot(p, vec2(0.38, 0.16)) + t * 0.55);
-            h += 0.16 * sin(dot(p, vec2(-0.21, 0.42)) + t * 0.75);
-  
-            // Medium-sized waves.
-            h += 0.07 * sin(dot(p, vec2(0.85, 0.34)) + t * 1.1);
-            h += 0.035 * sin(dot(p, vec2(-1.2, 0.95)) + t * 1.45);
-  
-            return h;
-          }
-  
-          void main() {
-            vec3 pos = position;
-  
-            pos.z = waveHeight(pos.xy, uTime);
-  
-            float e = 0.05;
-            float h = pos.z;
-            float hx = waveHeight(pos.xy + vec2(e, 0.0), uTime);
-            float hy = waveHeight(pos.xy + vec2(0.0, e), uTime);
-  
-            vec3 localNormal = normalize(vec3(
-              (h - hx) / e,
-              (h - hy) / e,
-              1.0
-            ));
-  
-            vec4 worldPosition = modelMatrix * vec4(pos, 1.0);
-  
-            vWorldPosition = worldPosition.xyz;
-            vWorldNormal = normalize(mat3(modelMatrix) * localNormal);
-            vWaveHeight = h;
-  
-            gl_Position = projectionMatrix * viewMatrix * worldPosition;
-          }
-        `,
-  
-        fragmentShader: `
-          uniform float uTime;
-          uniform vec3 uSunDirection;
-          uniform vec3 uDeepColor;
-          uniform vec3 uMidColor;
-          uniform vec3 uSkyBlue;
-          uniform vec3 uHorizonColor;
-          uniform vec3 uSunColor;
-  
-          varying vec3 vWorldPosition;
-          varying vec3 vWorldNormal;
-          varying float vWaveHeight;
-  
-          void main() {
-            vec3 N = normalize(vWorldNormal);
-            vec3 V = normalize(cameraPosition - vWorldPosition);
-            vec3 L = normalize(uSunDirection);
-  
-            // Fine animated ripples.
-            float r1 = sin(vWorldPosition.x * 4.5 + uTime * 1.7)
-                     * cos(vWorldPosition.z * 3.8 - uTime * 1.2);
-  
-            float r2 = sin(vWorldPosition.x * 8.0 - uTime * 2.1
-                     + vWorldPosition.z * 6.5);
-  
-            N = normalize(N + vec3(
-              r1 * 0.018,
-              0.0,
-              r2 * 0.014
-            ));
-  
-            // Blue ocean base.
-            float crest = smoothstep(-0.35, 0.4, vWaveHeight);
-            vec3 color = mix(uDeepColor, uMidColor, crest * 0.48);
-  
-            // Fresnel reflection: blue sky at grazing angles.
-            float fresnel = pow(
-              1.0 - clamp(dot(N, V), 0.0, 1.0),
-              4.0
-            );
-  
-            color = mix(color, uSkyBlue, fresnel * 0.35);
-  
-            // Narrow, controlled sunset reflection.
-            vec3 R = reflect(-L, N);
-            float sunHighlight = pow(
-              max(dot(R, V), 0.0),
-              260.0
-            );
-  
-            color += uSunColor * sunHighlight * 0.65;
-  
-            // Gentle horizon blending, without turning the whole sea pink.
-            float dist = length(cameraPosition - vWorldPosition);
-            float haze = smoothstep(180.0, 900.0, dist);
-  
-            color = mix(color, uHorizonColor, haze * 0.38);
-  
-            gl_FragColor = vec4(color, 1.0);
-  
-            #include <tonemapping_fragment>
-            #include <colorspace_fragment>
-          }
-        `,
-  
-        side: THREE.DoubleSide,
-      });
-    }, []);
-  
-    useFrame((_, delta) => {
-      material.uniforms.uTime.value += delta;
+  const material = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uSunDirection: { value: SUN_DIRECTION.clone() },
+
+        // Lighter blue palette
+        uDeepColor: { value: new THREE.Color("#0b4d96") },
+        uMidColor: { value: new THREE.Color("#2d7fc7") },
+        uLightColor: { value: new THREE.Color("#68aee8") },
+        uFoamColor: { value: new THREE.Color("#d9efff") },
+
+        // Horizon + sunset reflection
+        uHorizonColor: { value: new THREE.Color("#f0c2a5") },
+        uSunColor: { value: new THREE.Color("#ffe0b0") },
+      },
+
+      vertexShader: `
+        uniform float uTime;
+
+        varying vec3 vWorldPosition;
+        varying vec3 vWorldNormal;
+        varying float vWaveHeight;
+
+        // Main wave function
+        float waveHeight(vec2 p, float t) {
+          float h = 0.0;
+
+          // Large rolling swells
+          h += 0.22 * sin(dot(p, vec2(0.22, 0.08)) + t * 0.45);
+          h += 0.16 * sin(dot(p, vec2(-0.14, 0.28)) + t * 0.60);
+
+          // Medium crossing waves
+          h += 0.09 * sin(dot(p, vec2(0.80, 0.22)) + t * 0.95);
+          h += 0.06 * sin(dot(p, vec2(-0.55, 0.62)) + t * 1.15);
+
+          // Smaller surface chop
+          h += 0.035 * sin(dot(p, vec2(1.8, 1.0)) + t * 1.7);
+          h += 0.02 * sin(dot(p, vec2(-2.2, 1.7)) + t * 2.1);
+
+          return h;
+        }
+
+        void main() {
+          vec3 pos = position;
+
+          float h = waveHeight(pos.xy, uTime);
+          pos.z = h;
+
+          float e = 0.08;
+          float hx = waveHeight(pos.xy + vec2(e, 0.0), uTime);
+          float hy = waveHeight(pos.xy + vec2(0.0, e), uTime);
+
+          vec3 localNormal = normalize(vec3(
+            (h - hx) / e,
+            (h - hy) / e,
+            1.0
+          ));
+
+          vec4 worldPosition = modelMatrix * vec4(pos, 1.0);
+
+          vWorldPosition = worldPosition.xyz;
+          vWorldNormal = normalize(mat3(modelMatrix) * localNormal);
+          vWaveHeight = h;
+
+          gl_Position = projectionMatrix * viewMatrix * worldPosition;
+        }
+      `,
+
+      fragmentShader: `
+        uniform float uTime;
+        uniform vec3 uSunDirection;
+        uniform vec3 uDeepColor;
+        uniform vec3 uMidColor;
+        uniform vec3 uLightColor;
+        uniform vec3 uFoamColor;
+        uniform vec3 uHorizonColor;
+        uniform vec3 uSunColor;
+
+        varying vec3 vWorldPosition;
+        varying vec3 vWorldNormal;
+        varying float vWaveHeight;
+
+        void main() {
+          vec3 N = normalize(vWorldNormal);
+          vec3 V = normalize(cameraPosition - vWorldPosition);
+          vec3 L = normalize(uSunDirection);
+
+          // Fine ripples added to normal
+          float ripple1 = sin(vWorldPosition.x * 3.5 + uTime * 1.2)
+                        * cos(vWorldPosition.z * 2.8 - uTime * 0.9);
+
+          float ripple2 = sin(vWorldPosition.x * 7.0 - uTime * 1.8
+                        + vWorldPosition.z * 5.8);
+
+          float ripple3 = cos(vWorldPosition.x * 10.5 + uTime * 2.3)
+                        * sin(vWorldPosition.z * 9.0 - uTime * 1.7);
+
+          N = normalize(N + vec3(
+            ripple1 * 0.020 + ripple3 * 0.008,
+            0.0,
+            ripple2 * 0.016
+          ));
+
+          // Base color from deep to lighter blue
+          float heightMix = smoothstep(-0.28, 0.35, vWaveHeight);
+          vec3 color = mix(uDeepColor, uMidColor, heightMix);
+
+          // Lighter tops on higher wave crests
+          float crest = smoothstep(0.10, 0.36, vWaveHeight);
+          color = mix(color, uLightColor, crest * 0.55);
+
+          // Slight foam highlight on peak crests
+          float foam = smoothstep(0.28, 0.42, vWaveHeight);
+          color = mix(color, uFoamColor, foam * 0.0);
+
+          // Fresnel reflection
+          float fresnel = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.5);
+          color = mix(color, uLightColor, fresnel * 0.22);
+
+          // Sun reflection path
+          vec3 R = reflect(-L, N);
+          float sunHighlight = pow(max(dot(R, V), 0.0), 180.0);
+          color += uSunColor * sunHighlight * 0.75;
+
+          // Distance haze toward horizon
+          float dist = length(cameraPosition - vWorldPosition);
+          float haze = smoothstep(160.0, 820.0, dist);
+          color = mix(color, uHorizonColor, haze * 0.30);
+
+          gl_FragColor = vec4(color, 1.0);
+
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }
+      `,
+
+      side: THREE.DoubleSide,
     });
-  
-    useEffect(() => {
-      return () => material.dispose();
-    }, [material]);
-  
-    return (
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -1.05, 0]}
-        material={material}
-        frustumCulled={false}
-      >
-        <planeGeometry args={[600, 600, 300, 300]} />
-      </mesh>
-    );
-  }
+  }, []);
+
+  useFrame((_, delta) => {
+    material.uniforms.uTime.value += delta;
+  });
+
+  useEffect(() => {
+    return () => material.dispose();
+  }, [material]);
+
+  return (
+    <mesh
+      rotation={[-Math.PI / 2, 0, 0]}
+      position={[0, -1.05, 0]}
+      material={material}
+      frustumCulled={false}
+    >
+      <planeGeometry args={[900, 900, 360, 360]} />
+    </mesh>
+  );
+}
 
 function SunsetSky() {
   const sky = useMemo(() => {
@@ -246,18 +259,17 @@ function SailingScene({ progress }) {
     gl={{ antialias: true }}
   >
     <SunsetSky />
-  
-    <ambientLight intensity={0.8} />
-  
-    <directionalLight
-      position={[0, 8, -30]}
-      intensity={2.2}
-      color="#ffbf85"
-    />
-  
-    <SailingCamera progress={progress} />
-    <Ocean /> 
 
+    <ambientLight intensity={0.95} />
+
+    <directionalLight
+      position={[0, 12, -30]}
+      intensity={2.6}
+      color="#ffd0a0"
+    />
+
+    <SailingCamera progress={progress} />
+    <Ocean />
   
     <Suspense fallback={null}>
       <Boat progress={progress} />
