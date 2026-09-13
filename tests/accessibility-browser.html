@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><title>Yard Sailor local accessibility audit</title><body><h1>Local accessibility audit</h1><pre id="results">Running…</pre><iframe title="Page under test" style="height:900px;border:0"></iframe><script>
+(async()=>{
+const report=[];const frame=document.querySelector('iframe');
+for(const width of [1280,320]) for(const route of ['/','/shop','/about','/login','/register','/contact','/privacy','/accessibility','/products/6a8fe163-e17b-48af-bfd8-e137aaece1aa','/cart','/checkout','/messages']) {
+ frame.style.width=width+'px';await new Promise(r=>{frame.onload=r;frame.src=route;});await new Promise(r=>setTimeout(r,1300));
+ const d=frame.contentDocument;const script=d.createElement('script');script.src='/ys-audit-axe.js';await new Promise(r=>{script.onload=r;d.head.append(script)});
+ const result=await frame.contentWindow.axe.run(d,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});
+ report.push({route,actual:frame.contentWindow.location.pathname,width,overflow:d.documentElement.scrollWidth>width,violations:result.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),incomplete:result.incomplete.map(v=>v.id)});
+ document.querySelector('#results').textContent=JSON.stringify(report,null,2);
+}document.title='Audit finished';})();
+</script></body></html>

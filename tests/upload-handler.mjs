@@ -1,0 +1,24 @@
+// Exercise the actual Edge Function request handler with isolated service adapters.
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { transformWithOxc } from 'vite';
+import { boundedBody, MAX_BYTES } from '../supabase/functions/secure-image-upload/image.js';
+let source=await readFile(new URL('../supabase/functions/secure-image-upload/index.ts',import.meta.url),'utf8');
+source=source.replace(/^import .*;\n/gm,'').replace(/const wasm =[\s\S]*?configureLimits\(magick\);/,'');
+const {code}=await transformWithOxc(source,'index.ts');
+let handler; let budget=true; const stored=[]; const records=[];
+const admin={auth:{getUser:async token=>token==='valid'?{data:{user:{id:'owner-uuid'}},error:null}:{data:{user:null},error:{}}},rpc:async()=>({data:budget,error:null}),storage:{from:()=>({upload:async(path,bytes,options)=>{stored.push({path,bytes,options});return {error:null};},getPublicUrl:path=>({data:{publicUrl:`https://storage.example/${path}`}}),remove:async()=>({error:null})})},from:()=>({insert:async value=>{records.push(value);return {error:null};}})};
+const Deno={env:{get:key=>key==='ALLOWED_ORIGINS'?'https://yardsailor.example':'server-only'},serve:fn=>{handler=fn;}};
+await new Function('createClient','boundedBody','reencodeImage','magick','Deno',code)(()=>admin,boundedBody,()=>new Uint8Array([255,216,255]),{},Deno);
+const request=(token,origin='https://yardsailor.example',body=new Uint8Array([1]),kind='avatars')=>new Request('https://edge.example',{method:'POST',headers:{...(token?{authorization:`Bearer ${token}`} : {}),origin,'x-upload-kind':kind},body});
+assert.equal((await handler(request(null))).status,401);
+assert.equal((await handler(request('forged'))).status,401);
+assert.equal((await handler(request('valid','https://evil.example'))).status,403);
+assert.equal((await handler(request('valid',undefined,undefined,'../../evil'))).status,400);
+budget=false;assert.equal((await handler(request('valid'))).status,429);budget=true;
+assert.equal((await handler(request('valid',undefined,new Uint8Array(MAX_BYTES+1)))).status,400);
+const response=await handler(request('valid')); assert.equal(response.status,200);
+assert.equal(stored.length,1);assert.match(stored[0].path,/^owner-uuid\/avatars\/[0-9a-f-]{36}\.jpg$/);
+assert.equal(stored[0].options.contentType,'image/jpeg');assert.equal(stored[0].options.upsert,false);assert.equal(records[0].user_id,'owner-uuid');
+assert.equal(response.headers.get('x-content-type-options'),'nosniff');
+console.log('PASS Edge handler auth, CORS, category, rate/size limits, generated object keys, JPEG content type, owner registration');

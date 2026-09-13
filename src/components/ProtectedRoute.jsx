@@ -21,9 +21,6 @@ function ProtectedRoute({ children, requireProfile = false }) {
         error: userError,
       } = await supabase.auth.getUser();
 
-      console.log("Authenticated user:", currentUser?.id);
-      console.log("Requested route:", location.pathname);
-
       if (!active || currentCheck !== checkNumber) return;
 
       if (userError) {
@@ -51,13 +48,6 @@ function ProtectedRoute({ children, requireProfile = false }) {
         .select("username")
         .eq("id", currentUser.id)
         .maybeSingle();
-
-      console.log("Profile check result:", profile);
-      console.log("Username:", profile?.username);
-      console.log(
-        "Profile complete:",
-        Boolean(profile?.username?.trim())
-      );
 
       if (!active || currentCheck !== checkNumber) return;
 
@@ -103,7 +93,7 @@ function ProtectedRoute({ children, requireProfile = false }) {
   }, [location.pathname, requireProfile]);
 
   if (loading) {
-    return null;
+    return <main><p role="status">Checking your account…</p></main>;
   }
 
   if (!user) {
@@ -118,7 +108,7 @@ function ProtectedRoute({ children, requireProfile = false }) {
   }
 
   if (requireProfile && profileCheckError) {
-    return null;
+    return <main><p role="alert">Unable to check your profile. Please refresh and try again.</p></main>;
   }
 
   if (requireProfile && profileComplete === false) {

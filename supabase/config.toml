@@ -1,0 +1,12 @@
+[functions.secure-image-upload]
+verify_jwt = true
+
+[functions.create-checkout-session]
+verify_jwt = true
+
+[functions.manage-checkout]
+verify_jwt = true
+
+[functions.stripe-webhook]
+# Stripe authenticates through its endpoint-specific raw-body signature.
+verify_jwt = false

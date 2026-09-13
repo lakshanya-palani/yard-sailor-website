@@ -2,21 +2,18 @@
 import Products from "../components/Products";
 import SaleMap from "../components/SaleMap";
 import NearbyYardSales from "../components/NearbyYardSales";
-import { useState } from "react";
 import ScrollScene from "../components/ScrollScene";
 import SailingHero from "../components/SailingHero";
 import "./HomePage.css";
 
 function HomePage() {
-  const [products, setProducts] = useState([]);
-
   return (
     <main className="home-page">
       <SailingHero />
 
       <ScrollScene id="home-products" className="home-products">
         <div className="scene-reveal">
-          <Products onProductsLoaded={setProducts} />
+          <Products previewLimit={5} />
         </div>
       </ScrollScene>
 

@@ -2,10 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Navbar.css";
+import { useCart } from "../context/CartContext";
 import LanguageDropdown from "./LanguageDropdown";
 import SearchBar from "./SearchBar";
 
 function Navbar() {
+  const { count } = useCart();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -90,7 +92,8 @@ function Navbar() {
     }
 
     function handleEscape(event) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && menuRef.current?.contains(document.activeElement)) {
+        menuRef.current.querySelector("button")?.focus();
         setProfileMenuOpen(false);
       }
     }
@@ -144,7 +147,7 @@ function Navbar() {
       <header className="navbar">
         <SearchBar />
 
-        <div className="navbar-center">
+        <nav className="navbar-center" aria-label="Main navigation">
           <Link to="/">Home</Link>
 
           <Link to="/shop">Shop</Link>
@@ -167,7 +170,7 @@ function Navbar() {
           <Link to="/contact">
             Contact
           </Link>
-        </div>
+        </nav>
 
         <div className="navbar-account">
           {user ? (
@@ -177,7 +180,7 @@ function Navbar() {
                 className="profile-menu-trigger"
                 onClick={() => setProfileMenuOpen((open) => !open)}
                 aria-expanded={profileMenuOpen}
-                aria-haspopup="menu"
+                aria-controls="account-links"
               >
                 <span className="navbar-avatar" aria-hidden="true">
                   {profile?.avatar_url ? (
@@ -196,7 +199,7 @@ function Navbar() {
               </button>
 
               {profileMenuOpen && (
-                <div className="profile-dropdown" role="menu">
+                <div className="profile-dropdown" id="account-links">
                   <div className="profile-dropdown-header">
                     <span className="dropdown-avatar" aria-hidden="true">
                       {profile?.avatar_url ? (
@@ -221,6 +224,8 @@ function Navbar() {
                     <Link to="/my-yard-sales" onClick={() => setProfileMenuOpen(false)}>
                       My Yard Sale Listings
                     </Link>
+                    <Link to="/orders" onClick={() => setProfileMenuOpen(false)}>Orders</Link>
+                    <Link to="/messages" onClick={() => setProfileMenuOpen(false)}>Direct Messages</Link>
                     <Link to="/saved" onClick={() => setProfileMenuOpen(false)}>
                       Saved Items
                     </Link>
@@ -259,12 +264,14 @@ function Navbar() {
           <button
             className="cart-button"
             type="button"
-            aria-label="Shopping cart"
+            aria-label={`Shopping cart${count ? `, ${count} items` : ""}`}
+            onClick={() => navigate("/cart")}
           >
             <img
               src="/images/cart.png"
               alt=""
             />
+            {count > 0 && <span className="cart-count">{count}</span>}
           </button>
         </div>
       </header>

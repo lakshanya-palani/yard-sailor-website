@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import SocialLogin from "../components/SocialLogin";
+import { safeRedirect } from "../lib/redirect";
+import { useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Login.css";
 
@@ -9,32 +11,28 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const location = useLocation();
+  const [feedback, setFeedback] = useState(location.state?.notice || "");
+  const [socialBusy, setSocialBusy] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  useEffect(() => {
-    console.log("Login page mounted");
-  }, []);
 
   async function handleLogin(event) {
     event.preventDefault();
 
-    if (loading) return;
+    if (loading || socialBusy) return;
 
     const formData = new FormData(event.currentTarget);
     const submittedEmail = String(formData.get("email") || "").trim();
     const submittedPassword = String(formData.get("password") || "");
 
     if (!submittedEmail || !submittedPassword) {
-      alert("Please enter your email and password.");
+      setFeedback("Please enter your email and password.");
       return;
     }
-
-    console.log("Submitted email:", submittedEmail);
-    console.log("Password length:", submittedPassword.length);
-    console.log("Submitting login");
     setLoading(true);
 
     try {
@@ -43,30 +41,21 @@ function Login() {
         password: submittedPassword,
       });
 
-      console.log("Login response user:", data?.user);
-
       if (error) {
         console.error("Login response error:", error);
         console.error("Login error:", error);
-        alert(error.message);
+        setFeedback("Unable to log in. Check your email and password and try again.");
         return;
       }
 
-      console.log("Login successful:", data.user);
-
       const requestedRedirect = searchParams.get("redirect");
-      const redirect = requestedRedirect?.startsWith("/")
-        ? requestedRedirect
-        : "/";
-      console.log("Redirect target:", redirect);
+      const redirect = safeRedirect(requestedRedirect);
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("username, avatar_url")
         .eq("id", data.user.id)
         .maybeSingle();
-
-      console.log("Logged-in profile:", profile);
 
       if (profileError) {
         console.error("Profile lookup error:", profileError);
@@ -88,7 +77,7 @@ function Login() {
       navigate(redirect, { replace: true });
     } catch (unexpectedError) {
       console.error("Unexpected login error:", unexpectedError);
-      alert("Unable to log in. Please try again.");
+      setFeedback("Unable to log in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -101,7 +90,7 @@ function Login() {
       </div>
 
       <section className="login-card">
-        <h1>Welcome</h1>
+        <h1>Welcome</h1><p role="alert">{feedback}</p>
 
         <form
           className="login-form"
@@ -116,7 +105,7 @@ function Login() {
 
             <input
               type="email"
-              name="email"
+              name="email" aria-label="Email"
               autoComplete="email"
               placeholder="Email"
               value={email}
@@ -140,7 +129,7 @@ function Login() {
                   ? "text"
                   : "password"
               }
-              name="password"
+              name="password" aria-label="Password"
               autoComplete="current-password"
               placeholder="Password"
               value={password}
@@ -171,16 +160,16 @@ function Login() {
           </div>
 
           <a
-            href="/forgot-password"
+            href="/contact"
             className="forgot-password"
           >
-            Forgot password?
+            Need help signing in?
           </a>
 
           <button
             type="submit"
             className="login-submit"
-            disabled={loading}
+            disabled={loading || socialBusy}
           >
             {loading ? "Logging in..." : "Log in"}
           </button>
@@ -192,38 +181,14 @@ function Login() {
           <span></span>
         </div>
 
-        <div className="social-login">
-          <button
-            type="button"
-            className="social-button"
-          >
-            <img
-              src="/images/Google.svg"
-              alt="Google"
-              className="google-icon"
-            />
-            Google
-          </button>
-
-          <button
-            type="button"
-            className="social-button"
-          >
-            <img
-              src="/images/fbicon.png"
-              alt="Facebook"
-              className="facebook-icon"
-            />
-            Facebook
-          </button>
-        </div>
+        <SocialLogin redirect={safeRedirect(searchParams.get('redirect'))} disabled={loading} onBusy={setSocialBusy} />
 
         <p className="no-account">
           Have no account yet?
         </p>
 
         <Link
-          to="/register"
+          to={`/register?redirect=${encodeURIComponent(safeRedirect(searchParams.get("redirect")))}`}
           className="registration-button"
         >
           Sign Up

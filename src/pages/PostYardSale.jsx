@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { geocodeAddress, hasValidCoordinates } from "../utils/location";
 import "./PostSale.css";
+import { uploadImage } from "../lib/uploads";
 
-const SALE_IMAGES_BUCKET = "sale-images";
 
 function PostYardSale() {
   const navigate = useNavigate();
@@ -69,7 +69,7 @@ function PostYardSale() {
         coordinates = await geocodeAddress(address);
       } catch (error) {
         console.error("Yard sale address geocoding failed:", error);
-        alert(error.message);
+        alert("Unable to save your changes. Please check the fields and try again.");
         return;
       }
 
@@ -83,20 +83,7 @@ function PostYardSale() {
 
       const imageUrls = [];
       for (const image of images) {
-        const extension = (image.file.name.split(".").pop() || "jpg").toLowerCase();
-        const path = `${authData.user.id}/yard-sales/${crypto.randomUUID()}.${extension}`;
-        const { error: uploadError } = await supabase.storage.from(SALE_IMAGES_BUCKET).upload(path, image.file, {
-          cacheControl: "3600",
-          contentType: image.file.type,
-          upsert: false,
-        });
-        if (uploadError) {
-          console.error("Yard sale image upload failed:", uploadError);
-          alert(`Unable to upload image: ${uploadError.message}`);
-          return;
-        }
-        const { data: urlData } = supabase.storage.from(SALE_IMAGES_BUCKET).getPublicUrl(path);
-        imageUrls.push(urlData.publicUrl);
+        imageUrls.push(await uploadImage(image.file, 'yard-sales'));
       }
 
       const { data, error } = await supabase
@@ -119,7 +106,7 @@ function PostYardSale() {
 
       if (error) {
         console.error("Yard sale insert failed:", error);
-        alert(error.message);
+        alert("Unable to save your changes. Please check the fields and try again.");
         return;
       }
       window.dispatchEvent(new CustomEvent("yardSailorYardSalesUpdated", { detail: data }));

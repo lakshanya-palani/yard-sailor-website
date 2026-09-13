@@ -1,38 +1,57 @@
+import { lazy, Suspense } from "react";
+import { SavedProvider } from "./context/SavedContext";
+import AuthCallback from "./pages/AuthCallback";
+const Orders = lazy(() => import("./pages/Orders"));
+const Accessibility = lazy(() => import("./pages/Accessibility"));
+import RouteAccessibility from "./components/RouteAccessibility";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import HomePage from "./pages/HomePage";
-import SaleDetail from "./pages/SaleDetail";
+import { CartProvider } from "./context/CartContext";
+const Cart = lazy(() => import("./pages/Cart"));
+const Messages = lazy(() => import("./pages/Messages"));
+const HomePage = lazy(() => import("./pages/HomePage"));
+const SaleDetail = lazy(() => import("./pages/SaleDetail"));
 import Login from "./pages/Login";
-import Privacy from "./pages/Privacy";
-import Contact from "./pages/Contact";
-import PostSale from "./pages/PostSale";
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Contact = lazy(() => import("./pages/Contact"));
+const PostSale = lazy(() => import("./pages/PostSale"));
 import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Profile from "./pages/Profile";
-import ProfileSetup from "./pages/ProfileSetup";
-import MyPostings from "./pages/MyPostings";
-import EditProduct from "./pages/EditProduct";
-import MyYardSales from "./pages/MyYardSales";
-import EditYardSale from "./pages/EditYardSale";
-import SavedItems from "./pages/SavedItems";
-import AccountSettings from "./pages/AccountSettings";
-import HelpSupport from "./pages/HelpSupport";
-import ProductDetail from "./pages/ProductDetail";
-import PostYardSale from "./pages/PostYardSale";
-import FindYardSale from "./pages/FindYardSale";
+const Profile = lazy(() => import("./pages/Profile"));
+const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
+const MyPostings = lazy(() => import("./pages/MyPostings"));
+const EditProduct = lazy(() => import("./pages/EditProduct"));
+const MyYardSales = lazy(() => import("./pages/MyYardSales"));
+const EditYardSale = lazy(() => import("./pages/EditYardSale"));
+const SavedItems = lazy(() => import("./pages/SavedItems"));
+const AccountSettings = lazy(() => import("./pages/AccountSettings"));
+const HelpSupport = lazy(() => import("./pages/HelpSupport"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const PostYardSale = lazy(() => import("./pages/PostYardSale"));
+const FindYardSale = lazy(() => import("./pages/FindYardSale"));
 import Shop from "./pages/Shop";
-import About from "./pages/About";
+const About = lazy(() => import("./pages/About"));
 
 import "./App.css";
 
 function App() {
   return (
     <BrowserRouter>
+      <CartProvider>
+      <SavedProvider>
+      <RouteAccessibility />
       <Navbar />
 
+      <Suspense fallback={<main><p role="status">Loading page…</p></main>}>
       <Routes>
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="/accessibility" element={<Accessibility />} />
+        <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute><Cart checkout /></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/" element={<HomePage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/find-yard-sale" element={<FindYardSale />} />
@@ -100,8 +119,11 @@ function App() {
         <Route path="/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
         <Route path="/help" element={<HelpSupport />} />
       </Routes>
+      </Suspense>
 
       <Footer />
+    </SavedProvider>
+    </CartProvider>
     </BrowserRouter>
   );
 }

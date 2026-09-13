@@ -1,334 +1,74 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "../lib/supabase";
-import "./Profile.css";
-
-function Profile({ setup = false }) {
-  const [user, setUser] = useState(null);
-  const [username, setUsername] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
-
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [avatarUploadFailed, setAvatarUploadFailed] = useState(false);
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  async function loadProfile() {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) {
-      console.error("Unable to load authenticated user:", userError);
-      setLoading(false);
-      return;
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { safeRedirect } from '../lib/redirect';
+import { uploadImage } from '../lib/uploads';
+import { savePublicProfile, usernameError } from '../lib/profileEditor';
+import './Profile.css';
+const EMPTY = {username:'', avatar_url:''};
+export default function Profile({setup=false}) {
+  const [user,setUser]=useState(null), [draft,setDraft]=useState(EMPTY), [saved,setSaved]=useState(EMPTY);
+  const [loading,setLoading]=useState(true), [loadError,setLoadError]=useState(''), [retry,setRetry]=useState(0);
+  const [saving,setSaving]=useState(false), [uploading,setUploading]=useState(false);
+  const [error,setError]=useState(''), [status,setStatus]=useState(''), [touched,setTouched]=useState(false);
+  const busy=useRef(false), input=useRef(null), usernameInput=useRef(null);
+  const navigate=useNavigate(); const [params]=useSearchParams();
+  const dirty=draft.username!==saved.username || draft.avatar_url!==saved.avatar_url;
+  const validation=touched ? usernameError(draft.username) : '';
+  useEffect(()=>{
+    let active=true;
+    async function load() {
+      setLoading(true);setLoadError('');
+      try {
+        const {data:auth,error:authError}=await supabase.auth.getUser();
+        if(authError || !auth?.user) throw new Error('Please log in again to edit your profile.');
+        const {data,error:profileError}=await supabase.from('profiles').select('username, avatar_url').eq('id',auth.user.id).maybeSingle();
+        if(profileError)throw new Error('Your profile could not be loaded. Please retry.');
+        if(active){setUser(auth.user);const initial={username:data?.username||'',avatar_url:data?.avatar_url||''};setDraft(initial);setSaved(initial);}
+      }catch(e){if(active)setLoadError(e.message);}finally{if(active)setLoading(false);}
     }
-
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    setUser(user);
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Unable to load profile:", error);
-      alert("Your profile could not be loaded. Please try again.");
-    }
-
-    if (data) {
-      setUsername(data.username || "");
-      setAvatarUrl(data.avatar_url || "");
-    }
-
-    setLoading(false);
+    load();return()=>{active=false;};
+  },[retry]);
+  useEffect(()=>{
+    if(!dirty)return;
+    const warn=event=>{event.preventDefault();event.returnValue='';};
+    window.addEventListener('beforeunload',warn);
+    return()=>window.removeEventListener('beforeunload',warn);
+  },[dirty]);
+  function revert(){setDraft(saved);setTouched(false);setError('');setStatus('Changes reverted.');}
+  async function upload(event){
+    const file=event.target.files?.[0];event.target.value='';
+    if(!file || busy.current)return;
+    busy.current=true;setUploading(true);setError('');setStatus('');
+    try{const url=await uploadImage(file,'avatars');setDraft(value=>({...value,avatar_url:url}));setStatus('Photo uploaded. Save Changes to use it on your profile.');}
+    catch(e){setError(e.message);}finally{busy.current=false;setUploading(false);}
   }
-
-  async function handleAvatarUpload(event) {
-    const file = event.target.files?.[0];
-
-    if (!file || !user) {
-      return;
-    }
-
-    console.log("Selected avatar file:", file);
-
-    if (!file.type.startsWith("image/")) {
-      alert("Please choose an image file.");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Profile pictures must be 5 MB or smaller.");
-      event.target.value = "";
-      return;
-    }
-
-    setUploading(true);
-    setAvatarUploadFailed(false);
-
-    const fileExtension = (file.name.split(".").pop() || "jpg")
-      .toLowerCase();
-
-    const filePath =
-      `${user.id}/${crypto.randomUUID()}.${fileExtension}`;
-
-    const { error: uploadError } =
-      await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: file.type,
-        });
-
-    if (uploadError) {
-      setUploading(false);
-      setAvatarUploadFailed(true);
-      console.error("Avatar upload failed:", uploadError);
-      alert(uploadError.message);
-      event.target.value = "";
-      return;
-    }
-
-    console.log("Uploaded avatar path:", filePath);
-
-    const { data: urlData } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(filePath);
-
-    const publicUrl = urlData?.publicUrl;
-
-    if (!publicUrl) {
-      setUploading(false);
-      setAvatarUploadFailed(true);
-      console.error("Supabase did not return a public URL for:", filePath);
-      alert("The picture uploaded, but its public URL could not be created.");
-      event.target.value = "";
-      return;
-    }
-
-    console.log("Supabase public avatar URL:", publicUrl);
-    setAvatarUrl(publicUrl);
-    setUploading(false);
-    event.target.value = "";
+  async function save(event){
+    event.preventDefault();if(busy.current)return;
+    setTouched(true);setError('');setStatus('');
+    if(usernameError(draft.username)){usernameInput.current?.focus();return;}
+    busy.current=true;setSaving(true);
+    try{
+      const result=await savePublicProfile(supabase,user.id,draft);
+      setSaved(result);setDraft(result);setStatus('Your profile changes are saved.');
+      window.dispatchEvent(new Event('yardSailorProfileUpdated'));
+      if(setup)navigate(safeRedirect(params.get('redirect')),{replace:true});
+    }catch(e){setError(e.message);}finally{busy.current=false;setSaving(false);}
   }
-
-  async function handleSaveProfile(event) {
-    event.preventDefault();
-
-    const cleanUsername = username.trim();
-
-    if (!user) {
-      alert("Your session has expired. Please log in again.");
-      return;
-    }
-
-    if (!cleanUsername) {
-      alert("Please enter a username.");
-      return;
-    }
-
-    const usernameRegex = /^[A-Za-z0-9_]{3,20}$/;
-
-    if (!usernameRegex.test(cleanUsername)) {
-      alert(
-        "Username must be 3–20 characters and contain only letters, numbers, and underscores."
-      );
-      return;
-    }
-
-    if (uploading) {
-      alert("Please wait for your profile picture to finish uploading.");
-      return;
-    }
-
-    if (avatarUploadFailed) {
-      alert("Your profile picture did not upload. Please select it again before saving.");
-      return;
-    }
-
-    setSaving(true);
-
-    // Escape LIKE wildcards so underscores are checked as literal characters.
-    const usernamePattern = cleanUsername.replace(
-      /[\\%_]/g,
-      "\\$&"
-    );
-
-    const { data: existingUser, error: usernameCheckError } =
-      await supabase
-        .from("profiles")
-        .select("id")
-        .ilike("username", usernamePattern)
-        .neq("id", user.id)
-        .limit(1)
-        .maybeSingle();
-
-    if (usernameCheckError) {
-      setSaving(false);
-      console.error("Username check failed:", usernameCheckError);
-      alert("Unable to check username availability. Please try again.");
-      return;
-    }
-
-    if (existingUser) {
-      setSaving(false);
-      alert("This username is already taken. Please choose another.");
-      return;
-    }
-
-    const finalAvatarUrl = avatarUrl;
-    console.log("Saving avatar_url:", finalAvatarUrl);
-
-    const { error } = await supabase
-      .from("profiles")
-      .upsert({
-        id: user.id,
-        email: user.email,
-        username: cleanUsername,
-        avatar_url: finalAvatarUrl,
-        updated_at: new Date().toISOString(),
-      });
-
-    setSaving(false);
-
-    if (error) {
-      console.error("Profile save failed:", error);
-      if (error.code === "23505") {
-        alert("This username is already taken. Please choose another.");
-      } else {
-        alert(error.message);
-      }
-      return;
-    }
-
-    window.dispatchEvent(
-      new Event("yardSailorProfileUpdated")
-    );
-
-    if (setup) {
-      const requestedRedirect = searchParams.get("redirect");
-      const redirect = requestedRedirect?.startsWith("/")
-        ? requestedRedirect
-        : "/";
-      navigate(redirect, { replace: true });
-    } else {
-      navigate("/");
-    }
-  }
-
-  if (loading) {
-    return (
-      <main className="profile-page">
-        <p className="profile-loading">
-          Loading profile...
-        </p>
-      </main>
-    );
-  }
-
-  return (
-    <main className="profile-page">
-      <section className="profile-card">
-        <div className="profile-heading">
-          <h1>{setup ? "Set Up Your Profile" : "Your Profile"}</h1>
-
-          <p>
-            {setup
-              ? "Choose the username other sailors will see. You can add a profile picture now or later."
-              : "Add a profile picture and choose the username other sailors will see."}
-          </p>
-        </div>
-
-        <div className="profile-avatar-section">
-          <div className="profile-avatar">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="Profile"
-              />
-            ) : (
-              <span>
-                {username
-                  ? username.charAt(0).toUpperCase()
-                  : "Y"}
-              </span>
-            )}
-          </div>
-
-          <label className="profile-upload-button">
-            {uploading
-              ? "Uploading..."
-              : "Upload Photo"}
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarUpload}
-              disabled={uploading}
-            />
-          </label>
-        </div>
-
-        <form
-          className="profile-form"
-          onSubmit={handleSaveProfile}
-        >
-          <label htmlFor="profile-username">
-            Username
-          </label>
-
-          <input
-            id="profile-username"
-            type="text"
-            placeholder="Choose a username"
-            value={username}
-            onChange={(e) =>
-              setUsername(e.target.value)
-            }
-            maxLength={30}
-          />
-
-          <label htmlFor="profile-email">
-            Email
-          </label>
-
-          <input
-            id="profile-email"
-            type="email"
-            value={user?.email || ""}
-            disabled
-          />
-
-          <button
-            type="submit"
-            className="profile-save-button"
-            disabled={saving || uploading}
-          >
-            {saving
-              ? "Saving..."
-              : setup
-                ? "Complete Profile"
-                : "Save Profile"}
-          </button>
-        </form>
-      </section>
-    </main>
-  );
+  return <main className="profile-page"><section className="profile-card">
+    <div className="profile-heading"><h1>{setup?'Set Up Your Profile':'Edit Profile'}</h1><p>Your username and photo appear with your listings and conversations.</p></div>
+    {loading?<p role="status">Loading profile…</p>:loadError?<><p role="alert">{loadError}</p><button className="profile-save-button" onClick={()=>setRetry(v=>v+1)}>Retry</button><p><Link to="/login?redirect=%2Fprofile">Return to login</Link></p></>:<>
+      <section className="profile-preview" aria-labelledby="profile-preview-title"><h2 id="profile-preview-title">Public profile preview</h2><div className="profile-preview-identity"><div className="profile-avatar">{draft.avatar_url?<img src={draft.avatar_url} alt="Your public profile photo"/>:<span aria-hidden="true">{draft.username.charAt(0).toUpperCase()||'Y'}</span>}</div><strong>{draft.username.trim()||'Your username'}</strong></div><p>Only your username and photo are shown here. Your account email stays private.</p></section>
+      <div className="profile-photo-actions"><input ref={input} className="profile-file-input" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose profile photo" onChange={upload} disabled={saving||uploading}/><button type="button" className="profile-secondary" disabled={saving||uploading} onClick={()=>input.current?.click()}>{uploading?'Uploading…':'Upload Photo'}</button><button type="button" className="profile-secondary" disabled={saving||uploading||!draft.avatar_url} onClick={()=>{setDraft(value=>({...value,avatar_url:''}));setStatus('Photo removed from preview. Save Changes to apply.');}}>Remove Photo</button></div>
+      <p className="profile-help">JPEG, PNG, or WebP · Up to 5 MB. Removing a photo changes your profile; it does not erase previously uploaded files.</p>
+      <form className="profile-form" onSubmit={save} noValidate aria-busy={saving||uploading}>
+        <label htmlFor="profile-username">Public username</label><input ref={usernameInput} id="profile-username" value={draft.username} onChange={e=>{setDraft(value=>({...value,username:e.target.value}));setStatus('');}} onBlur={()=>setTouched(true)} maxLength={20} autoComplete="username" disabled={saving||uploading} aria-invalid={!!validation} aria-describedby="profile-username-help profile-username-error"/>
+        <span id="profile-username-help" className="profile-help">3–20 letters, numbers, or underscores.</span><span id="profile-username-error" className="profile-error">{validation}</span>
+        <label htmlFor="profile-email">Account email (private)</label><input id="profile-email" type="email" value={user.email||''} readOnly/>
+        <p role="alert" className="profile-error">{error}</p><p role="status">{status || (dirty?'You have unsaved changes.':'No unsaved changes.')}</p>
+        <button className="profile-save-button" disabled={saving||uploading||(!setup&&!dirty)}>{saving?'Saving…':setup?'Complete Profile':'Save Changes'}</button><button type="button" className="profile-secondary" disabled={saving||uploading||!dirty} onClick={revert}>Revert Changes</button>
+      </form>
+      {!setup && <nav className="profile-account-links" aria-label="Your marketplace and account"><h2>Your marketplace</h2><Link to="/my-postings">My Postings ↗</Link><Link to="/my-yard-sales">My Yard Sale Listings ↗</Link><Link to="/settings">Security & account settings ↗</Link><p className="profile-help">Save or revert your edits before leaving this page.</p></nav>}
+    </>}
+  </section></main>;
 }
-
-export default Profile;

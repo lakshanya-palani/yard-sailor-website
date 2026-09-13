@@ -287,3 +287,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+.product-buyer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.product-buyer-actions button { min-height: 44px; padding: 12px 15px; border: 1px solid #1c2a39; border-radius: 10px; background: white; color: #1c2a39; font: 700 15px 'League Spartan', sans-serif; cursor: pointer; }
+.product-buyer-actions .product-buy-now { background: #b52c26; color: white; border-color: #b52c26; }
+.product-buyer-actions button:nth-child(3), .product-buyer-actions p { grid-column: 1 / -1; }
+.product-buyer-actions button:disabled { opacity: .6; cursor: wait; }
+.product-buyer-actions p { margin: 5px 0; line-height: 1.4; }
+.product-buyer-actions a { color: #b52c26; }
+.product-buyer-actions [role=alert] { color: #b52c26; }

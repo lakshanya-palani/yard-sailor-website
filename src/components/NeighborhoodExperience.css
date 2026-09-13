@@ -1,0 +1,30 @@
+.neighborhood-section { display: grid; grid-template-columns: .8fr 1.4fr; gap: clamp(28px, 5vw, 64px); align-items: center; padding-block: clamp(48px, 6vw, 88px); border-bottom: 1px solid #b5b4a6; }
+.neighborhood-copy h2 { margin: 0; font-size: clamp(36px, 4vw, 54px); line-height: 1.04; letter-spacing: -1.5px; }
+.neighborhood-lead { max-width: 350px; font-size: 21px; line-height: 1.45; }
+.neighborhood-steps { list-style: none; padding: 0; margin: 32px 0; counter-reset: journey; }
+.neighborhood-steps li { counter-increment: journey; position: relative; padding: 0 0 22px 40px; display: grid; gap: 5px; }
+.neighborhood-steps li::before { content: '0' counter(journey); position: absolute; left: 0; top: 2px; color: #b52c26; font-size: 14px; font-weight: 700; }
+.neighborhood-steps strong { font-size: 19px; }
+.neighborhood-steps span { font-size: 16px; color: #596168; }
+.neighborhood-demo { min-width: 0; background: #f6ecd8; border: 1px solid #cec4b0; border-radius: 16px; overflow: hidden; }
+.neighborhood-toolbar { display: flex; justify-content: space-between; padding: 20px 24px 0; gap: 16px; font-size: 12px; letter-spacing: 1px; font-weight: 700; }
+.neighborhood-stage { height: clamp(330px, 36vw, 460px); position: relative; touch-action: pan-y; }
+.neighborhood-stage.is-exploring { touch-action: none; cursor: grab; }
+.neighborhood-stage.is-exploring:active { cursor: grabbing; }
+.neighborhood-controls { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 24px; }
+.neighborhood-controls button, .neighborhood-locations button { font: 600 14px 'League Spartan', sans-serif; min-height: 44px; border: 1px solid #1c2a39; border-radius: 6px; padding: 10px 14px; color: #1c2a39; background: transparent; cursor: pointer; }
+.neighborhood-controls button:first-child { background: #1c2a39; color: #fff3df; }
+.neighborhood-controls button[aria-pressed=true] { background: #b52c26; border-color: #b52c26; }
+.neighborhood-controls button:disabled { opacity: .5; cursor: default; }
+.neighborhood-instructions { margin: 12px 24px 20px; color: #596168; font-size: 14px; line-height: 1.45; }
+.neighborhood-locations { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 24px; }
+.neighborhood-locations button { border-color: #c9beaa; text-align: left; }
+.neighborhood-locations button[aria-pressed=true] { border-color: #b52c26; color: #b52c26; background: #fff3df; }
+.neighborhood-info { margin: 20px 24px 0; padding-top: 20px; border-top: 1px solid #cec4b0; min-height: 155px; }
+.neighborhood-info > span { font-size: 12px; letter-spacing: .6px; color: #943020; font-weight: 700; }
+.neighborhood-info h3 { font-size: 23px; margin: 10px 0; }
+.neighborhood-info p { font-size: 16px; line-height: 1.5; margin: 0; }
+.neighborhood-disclaimer { margin: 20px 24px; font-size: 13px; line-height: 1.4; color: #596168; }
+.neighborhood-fallback { display: grid; align-content: center; height: 100%; padding: 32px; line-height: 1.5; }
+@media (max-width: 850px) { .neighborhood-section { grid-template-columns: 1fr; } .neighborhood-lead { max-width: 560px; } .neighborhood-stage { height: 420px; } }
+@media (max-width: 450px) { .neighborhood-stage { height: 330px; } .neighborhood-toolbar { padding-inline: 16px; } .neighborhood-controls { padding-inline: 16px; } .neighborhood-locations, .neighborhood-info, .neighborhood-instructions, .neighborhood-disclaimer { margin-inline: 16px; } }

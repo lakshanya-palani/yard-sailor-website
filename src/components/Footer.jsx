@@ -11,11 +11,12 @@ function Footer() {
           <a href="/shop">SHOP</a>
           <a href="/contact">CONTACT US</a>
           <a href="/privacy">PRIVACY POLICY</a>
+          <a href="/accessibility">ACCESSIBILITY</a>
         </div>
 
         {/* Signup + social */}
         <div className="footer-info">
-          <h3>STAY IN THE LOOP</h3>
+          <h2>STAY IN THE LOOP</h2>
 
           <p>
             Get updates on nearby yard sales, special finds, and Yard Sailor
@@ -23,9 +24,9 @@ function Footer() {
           </p>
 
           <div className="footer-email">
-            <input type="email" placeholder="Enter your email" />
+            <input type="email" aria-label="Newsletter email (signup not yet available)" disabled placeholder="Enter your email" />
 
-            <button type="button" aria-label="Submit email">
+            <button type="button" aria-label="Newsletter signup not yet available" disabled>
               →
             </button>
           </div>
