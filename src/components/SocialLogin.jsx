@@ -10,7 +10,7 @@ export default function SocialLogin({redirect='/',disabled=false,onBusy=()=>{}})
     try {
       const url=await startSocial(supabase,provider,redirect,{origin:window.location.origin,storage:authReturnStorage,supabaseUrl:import.meta.env.VITE_SUPABASE_URL,publicKey:import.meta.env.VITE_SUPABASE_ANON_KEY});
       window.location.assign(url);
-    }catch(e){setError(e instanceof TypeError?'Unable to connect to sign-in. Please retry or use email and password.':e.message);}
+    }catch(e){setError((e instanceof TypeError || e.name === 'TimeoutError' || e.name === 'AbortError')?'Unable to connect to sign-in. Please try again.':e.message);}
     finally {running.current=false;setBusy(null);onBusy(false);}
   }
   return <div className="social-auth-options"><div className="social-login">

@@ -11,7 +11,7 @@ export function returnPath(value) {
 }
 export function saveReturn(storage,value) {
   const path=returnPath(value);
-  storage.setItem(INTENT,JSON.stringify({path,created:Date.now()}));
+  try { storage.setItem(INTENT,JSON.stringify({path,created:Date.now()})); } catch { /* OAuth still works without return-path storage. */ }
   return path;
 }
 export function readReturn(storage) {
@@ -27,13 +27,13 @@ export async function profileDestination(client,userId,redirect) {
 export async function startSocial(client,provider,redirect,{origin,storage,fetcher=fetch,supabaseUrl,publicKey}) {
   if(!['google','facebook'].includes(provider))throw new Error('Unsupported sign-in provider.');
   // The public Auth settings endpoint prevents navigating to a disabled-provider error page.
-  const response=await fetcher(`${supabaseUrl}/auth/v1/settings`,{headers:{apikey:publicKey}});
-  if(!response.ok)throw new Error('Unable to check sign-in availability. Please retry or use email and password.');
+  const response=await fetcher(`${supabaseUrl}/auth/v1/settings`,{headers:{apikey:publicKey},signal:AbortSignal.timeout(10000)});
+  if(!response.ok)throw new Error('Unable to check sign-in availability. Please try again.');
   const settings=await response.json();
-  if(settings.external?.[provider]!==true)throw new Error(`${provider==='google'?'Google':'Facebook'} sign-in is not configured yet. Please use email and password.`);
+  if(settings.external?.[provider]!==true)throw new Error(`${provider==='google'?'Google':'Facebook'} sign-in is not configured yet. Please try another sign-in option.`);
   saveReturn(storage,redirect);
   const {data,error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:`${origin}/auth/callback`,skipBrowserRedirect:true,...(provider==='facebook'?{scopes:'email'}:{})}});
-  if(error||!data?.url)throw new Error('Unable to start social sign-in. Please retry or use email and password.');
+  if(error||!data?.url)throw new Error('Unable to start social sign-in. Please try again.');
   const url=new URL(data.url);
   if(url.origin!==new URL(supabaseUrl).origin || url.pathname!==`${new URL(supabaseUrl).pathname.replace(/\/$/,'')}/auth/v1/authorize`)throw new Error('Unexpected sign-in destination.');
   return url.href;

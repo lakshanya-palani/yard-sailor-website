@@ -1,10 +1,12 @@
+import { useAuth } from './useAuth';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { rpc } from '../lib/commerce';
 
 const CartContext = createContext(null);
 export function CartProvider({ children }) {
-  const [userId, setUserId] = useState(null);
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const [count, setCount] = useState(0);
   const currentUser = useRef(null);
   const request = useRef(0);
@@ -25,22 +27,20 @@ export function CartProvider({ children }) {
       initialized = true;
       if (currentUser.current !== id) setCount(0);
       currentUser.current = id;
-      setUserId(id);
       // Keep queries outside the auth callback's lock.
       setTimeout(() => { if (active) refresh(); }, 0);
     };
-    supabase.auth.getSession().then(({data}) => update(data?.session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => update(session));
+    update(userId ? { user: { id: userId } } : null);
     const refreshVisible = () => { if (document.visibilityState === 'visible') refresh(); };
     const poll = setInterval(refreshVisible, 15000);
     window.addEventListener('focus', refreshVisible);
     document.addEventListener('visibilitychange', refreshVisible);
     return () => {
-      active = false; currentUser.current = null; subscription.unsubscribe(); clearInterval(poll);
+      active = false; currentUser.current = null; clearInterval(poll);
       window.removeEventListener('focus', refreshVisible);
       document.removeEventListener('visibilitychange', refreshVisible);
     };
-  }, [refresh]);
+  }, [refresh, userId]);
   useEffect(() => {
     if (!userId) return;
     const channel = supabase.channel(`cart-${userId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'cart_items', filter: `user_id=eq.${userId}` }, refresh).subscribe();

@@ -1,10 +1,14 @@
+import { useAuth } from './useAuth';
 import {createContext,useContext,useEffect,useRef,useState,useCallback} from 'react';
 import {supabase} from '../lib/supabase';
 import {readSavedIds,writeSaved} from '../lib/favorites';
 const SavedContext=createContext(null);
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSaved=()=>useContext(SavedContext);
 export function SavedProvider({children}) {
-  const [userId,setUserId]=useState(null),[ids,setIds]=useState(new Set()),[loading,setLoading]=useState(true),[error,setError]=useState(''),[pending,setPending]=useState(new Set());
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const [ids,setIds]=useState(new Set()),[loading,setLoading]=useState(true),[error,setError]=useState(''),[pending,setPending]=useState(new Set());
   const [actionError,setActionError]=useState('');
   const owner=useRef(null),version=useRef(0),locks=useRef(new Map()),snapshot=useRef(new Set());
   const loaded=useRef(false), refreshedAt=useRef(0), fetching=useRef(null);
@@ -25,15 +29,14 @@ export function SavedProvider({children}) {
     const update=session=>{
       if(!active)return;const next=session?.user?.id||null;
       if(initialized&&next===owner.current)return;initialized=true;
-      version.current++;loaded.current=false;fetching.current=null;refreshedAt.current=0;setActionError('');owner.current=next;setUserId(next);replace(new Set());locks.current=new Map();setPending(new Set());setLoading(true);
+      version.current++;loaded.current=false;fetching.current=null;refreshedAt.current=0;setActionError('');owner.current=next;replace(new Set());locks.current=new Map();setPending(new Set());setLoading(true);
       const timer=setTimeout(()=>{timers.delete(timer);if(active)refresh();},0);timers.add(timer);
     };
-    const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>update(session));
-    supabase.auth.getSession().then(({data})=>{if(!initialized)update(data.session);});
+    update(userId ? {user: {id: userId}} : null);
     const focus=()=>{if(document.visibilityState==='visible'&&Date.now()-refreshedAt.current>30000)refresh();};
     window.addEventListener('focus',focus);
-    return()=>{active=false;version.current++;timers.forEach(clearTimeout);subscription.unsubscribe();window.removeEventListener('focus',focus);};
-  },[refresh]);
+    return()=>{active=false;version.current++;timers.forEach(clearTimeout);window.removeEventListener('focus',focus);};
+  },[refresh,userId]);
   function toggle(productId){
     if(!owner.current||loading||error)return Promise.resolve();
     setActionError('');version.current++;
