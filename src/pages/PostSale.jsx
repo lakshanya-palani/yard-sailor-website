@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./PostSale.css";
+import { ITEM_CATEGORIES } from "../lib/itemCategories";
 import { uploadImage } from "../lib/uploads";
 
 
@@ -10,6 +11,7 @@ function PostSale() {
 
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("other");
   const [brand, setBrand] = useState("");
   const [condition, setCondition] = useState("");
   const [description, setDescription] = useState("");
@@ -135,6 +137,7 @@ function PostSale() {
           price: numericPrice,
           brand: brand.trim() || null,
           condition,
+          category,
           description: description.trim(),
           pickup,
           shipping,
@@ -228,6 +231,12 @@ function PostSale() {
           </div>
 
           <div className="sale-details-grid form-section">
+            <div>
+              <label className="input-label" htmlFor="sale-category">Item Category</label>
+              <select id="sale-category" className="sale-input sale-select" name="category" value={category} onChange={(event) => setCategory(event.target.value)}>
+                {ITEM_CATEGORIES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+              </select>
+            </div>
             <div>
               <label className="input-label" htmlFor="sale-price">
                 Price

@@ -2,7 +2,7 @@
 .shop-container { width: min(1250px, 100%); margin: 0 auto; }
 .shop-heading h1 { margin: 0 0 7px; font-size: clamp(40px, 6vw, 58px); }
 .shop-heading p { margin: 0; color: #687078; font-size: 18px; }
-.shop-controls { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; margin: 28px 0 30px; }
+.shop-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 240px) 220px; gap: 12px; margin: 28px 0 30px; }
 .shop-controls input, .shop-controls select { min-width: 0; padding: 13px 15px; border: 1px solid #cbc8c2; border-radius: 10px; background: white; color: #1c2a39; font: 16px "League Spartan", sans-serif; }
 .shop-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
 .shop-card { min-width: 0; overflow: hidden; border-radius: 14px; background: white; box-shadow: 0 5px 18px rgb(0 0 0 / 10%); cursor: pointer; transition: transform .2s ease, box-shadow .2s ease; }
@@ -23,3 +23,7 @@
 @media (max-width: 1000px) { .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .shop-page { padding: 38px 14px 65px; } .shop-controls { grid-template-columns: 1fr; } .shop-grid { gap: 12px; } .shop-card-info { padding: 11px; } }
+
+.shop-controls select.shop-category-active { border-color: #1c2a39; box-shadow: 0 0 0 1px #1c2a39; font-weight: 700; }
+.shop-result-count { margin: -14px 0 20px; color: #687078; }
+@media (max-width: 760px) { .shop-controls { grid-template-columns: minmax(0, 1fr); } }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./AccountPages.css";
+import { ITEM_CATEGORIES } from "../lib/itemCategories";
 
 function EditProduct() {
   const { id } = useParams();
@@ -61,6 +62,7 @@ function EditProduct() {
         price,
         brand: form.brand?.trim() || null,
         condition: form.condition,
+        category: form.category || "other",
         description: form.description.trim(),
         pickup: form.pickup,
         shipping: form.shipping,
@@ -89,6 +91,7 @@ function EditProduct() {
             <label>Title<input name="title" value={form.title || ""} onChange={updateField} /></label>
             <label>Price<input name="price" type="number" min="0" step="0.01" value={form.price ?? ""} onChange={updateField} /></label>
             <label>Brand<input name="brand" value={form.brand || ""} onChange={updateField} /></label>
+            <label>Item Category<select name="category" value={form.category || "other"} onChange={updateField}>{ITEM_CATEGORIES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</select></label>
             <label>Condition<select name="condition" value={form.condition || ""} onChange={updateField}><option value="">Select condition</option><option>New</option><option>Like New</option><option>Good</option><option>Fair</option><option>Poor</option></select></label>
             <label>Description<textarea name="description" value={form.description || ""} onChange={updateField} /></label>
             <label><span><input name="pickup" type="checkbox" checked={Boolean(form.pickup)} onChange={updateField} /> Pickup</span></label>
