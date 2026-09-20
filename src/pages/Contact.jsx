@@ -43,7 +43,9 @@ function Contact() {
   async function handleSubmit(event) {
     event.preventDefault();
 
+    if (status === "sending") return;
     if (!validate()) {
+      requestAnimationFrame(() => document.querySelector(".contact-form [aria-invalid=true]")?.focus());
       return;
     }
 
@@ -55,7 +57,6 @@ function Contact() {
       subject: form.subject.trim(),
       message: form.message.trim(),
       _subject: `New Yard Sailor contact message: ${form.subject.trim()}`,
-      _captcha: "false",
     };
 
     try {
@@ -115,7 +116,7 @@ function Contact() {
             </label>
 
             <input
-              id="contact-name"
+              id="contact-name" maxLength={100} aria-invalid={!!errors.name} aria-describedby={errors.name ? "contact-name-error" : undefined}
               className={errors.name ? "input-error" : ""}
               type="text"
               name="name"
@@ -125,7 +126,7 @@ function Contact() {
             />
 
             {errors.name && (
-              <p className="contact-error">
+              <p id="contact-name-error" className="contact-error">
                 Please enter your name.
               </p>
             )}
@@ -135,7 +136,7 @@ function Contact() {
             </label>
 
             <input
-              id="contact-email"
+              id="contact-email" maxLength={254} aria-invalid={!!errors.email} aria-describedby={errors.email ? "contact-email-error" : undefined}
               className={errors.email ? "input-error" : ""}
               type="email"
               name="email"
@@ -145,7 +146,7 @@ function Contact() {
             />
 
             {errors.email && (
-              <p className="contact-error">
+              <p id="contact-email-error" className="contact-error">
                 Please enter a valid email.
               </p>
             )}
@@ -155,7 +156,7 @@ function Contact() {
             </label>
 
             <input
-              id="contact-subject"
+              id="contact-subject" maxLength={200} aria-invalid={!!errors.subject} aria-describedby={errors.subject ? "contact-subject-error" : undefined}
               className={errors.subject ? "input-error" : ""}
               type="text"
               name="subject"
@@ -165,7 +166,7 @@ function Contact() {
             />
 
             {errors.subject && (
-              <p className="contact-error">
+              <p id="contact-subject-error" className="contact-error">
                 Please enter a subject.
               </p>
             )}
@@ -175,7 +176,7 @@ function Contact() {
             </label>
 
             <textarea
-              id="contact-message"
+              id="contact-message" maxLength={4000} aria-invalid={!!errors.message} aria-describedby={errors.message ? "contact-message-error" : undefined}
               className={errors.message ? "input-error" : ""}
               name="message"
               value={form.message}
@@ -184,7 +185,7 @@ function Contact() {
             />
 
             {errors.message && (
-              <p className="contact-error">
+              <p id="contact-message-error" className="contact-error">
                 Please enter a message.
               </p>
             )}
@@ -198,13 +199,13 @@ function Contact() {
             </button>
 
             {status === "success" && (
-              <p className="contact-status success">
+              <p role="status" className="contact-status success">
                 Message sent!
               </p>
             )}
 
             {status === "failure" && (
-              <p className="contact-status failure">
+              <p role="alert" className="contact-status failure">
                 Something went wrong. Please try again.
               </p>
             )}

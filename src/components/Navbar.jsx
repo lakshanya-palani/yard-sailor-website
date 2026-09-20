@@ -1,86 +1,41 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Navbar.css";
+import { useCart } from "../context/CartContext";
 import LanguageDropdown from "./LanguageDropdown";
+import { useAuth } from "../context/useAuth";
+import { returnPath } from "../lib/authFlow";
 import SearchBar from "./SearchBar";
 
 function Navbar() {
-  const [user, setUser] = useState(null);
+  const { count } = useCart();
+  const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
+  const [failedAvatar, setFailedAvatar] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
 
-  const loadProfile = useCallback(async (currentUser) => {
-    if (!currentUser) {
-      setProfile(null);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", currentUser.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Unable to load navbar profile:", error);
-      setProfile(null);
-      return;
-    }
-
-    setProfile(data);
-  }, []);
-
   useEffect(() => {
     let active = true;
-
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (error) {
-        console.error("Unable to read auth session:", error);
-      }
-
-      if (active) {
-        const currentUser = data?.session?.user ?? null;
-        setUser(currentUser);
-        loadProfile(currentUser);
-      }
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      // Let Supabase finish committing the new session before querying tables.
-      setTimeout(() => {
-        if (active) {
-          loadProfile(currentUser);
-        }
-      }, 0);
-    });
-
-    const handleProfileUpdated = async () => {
-      const { data } = await supabase.auth.getSession();
-      loadProfile(data?.session?.user ?? null);
-    };
-    window.addEventListener(
-      "yardSailorProfileUpdated",
-      handleProfileUpdated
-    );
-
+    let request = 0;
+    async function loadProfile() {
+      const version = ++request;
+      if (!user) { setProfile(null); return; }
+      const { data, error } = await supabase.from("profiles")
+        .select("username, avatar_url").eq("id", user.id).maybeSingle();
+      if (active && version === request) setProfile(error ? null : { ...data, id: user.id });
+    }
+    void loadProfile();
+    window.addEventListener("yardSailorProfileUpdated", loadProfile);
     return () => {
       active = false;
-      subscription.unsubscribe();
-      window.removeEventListener(
-        "yardSailorProfileUpdated",
-        handleProfileUpdated
-      );
+      window.removeEventListener("yardSailorProfileUpdated", loadProfile);
     };
-  }, [loadProfile]);
+  }, [user]);
 
   useEffect(() => {
     function handleOutsideClick(event) {
@@ -90,7 +45,8 @@ function Navbar() {
     }
 
     function handleEscape(event) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && menuRef.current?.contains(document.activeElement)) {
+        menuRef.current.querySelector("button")?.focus();
         setProfileMenuOpen(false);
       }
     }
@@ -107,24 +63,28 @@ function Navbar() {
   async function handleLogout() {
     setProfileMenuOpen(false);
     setLoggingOut(true);
-    const { error } = await supabase.auth.signOut();
+    let error;
+    try { ({ error } = await supabase.auth.signOut()); }
+    catch { error = true; }
     setLoggingOut(false);
 
     if (error) {
       console.error("Unable to log out:", error);
-      alert(error.message);
+      alert("Unable to sign out. Please try again.");
       return;
     }
 
-    setUser(null);
     setProfile(null);
     navigate("/");
   }
 
-  const displayName = profile?.username?.trim() || "My Profile";
-  const fallbackLetter = profile?.username?.trim()
-    ? profile.username.trim().charAt(0).toUpperCase()
-    : "Y";
+  const ownProfile = profile?.id === user?.id ? profile : null;
+  const metadata = user?.user_metadata;
+  const displayName = [ownProfile?.username, metadata?.full_name, metadata?.name]
+    .find(value => typeof value === "string" && value.trim())?.trim() || "My Profile";
+  const candidateAvatar = ownProfile?.avatar_url || metadata?.avatar_url || metadata?.picture;
+  const avatar = typeof candidateAvatar === 'string' && /^https:\/\//.test(candidateAvatar) && candidateAvatar !== failedAvatar ? candidateAvatar : null;
+  const fallbackLetter = displayName.charAt(0).toUpperCase();
 
   return (
     <>
@@ -144,7 +104,7 @@ function Navbar() {
       <header className="navbar">
         <SearchBar />
 
-        <div className="navbar-center">
+        <nav className="navbar-center" aria-label="Main navigation">
           <Link to="/">Home</Link>
 
           <Link to="/shop">Shop</Link>
@@ -167,23 +127,23 @@ function Navbar() {
           <Link to="/contact">
             Contact
           </Link>
-        </div>
+        </nav>
 
         <div className="navbar-account">
-          {user ? (
+          {authLoading ? <span role="status">Loading account…</span> : user ? (
             <div className="profile-menu-container" ref={menuRef}>
               <button
                 type="button"
                 className="profile-menu-trigger"
                 onClick={() => setProfileMenuOpen((open) => !open)}
                 aria-expanded={profileMenuOpen}
-                aria-haspopup="menu"
+                aria-controls="account-links"
               >
                 <span className="navbar-avatar" aria-hidden="true">
-                  {profile?.avatar_url ? (
+                  {avatar ? (
                     <img
-                      src={profile.avatar_url}
-                      alt={profile.username || "Profile"}
+                      src={avatar} onError={() => setFailedAvatar(avatar)}
+                      alt=""
                     />
                   ) : (
                     fallbackLetter
@@ -196,11 +156,11 @@ function Navbar() {
               </button>
 
               {profileMenuOpen && (
-                <div className="profile-dropdown" role="menu">
+                <div className="profile-dropdown" id="account-links">
                   <div className="profile-dropdown-header">
                     <span className="dropdown-avatar" aria-hidden="true">
-                      {profile?.avatar_url ? (
-                        <img src={profile.avatar_url} alt="" />
+                      {avatar ? (
+                        <img src={avatar} onError={() => setFailedAvatar(avatar)} alt="" />
                       ) : (
                         fallbackLetter
                       )}
@@ -221,6 +181,8 @@ function Navbar() {
                     <Link to="/my-yard-sales" onClick={() => setProfileMenuOpen(false)}>
                       My Yard Sale Listings
                     </Link>
+                    <Link to="/orders" onClick={() => setProfileMenuOpen(false)}>Orders</Link>
+                    <Link to="/messages" onClick={() => setProfileMenuOpen(false)}>Direct Messages</Link>
                     <Link to="/saved" onClick={() => setProfileMenuOpen(false)}>
                       Saved Items
                     </Link>
@@ -245,7 +207,7 @@ function Navbar() {
               )}
             </div>
           ) : (
-            <Link to="/login" className="login-link">
+            <Link to={`/login?redirect=${encodeURIComponent(returnPath(`${location.pathname}${location.search}${location.hash}`))}`} className="login-link">
               <img
                 src="/images/lock.png"
                 alt=""
@@ -259,12 +221,14 @@ function Navbar() {
           <button
             className="cart-button"
             type="button"
-            aria-label="Shopping cart"
+            aria-label={`Shopping cart${count ? `, ${count} items` : ""}`}
+            onClick={() => navigate("/cart")}
           >
             <img
               src="/images/cart.png"
               alt=""
             />
+            {count > 0 && <span className="cart-count">{count}</span>}
           </button>
         </div>
       </header>

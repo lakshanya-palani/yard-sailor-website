@@ -1,9 +1,10 @@
+import SaveButton from "./SaveButton";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./products.css";
 
-function Products({ onProductsLoaded }) {
+function Products({ onProductsLoaded, previewLimit = 10 }) {
   const [sales, setSales] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ function Products({ onProductsLoaded }) {
     const [{ data, error }, { data: authData }] = await Promise.all([
       supabase
         .from("products")
-        .select("*")
+        .select("id,title,description,price,image_urls,user_id,brand,condition,pickup,shipping")
         .order("created_at", { ascending: false })
         .limit(10),
       supabase.auth.getSession(),
@@ -74,7 +75,7 @@ function Products({ onProductsLoaded }) {
 
   const placeholdersNeeded = Math.max(
     0,
-    10 - sales.slice(0, 10).length
+    previewLimit - sales.slice(0, previewLimit).length
   );
 
   const placeholders = Array.from(
@@ -89,30 +90,24 @@ function Products({ onProductsLoaded }) {
       </div>
 
       <div className="products-grid">
-        {sales.slice(0, 10).map((sale) => (
+        {sales.slice(0, previewLimit).map((sale) => (
           <article
             className="product-card real-product-card"
             key={sale.id}
-            role="link"
-            tabIndex={0}
             onClick={() => navigate(`/products/${sale.id}`)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                navigate(`/products/${sale.id}`);
-              }
-            }}
           >
             <div className="product-image-container">
+              <SaveButton productId={sale.id} title={sale.title} />
               <img
                 src={sale.image_urls?.[0]}
                 alt={sale.title}
                 className="product-image"
+                loading="lazy"
               />
             </div>
 
             <div className="product-information">
-              <h3>{sale.title}</h3>
+              <h3><Link to={`/products/${sale.id}`}>{sale.title}</Link></h3>
 
               <p className="product-price">
                 ${Number(sale.price).toFixed(2)}

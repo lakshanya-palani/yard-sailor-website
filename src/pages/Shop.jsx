@@ -1,10 +1,10 @@
+import ShopProductCard from "../components/ShopProductCard";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Shop.css";
 
 function Shop() {
-  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [sellers, setSellers] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,7 +26,7 @@ function Shop() {
     async function loadProducts() {
       const { data, error: productsError } = await supabase
         .from("products")
-        .select("*")
+        .select("id,title,description,price,image_urls,user_id,created_at")
         .order("created_at", { ascending: false });
 
       if (productsError) {
@@ -88,16 +88,7 @@ function Shop() {
 
         {loading ? <p className="shop-message">Loading products...</p> : error ? <p className="shop-error">{error}</p> : displayedProducts.length === 0 ? <div className="shop-empty"><h2>No products found.</h2><p>Try changing your search or filters.</p></div> : (
           <div className="shop-grid">
-            {displayedProducts.map((product) => {
-              const seller = sellers[product.user_id];
-              const sellerName = seller?.username?.trim() || "Yard Sailor seller";
-              return (
-                <article className="shop-card" key={product.id} tabIndex={0} role="link" onClick={() => navigate(`/products/${product.id}`)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate(`/products/${product.id}`); } }}>
-                  <div className="shop-card-image">{product.image_urls?.[0] ? <img src={product.image_urls[0]} alt={product.title} /> : <span>No image</span>}</div>
-                  <div className="shop-card-info"><h2>{product.title}</h2><p className="shop-card-price">${Number(product.price).toFixed(2)}</p><div className="shop-card-seller"><span>{seller?.avatar_url ? <img src={seller.avatar_url} alt="" /> : sellerName.charAt(0).toUpperCase()}</span><strong>{sellerName}</strong></div></div>
-                </article>
-              );
-            })}
+            {displayedProducts.map(product => <ShopProductCard key={product.id} product={product} seller={sellers[product.user_id]} />)}
           </div>
         )}
       </div>

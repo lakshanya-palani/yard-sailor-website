@@ -323,3 +323,7 @@
       grid-template-columns: 1fr;
     }
   }
+.social-auth-options { margin-top: 20px; }
+.social-auth-options .social-login { grid-template-columns: 1fr; }
+.social-auth-options .social-button { width: 100%; }
+.social-auth-options .social-button:disabled { opacity: .6; cursor: wait; }

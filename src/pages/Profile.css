@@ -142,3 +142,21 @@
     padding: 28px 20px;
   }
 }
+
+.profile-heading p { color: #596168; }
+.profile-preview { margin-top: 28px; padding-block: 20px; border-block: 1px solid #ddd6ca; }
+.profile-preview h2, .profile-account-links h2 { font-size: 20px; margin: 0 0 18px; color: #1c2a39; }
+.profile-preview-identity { display: flex; align-items: center; gap: 20px; min-width: 0; }
+.profile-preview-identity strong { overflow-wrap: anywhere; font-size: 22px; }
+.profile-preview-identity .profile-avatar { width: 80px; height: 80px; flex-shrink: 0; font-size: 30px; }
+.profile-preview p, .profile-help { color: #596168; font-size: 14px; line-height: 1.5; }
+.profile-photo-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.profile-file-input { display: none; }
+.profile-secondary { min-height: 44px; border: 1px solid #1c2a39; border-radius: 22px; background: white; color: #1c2a39; padding: 10px 18px; font: 700 15px 'League Spartan',sans-serif; cursor: pointer; }
+.profile-secondary:disabled { opacity: .6; cursor: default; }
+.profile-form .profile-save-button { background: #b52c26; margin-top: 0; }
+.profile-form p { margin: 5px 0; line-height: 1.4; }
+.profile-error { color: #b52c26; line-height: 1.4; }
+.profile-account-links { display: grid; gap: 14px; margin-top: 30px; border-top: 1px solid #ddd6ca; padding-top: 24px; }
+.profile-account-links a { color: #1c2a39; text-underline-offset: 4px; }
+.profile-page :is(button,input,a):focus-visible { outline: 3px solid #1c2a39; outline-offset: 3px; }

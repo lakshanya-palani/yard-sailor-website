@@ -10,3 +10,37 @@
 .home-map-heading { width: min(1200px, calc(100% - 40px)); margin: 0 auto; padding: 25px 0 32px; color: #1c2a39; }
 .home-map-heading p { font-size: 14px; letter-spacing: 2px; color: #b52c26; font-weight: 700; }
 .home-map-heading h2 { font-size: clamp(30px, 4vw, 46px); margin: 0; }
+
+/* Homepage sizing stays independent of the full catalog and shared navigation. */
+.home-page .products-heading,
+.home-page .products-grid,
+.home-page .nearby-sales-heading,
+.home-page .nearby-sales-grid,
+.home-page .nearby-sales-message,
+.home-page .home-map-heading {
+  width: min(1080px, calc(100% - 40px));
+}
+.home-page .products-section,
+.home-page .nearby-sales-section { padding-block: clamp(32px, 4vw, 48px); }
+.home-page .products-heading { margin-bottom: 24px; }
+.home-page .products-heading h2,
+.home-page .nearby-sales-heading h2,
+.home-page .home-map-heading h2 { font-size: clamp(1.625rem, 2.5vw, 2rem); line-height: 1.15; }
+.home-page .products-grid { gap: clamp(14px, 1.6vw, 20px); }
+.home-page .product-image-container { aspect-ratio: 6 / 5; }
+.home-page .product-information { padding: 14px; }
+.home-page .product-information h3,
+.home-page .product-price { font-size: 16px; line-height: 1.25; }
+.home-page .product-meta,
+.home-page .product-description { font-size: 14px; }
+.home-page .delivery-tags span { font-size: 12px; }
+.home-page .view-all-container { margin-top: 24px; }
+.home-page .view-all-button { min-height: 44px; min-width: 144px; padding: 10px 20px; font-size: 16px; }
+.home-page .home-map-heading { padding-block: 32px 24px; }
+.home-page .homepage-sale-map { height: clamp(320px, 45vw, 440px); }
+
+/* Match the existing column breakpoints with exactly one preview row. */
+@media (max-width: 1100px) { .home-page .products-grid > :nth-child(n + 5) { display: none; } }
+@media (max-width: 850px) { .home-page .products-grid > :nth-child(n + 4) { display: none; } }
+@media (max-width: 650px) { .home-page .products-grid > :nth-child(n + 3) { display: none; } }
+@media (max-width: 450px) { .home-page .products-grid > :nth-child(n + 2) { display: none; } }

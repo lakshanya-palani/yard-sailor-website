@@ -1,10 +1,19 @@
+import SaveButton from "../components/SaveButton";
+import { startCheckout, checkoutDestination, PaymentError } from "../lib/payments";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useCart } from "../context/CartContext";
+import { commerceError, productLogin, startConversation } from "../lib/commerce";
 import "./ProductDetail.css";
 
 function ProductDetail() {
   const { id } = useParams();
+  const [saveParams] = useSearchParams();
+  const { add } = useCart();
+  const [action, setAction] = useState(null);
+  const [feedback, setFeedback] = useState("");
+  const [actionError, setActionError] = useState("");
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [seller, setSeller] = useState(null);
@@ -18,6 +27,8 @@ function ProductDetail() {
     async function loadProduct() {
       setLoading(true);
       setNotFound(false);
+      setFeedback("");
+      setActionError("");
 
       const { data, error } = await supabase
         .from("products")
@@ -62,6 +73,26 @@ function ProductDetail() {
 
     loadProduct();
   }, [id]);
+
+  async function purchaseAction(kind) {
+    if (action) return;
+    setAction(kind); setFeedback(""); setActionError("");
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error && error.name !== "AuthSessionMissingError") throw error;
+      if (!user) { navigate(productLogin(id)); return; }
+      if (user.id === product.user_id) throw new Error("You cannot buy or message your own listing.");
+      if (kind === 'buy') checkoutDestination(await startCheckout([id], 'buy_now'), navigate);
+      else if (kind === 'message') {
+        const conversation = await startConversation(id);
+        navigate(`/messages?conversation=${conversation}`);
+      } else {
+        const inserted = await add(id);
+        setFeedback(inserted ? 'Added to your cart.' : 'This item is already in your cart.');
+      }
+    } catch (e) { setActionError(e instanceof PaymentError ? e.message : commerceError(e)); }
+    finally { setAction(null); }
+  }
 
   const images = product?.image_urls || [];
 
@@ -160,6 +191,8 @@ function ProductDetail() {
 
         <section className="product-detail-information">
           <h1>{product.title}</h1>
+          {saveParams.get("save") === "1" && <p>Use the heart below to finish saving this item. Saving does not reserve it.</p>}
+          <SaveButton productId={product.id} title={product.title} detail />
           <p className="product-detail-price">${Number(product.price).toFixed(2)}</p>
 
           <dl className="product-detail-meta">
@@ -193,7 +226,14 @@ function ProductDetail() {
               <button type="button" onClick={cancelPosting} disabled={deleting}>{deleting ? "Cancelling..." : "Cancel Posting"}</button>
             </div>
           ) : (
-            <button className="contact-seller-placeholder" type="button" disabled>Contact Seller — Coming Soon</button>
+            <div className="product-buyer-actions">
+              <p className="commerce-muted">Checkout is in test mode. No real purchase or seller payout.</p>
+              <button className="product-buy-now" disabled={!!action} onClick={() => purchaseAction('buy')}>{action === 'buy' ? 'Opening…' : 'Buy Now'}</button>
+              <button disabled={!!action} onClick={() => purchaseAction('cart')}>{action === 'cart' ? 'Adding…' : 'Add to Cart'}</button>
+              <button disabled={!!action} onClick={() => purchaseAction('message')}>{action === 'message' ? 'Opening…' : 'Message Seller'}</button>
+              {feedback && <p role="status">{feedback} <Link to="/cart">View cart</Link></p>}
+              {actionError && <p role="alert">{actionError}</p>}
+            </div>
           )}
         </section>
       </div>

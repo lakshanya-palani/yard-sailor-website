@@ -1,98 +1,15 @@
-import "./Privacy.css";
-
-function Privacy() {
-  return (
-    <main className="privacy-page">
-      <section className="privacy-container">
-        <h1>Privacy Policy</h1>
-
-        <p className="privacy-updated">
-          Last updated: August 8, 2026
-        </p>
-
-        <section>
-          <h2>1. Information We Collect</h2>
-          <p>
-            Yard Sailor may collect information that you provide directly,
-            such as your name, email address, account information, yard sale
-            listings, and other information you choose to submit.
-          </p>
-        </section>
-
-        <section>
-          <h2>2. How We Use Your Information</h2>
-          <p>
-            We may use your information to provide and improve Yard Sailor,
-            manage user accounts, display yard sale listings, respond to
-            support requests, and maintain the security of the platform.
-          </p>
-        </section>
-
-        <section>
-          <h2>3. Location Information</h2>
-          <p>
-            Yard Sailor may use location information to display nearby yard
-            sales and map results. Location information may come from
-            addresses submitted with listings or, when permitted, from your
-            device.
-          </p>
-        </section>
-
-        <section>
-          <h2>4. Third-Party Services</h2>
-          <p>
-            Yard Sailor may use third-party services for features such as
-            authentication, maps, databases, analytics, or other website
-            functionality. These providers may process information according
-            to their own privacy policies.
-          </p>
-        </section>
-
-        <section>
-          <h2>5. Cookies and Similar Technologies</h2>
-          <p>
-            We may use cookies or similar technologies to maintain sessions,
-            remember preferences, improve functionality, and understand how
-            users interact with the website.
-          </p>
-        </section>
-
-        <section>
-          <h2>6. Data Security</h2>
-          <p>
-            We take reasonable measures to protect information from
-            unauthorized access, misuse, loss, or disclosure. However, no
-            online service can guarantee complete security.
-          </p>
-        </section>
-
-        <section>
-          <h2>7. Your Choices</h2>
-          <p>
-            You may update certain account information and preferences through
-            your account. You may also contact Yard Sailor regarding questions
-            or requests involving your personal information.
-          </p>
-        </section>
-
-        <section>
-          <h2>8. Changes to This Policy</h2>
-          <p>
-            This Privacy Policy may be updated as Yard Sailor changes. Any
-            updated version will be posted on this page with a revised date.
-          </p>
-        </section>
-
-        <section>
-          <h2>9. Contact Us</h2>
-          <p>
-            If you have questions about this Privacy Policy, please contact
-            Yard Sailor through the website's Contact page.
-          </p>
-        </section>
-      </section>
-    </main>
-  );
+import './Privacy.css';
+export default function Privacy() {
+  return <main className="privacy-page"><article className="privacy-container">
+    <h1>Privacy Policy</h1><p className="privacy-updated">Last reviewed: September 7, 2026</p>
+    <section><h2>Accounts and profiles</h2><p>Yard Sailor uses Supabase for account authentication, database storage, and uploaded images. Registration collects a name, email address, and password. Your username and avatar identify you on listings and in conversations. Your account email is not intended as public profile information. Do not include private contact details in your public username or images.</p></section>
+    <section><h2>Listings and images</h2><p>Product titles, descriptions, prices, images, and seller display information are shown to visitors. Yard-sale listings also include event times, addresses, and map coordinates. Publish only information and photographs you intend to share publicly. Public image links may be accessible outside Yard Sailor and copied by others.</p><p>New uploads use an image-processing service designed to validate and re-encode supported images and remove embedded metadata. Older images may still contain metadata; do not rely on this processing to conceal information visible in a photograph.</p></section>
+    <section><h2>Location and maps</h2><p>With your browser’s permission, the site uses device location to show nearby sales and calculate distances. The current site uses this location in memory rather than adding it to your account record. You can deny or revoke location permission in your browser.</p><p>Mapbox provides maps and address lookup. Map requests, map areas, and addresses entered for lookup are sent to Mapbox, which also receives connection information such as an IP address. A yard-sale address and coordinates submitted as part of a listing are stored and published with that listing. The About page neighborhood uses illustrative locations, not live addresses.</p></section>
+    <section><h2>Messages, carts, and checkout</h2><p>Buyer/seller conversations store the participants, associated product, message text, timestamps, and read-state information. Conversations are intended for their participants. Messages are not end-to-end encrypted. Do not send passwords, payment-card details, or other sensitive information.</p><p>Signed-in carts store product references and are associated with your account. When configured, Stripe hosts test-mode Checkout and collects payment details on its own page. Stripe receives listing titles, prices, and internal order/account references needed to associate the payment. Yard Sailor stores test order items, totals, payment status, and Stripe session/payment identifiers to verify the result and manage reservations. Card details are not collected by Yard Sailor’s forms. Live payments, real fulfillment, and seller payouts are not enabled. A return from Stripe alone does not prove payment.</p></section>
+    <section><h2>Support and service providers</h2><p>Contact form submissions include your name, email, subject, and message and are sent through FormSubmit to our support email. Email correspondence is handled by our email provider. Supabase, Mapbox, FormSubmit, Google Fonts, and the website hosting provider receive information needed to deliver their services, which can include connection and request information. Fonts are requested from Google’s font service. These providers have their own privacy terms.</p></section>
+    <section><h2>Browser storage and cookies</h2><p>Supabase authentication uses browser local storage to keep your session between visits. Signing out ends the active session; browser settings can clear local storage. The current application does not implement advertising trackers or its own analytics cookies. Third-party services may process request information under their own policies. The footer newsletter field is not currently connected to a subscription service.</p></section>
+    <section><h2>Retention and deletion</h2><p>Records are stored to support your account, listings, cart, and conversations. You can edit your profile, remove cart entries, and manage your listings using the account tools. Removing a listing does not automatically erase its message history or every stored image. There is no automatic deletion schedule defined in the current application.</p><p>Contact us to request access, correction, or deletion of your information, or to ask about retained images and messages. We may need to verify your account before acting on a request. Provider backups and logs may have separate retention arrangements. Specific retention periods and request procedures are still being reviewed by the site owner.</p></section>
+    <section><h2>Security and your choices</h2><p>The application uses authenticated access and database access policies to restrict private records, along with input and upload validation. No online system can guarantee complete security. Keep your password private and sign out on shared devices.</p><p>You can choose what to publish, manage browser location permission, and contact us about your information. Rights available to you may depend on where you live and applicable law. This policy does not establish certification or compliance with any privacy law.</p></section>
+    <section><h2>Contact and policy updates</h2><p>Email <a href="mailto:app.yardsailor@gmail.com">app.yardsailor@gmail.com</a> or visit <a href="/contact">Contact</a>. Changes to this policy will be reflected in its review date.</p><p>Owner review pending: the operator’s legal identity, applicable jurisdictions, provider retention arrangements, and formal privacy-request procedures must be confirmed.</p></section>
+  </article></main>;
 }
-
-export default Privacy;

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./PostSale.css";
+import { uploadImage } from "../lib/uploads";
 
-const SALE_IMAGES_BUCKET = "sale-images";
 
 function PostSale() {
   const navigate = useNavigate();
@@ -123,47 +123,8 @@ function PostSale() {
       }
 
       const imageUrls = [];
-      console.log(`Using bucket: ${SALE_IMAGES_BUCKET}`);
-
       for (const image of images) {
-        const extension = (image.file.name.split(".").pop() || "jpg")
-          .toLowerCase();
-        const filePath =
-          `${user.id}/${crypto.randomUUID()}.${extension}`;
-        console.log("Uploading path:", filePath);
-
-        const { error: uploadError } = await supabase.storage
-          .from(SALE_IMAGES_BUCKET)
-          .upload(filePath, image.file, {
-            cacheControl: "3600",
-            contentType: image.file.type,
-            upsert: false,
-          });
-
-        if (uploadError) {
-          console.error("Sale image upload failed:", uploadError);
-          const bucketHelp = uploadError.message
-            .toLowerCase()
-            .includes("bucket not found")
-            ? " Create a public Supabase Storage bucket named sale-images."
-            : "";
-          alert(`Unable to upload image: ${uploadError.message}.${bucketHelp}`);
-          return;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from(SALE_IMAGES_BUCKET)
-          .getPublicUrl(filePath);
-
-        if (!urlData?.publicUrl) {
-          console.error("No public URL returned for sale image:", filePath);
-          alert("An image uploaded, but its public URL could not be created.");
-          return;
-        }
-
-        const publicUrl = urlData.publicUrl;
-        console.log("Product image URL:", publicUrl);
-        imageUrls.push(publicUrl);
+        imageUrls.push(await uploadImage(image.file, 'products'));
       }
 
       const { data: insertedProduct, error: insertError } = await supabase
@@ -187,8 +148,6 @@ function PostSale() {
         alert(insertError.message);
         return;
       }
-
-      console.log("Product posted:", insertedProduct.id);
       window.dispatchEvent(
         new CustomEvent("yardSailorProductsUpdated", {
           detail: insertedProduct,

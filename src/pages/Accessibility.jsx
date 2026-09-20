@@ -1,0 +1,10 @@
+import './Privacy.css';
+export default function Accessibility() {
+  return <main className="privacy-page"><article className="privacy-container">
+    <h1>Accessibility Statement</h1><p className="privacy-updated">Last reviewed: September 7, 2026</p>
+    <section><h2>Our commitment</h2><p>Yard Sailor aims to make discovering local treasures accessible to everyone. We are working toward the Web Content Accessibility Guidelines (WCAG) 2.2 Level AA. This is a goal, not a claim of full compliance or certification; a complete independent audit has not been performed.</p></section>
+    <section><h2>Using Yard Sailor</h2><p>You can use keyboard navigation, visible focus indicators, a skip-to-content link, labelled form controls, and text feedback. The site adapts to smaller screens. Reduced-motion preferences simplify animations.</p><p>The About page’s illustrative neighborhood offers buttons to rotate, zoom, reset the view, and select each demo sale without dragging. Activate the map to use mouse or touch controls; choose Done exploring or press Escape to resume normal scrolling. Sale details are also available as text when 3D rendering is unavailable.</p></section>
+    <section><h2>Known limitations</h2><p>The sailing scene and interactive maps contain visual information that may not be fully conveyed by a screen reader. Use the Shop and Find a Yard Sale links and listing information as alternatives. Third-party map controls, user-uploaded images, and authenticated workflows still require additional assistive-technology and device testing. Automated checks do not establish accessibility for every interaction.</p></section>
+    <section><h2>Report a problem</h2><p>Email <a href="mailto:app.yardsailor@gmail.com">app.yardsailor@gmail.com</a> or use our <a href="/contact">Contact page</a>. Please include the page address, what you were trying to do, and any browser or assistive technology details you wish to share. Avoid sending passwords or sensitive account information. You may request an alternative way to access the information.</p></section>
+  </article></main>;
+}

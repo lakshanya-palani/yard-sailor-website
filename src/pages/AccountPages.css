@@ -196,3 +196,13 @@
     flex-direction: column;
   }
 }
+
+.account-security .account-form-card h2 { font-size: 21px; margin: 28px 0 14px; }
+.account-security .account-form-card h2:first-child { margin-top: 0; }
+.account-security p { line-height: 1.5; }
+.account-security a { color: #1c2a39; text-underline-offset: 4px; }
+.account-security .account-button { background: #b52c26; border-color: #b52c26; min-height: 44px; }
+.account-security .account-button-danger { color: #b52c26; border-color: #b52c26; }
+.account-security [role=alert] { color: #b52c26; }
+.account-security button:disabled { opacity: .6; cursor: wait; }
+.account-security :is(button,input,a):focus-visible { outline: 3px solid #1c2a39; outline-offset: 3px; }

@@ -37,7 +37,7 @@ function SearchBar() {
   };
 
   return (
-    <div className="search-container" ref={searchRef}>
+    <div className="search-container" ref={searchRef} onKeyDown={event => { if (event.key === 'Escape') { setSearchOpen(false); searchRef.current?.querySelector('button')?.focus(); } }}>
       <button
         className="search-button"
         type="button"

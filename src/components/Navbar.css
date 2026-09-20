@@ -420,3 +420,6 @@
     .top-bar-right { grid-column: 2; gap: 10px; }
     .top-bar-right > img { display: none; }
   }
+
+.cart-button { position: relative; }
+.cart-count { position: absolute; right: -5px; top: -5px; min-width: 19px; height: 19px; padding: 2px 4px; border-radius: 10px; background: #b52c26; color: white; font: 700 12px 'League Spartan', sans-serif; }

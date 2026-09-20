@@ -1,0 +1,13 @@
+/* Focus and contrast corrections retain existing component layouts. */
+:focus-visible { outline: 3px solid #b52c26 !important; outline-offset: 3px; box-shadow: 0 0 0 2px #fff3df; }
+.login-submit, .register-submit, .profile-save-button, .nearby-sales-heading a { background-color: #b52c26; }
+.cancel-sale-button, .shop-card-price, .nearby-sale-info strong, .product-detail-message a, .profile-upload-button { color: #b52c26; }
+.placeholder-image span, .login-divider p, .no-account, .register-subtitle, .already-account { color: #656565; }
+.forgot-password { color: #5145b0; }
+.contact-send { background-color: #365bbb; }
+input::placeholder, textarea::placeholder { color: #656565; opacity: 1; }
+.product-information h3 a { color: inherit; text-decoration: none; }
+.image-upload-box input, .profile-upload-button input { display: block; position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+.image-upload-box:focus-within, .profile-upload-button:focus-within { outline: 3px solid #b52c26; outline-offset: 3px; }
+.product-detail-page dt, .product-seller > p { color: #656b72; }
+.product-owner-actions > button { color: #b52c26; }
