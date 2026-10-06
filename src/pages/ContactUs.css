@@ -1,0 +1,943 @@
+/* Contact Us Page  */
+
+position: relative;
+width: 1440px;
+height: 875px;
+
+background: #FBF0DD;
+
+
+/* Navbar */
+
+position: absolute;
+width: 1440px;
+height: 120px;
+left: 0px;
+top: 63px;
+
+filter: drop-shadow(0px 0px 5px rgba(200, 224, 212, 0.25));
+
+
+/* Rectangle 28 */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #1E2A38;
+box-shadow: 0px 0px 5px rgba(200, 224, 212, 0.25);
+
+
+/* Logo */
+
+position: absolute;
+visibility: hidden;
+left: 1.56%;
+right: 95.23%;
+top: 17.86%;
+bottom: 16.07%;
+
+
+
+/* Frame 12 */
+
+position: absolute;
+width: 1440px;
+height: 692px;
+left: 0px;
+top: 183px;
+
+background: #FBF0DD;
+
+
+/* Home */
+
+position: absolute;
+width: 140px;
+height: 32px;
+left: 460px;
+top: 104px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 500;
+font-size: 24px;
+line-height: 22px;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Union */
+
+position: absolute;
+width: 64px;
+height: 64px;
+left: 688px;
+top: 88px;
+
+background: url(logo_bubble_green);
+
+
+/* Logo  */
+
+position: absolute;
+width: 64px;
+height: 64px;
+left: 688px;
+top: 88px;
+
+background: url(logo_bubble_green);
+
+
+/* Shop */
+
+position: absolute;
+width: 140px;
+height: 32px;
+left: 545px;
+top: 104px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 500;
+font-size: 24px;
+line-height: 22px;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Post Yard Sale */
+
+position: absolute;
+width: 160px;
+height: 32px;
+left: 786px;
+top: 106px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 500;
+font-size: 24px;
+line-height: 22px;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Contact */
+
+position: absolute;
+width: 160px;
+height: 32px;
+left: 923px;
+top: 106px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 500;
+font-size: 24px;
+line-height: 22px;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Login/Sign Up */
+
+position: absolute;
+width: 160px;
+height: 32px;
+left: 1203px;
+top: 106px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 400;
+font-size: 24px;
+line-height: 22px;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Header at Top */
+
+position: absolute;
+width: 1440px;
+height: 65px;
+left: 0px;
+top: -2px;
+
+background: #000000;
+
+
+/* NEW DROP NOW LIVE */
+
+position: absolute;
+width: 196px;
+height: 18px;
+left: 622px;
+top: 23px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 700;
+font-size: 20px;
+line-height: 18px;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Line 3 */
+
+position: absolute;
+width: 20px;
+height: 0px;
+left: 1378px;
+top: 37px;
+
+border: 1.5px solid #FFFFFF;
+transform: rotate(47deg);
+
+
+/* Line 4 */
+
+position: absolute;
+width: 20.96px;
+height: 0px;
+left: 1391px;
+top: 37px;
+
+border: 1.5px solid #FFFFFF;
+transform: rotate(135.7deg);
+
+
+/* English */
+
+position: absolute;
+width: 85px;
+height: 32px;
+left: 1299px;
+top: 37px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 400;
+font-size: 20px;
+line-height: 18px;
+text-align: center;
+
+color: #FFFFFF;
+
+
+
+/* Vector */
+
+position: absolute;
+left: 82.64%;
+right: 15.97%;
+top: 3.89%;
+bottom: 93.94%;
+
+background: #FFFFFF;
+
+
+/* Vector */
+
+position: absolute;
+left: 85.21%;
+right: 13.4%;
+top: 3.43%;
+bottom: 93.94%;
+
+background: #FFFFFF;
+
+
+/* Vector */
+
+position: absolute;
+left: 87.71%;
+right: 10.14%;
+top: 3.66%;
+bottom: 93.71%;
+
+background: #FFFFFF;
+
+
+/* search */
+
+position: absolute;
+left: 2.22%;
+right: 96.04%;
+top: 11.89%;
+bottom: 85.26%;
+
+background: #FFFFFF;
+
+
+/* lock */
+
+position: absolute;
+left: 82.29%;
+right: 16.46%;
+top: 11.77%;
+bottom: 85.61%;
+
+
+
+/* Vector */
+
+position: absolute;
+left: 82.29%;
+right: 16.46%;
+top: 11.77%;
+bottom: 85.61%;
+
+background: #FFFFFF;
+
+
+/* Vector */
+
+position: absolute;
+left: 82.86%;
+right: 17.03%;
+top: 13.42%;
+bottom: 86.16%;
+
+background: #FFFFFF;
+
+
+/* bxs:cart */
+
+position: absolute;
+width: 35px;
+height: 35px;
+left: 1374px;
+top: 96px;
+
+
+
+/* Vector */
+
+position: absolute;
+left: 8.33%;
+right: 8.33%;
+top: 12.5%;
+bottom: 29.17%;
+
+background: #FFFFFF;
+
+
+/* Vector */
+
+position: absolute;
+left: 37.5%;
+right: 50%;
+top: 75%;
+bottom: 12.5%;
+
+background: #FFFFFF;
+
+
+/* Vector */
+
+position: absolute;
+left: 66.67%;
+right: 20.83%;
+top: 75%;
+bottom: 12.5%;
+
+background: #FFFFFF;
+
+
+/* Yard Sailor */
+
+position: absolute;
+left: 1.25%;
+right: 79.31%;
+top: 24%;
+bottom: 69.26%;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 700;
+font-size: 52px;
+line-height: 48px;
+text-align: center;
+
+/* Primary/Red */
+color: #E8453C;
+
+
+
+/* Contact Us */
+
+position: absolute;
+width: 551.92px;
+height: 358.75px;
+left: 444px;
+top: 371px;
+
+background: #201F1F;
+border-radius: 8px;
+
+
+/* Mapsicle Map */
+
+position: absolute;
+width: 276px;
+height: 359px;
+left: 276px;
+top: 0px;
+
+background: url(.png);
+
+
+/* material-symbols:location-on-rounded */
+
+position: absolute;
+width: 20.7px;
+height: 20.7px;
+left: 413.94px;
+top: 143.82px;
+
+
+
+/* Vector */
+
+position: absolute;
+left: 16.67%;
+right: 16.67%;
+top: 8.33%;
+bottom: 9.9%;
+
+background: #FF5F5F;
+
+
+/* Rectangle 238 */
+
+position: absolute;
+width: 98.31px;
+height: 29.75px;
+left: 424.29px;
+top: 164.52px;
+
+background: rgba(255, 255, 255, 0.78);
+border-radius: 1.72476px;
+
+
+/* Yard Sailor Address */
+
+position: absolute;
+width: 87.96px;
+height: 13px;
+left: 429.47px;
+top: 169.7px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 300;
+font-size: 5.17428px;
+line-height: 6px;
+/* or 125% */
+letter-spacing: 0.03em;
+
+color: #353535;
+
+
+
+/* Ellipse 5 */
+
+position: absolute;
+left: 94.77%;
+right: 2.11%;
+top: 6.73%;
+bottom: 86.6%;
+
+background: rgba(237, 234, 231, 0.31);
+
+
+/* mdi:arrow-expand */
+
+position: absolute;
+width: 10.35px;
+height: 10.35px;
+left: 526.48px;
+top: 23.09px;
+
+
+
+/* Vector */
+
+position: absolute;
+left: 12.5%;
+right: 12.5%;
+top: 12.5%;
+bottom: 12.5%;
+
+background: #BEBDBD;
+
+
+/* Get in touch with us */
+
+position: absolute;
+width: 196px;
+height: 23px;
+left: 27.46px;
+top: 48px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 700;
+font-size: 17.2476px;
+line-height: 16px;
+letter-spacing: 0.03em;
+
+color: #FFFFFF;
+
+
+
+/* Group 5 */
+
+position: absolute;
+width: 217.96px;
+height: 36.96px;
+left: 27px;
+top: 80.47px;
+
+
+
+/* Name */
+
+position: absolute;
+width: 19.87px;
+height: 9.45px;
+left: 27px;
+top: 80.47px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 300;
+font-size: 6.03666px;
+line-height: 150%;
+/* or 9px */
+letter-spacing: 0.03em;
+
+color: #CCC6C6;
+
+
+
+/* Frame 7 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 7.35143px 11.7623px;
+
+position: absolute;
+width: 217.96px;
+height: 23.83px;
+left: 27px;
+top: 93.6px;
+
+background: #343333;
+border: 0.367572px solid #8D8D8D;
+border-radius: 2.20543px;
+
+
+/* Frame 6 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+
+width: 29px;
+height: 8px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Label */
+
+width: 29px;
+height: 8px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 600;
+font-size: 5.146px;
+line-height: 150%;
+/* identical to box height, or 8px */
+display: flex;
+align-items: center;
+letter-spacing: 0.005em;
+
+color: #8D8D8D;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 4 */
+
+position: absolute;
+width: 217.96px;
+height: 36.96px;
+left: 27px;
+top: 126.64px;
+
+
+
+/* Email */
+
+position: absolute;
+width: 18.76px;
+height: 9.45px;
+left: 27px;
+top: 126.64px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 300;
+font-size: 6.03666px;
+line-height: 150%;
+/* or 9px */
+letter-spacing: 0.03em;
+
+color: #CCC6C6;
+
+
+
+/* Frame 8 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 7.35143px 11.7623px;
+
+position: absolute;
+width: 217.96px;
+height: 23.83px;
+left: 27px;
+top: 139.76px;
+
+background: #343333;
+border: 0.367572px solid #8D8D8D;
+border-radius: 2.20543px;
+
+
+/* Frame 6 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+
+width: 54px;
+height: 8px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Label */
+
+width: 54px;
+height: 8px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 500;
+font-size: 5.146px;
+line-height: 150%;
+/* identical to box height, or 8px */
+display: flex;
+align-items: center;
+letter-spacing: 0.005em;
+
+color: #8D8D8D;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 7 */
+
+position: absolute;
+width: 217.96px;
+height: 36.96px;
+left: 27.46px;
+top: 173px;
+
+
+
+/* Subject */
+
+position: absolute;
+width: 30px;
+height: 9px;
+left: 27.46px;
+top: 173px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 300;
+font-size: 6.03666px;
+line-height: 150%;
+/* identical to box height, or 9px */
+letter-spacing: 0.03em;
+
+color: #CCC6C6;
+
+
+
+/* Frame 8 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 7.35143px 11.7623px;
+
+position: absolute;
+width: 217.96px;
+height: 23.83px;
+left: 27.46px;
+top: 186.13px;
+
+background: #343333;
+border: 0.367572px solid #8D8D8D;
+border-radius: 2.20543px;
+
+
+/* Frame 6 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+
+width: 63px;
+height: 8px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Label */
+
+width: 63px;
+height: 8px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 500;
+font-size: 5.146px;
+line-height: 150%;
+/* identical to box height, or 8px */
+display: flex;
+align-items: center;
+letter-spacing: 0.005em;
+
+color: #8D8D8D;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 3 */
+
+position: absolute;
+width: 217.96px;
+height: 52.05px;
+left: 27.46px;
+top: 219px;
+
+
+
+/* Message */
+
+position: absolute;
+width: 29.8px;
+height: 9.45px;
+left: 27.46px;
+top: 219px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 300;
+font-size: 6.03666px;
+line-height: 150%;
+/* or 9px */
+letter-spacing: 0.03em;
+
+color: #CCC6C6;
+
+
+
+/* Frame 9 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 7.35143px 11.7623px;
+
+position: absolute;
+width: 217.96px;
+height: 38.92px;
+left: 27.46px;
+top: 232.13px;
+
+background: #343333;
+border: 0.367572px solid #8D8D8D;
+border-radius: 2.20543px;
+
+
+/* Frame 6 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+
+width: 58px;
+height: 8px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Label */
+
+width: 58px;
+height: 8px;
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 300;
+font-size: 5.146px;
+line-height: 150%;
+/* identical to box height, or 8px */
+display: flex;
+align-items: center;
+letter-spacing: 0.005em;
+
+color: #8D8D8D;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Group 6 */
+
+position: absolute;
+width: 106.12px;
+height: 20.37px;
+left: 27.46px;
+top: 284.01px;
+
+
+
+/* Rectangle 240 */
+
+position: absolute;
+width: 106.12px;
+height: 20.37px;
+left: 27.46px;
+top: 284.01px;
+
+background: #6088EE;
+border-radius: 1.72476px;
+
+
+/* Send */
+
+position: absolute;
+width: 60.7px;
+height: 9.45px;
+right: 418.76px;
+top: calc(50% - 9.45px/2 + 114.35px);
+
+font-family: 'Lexend Deca';
+font-style: normal;
+font-weight: 300;
+font-size: 6.03666px;
+line-height: 150%;
+/* or 9px */
+letter-spacing: 0.03em;
+
+color: #FFFEFE;
+
+
+
+/* CONTACT US */
+
+position: absolute;
+width: 357px;
+height: 59px;
+left: calc(50% - 357px/2 + 5.5px);
+top: 269px;
+
+font-family: 'League Spartan';
+font-style: normal;
+font-weight: 400;
+font-size: 64px;
+line-height: 59px;
+/* identical to box height */
+text-align: center;
+
+color: #000000;
+
+border: 3px solid #FFFFFF;
