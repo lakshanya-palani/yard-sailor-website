@@ -1,3 +1,4 @@
+import { saleStatusLabel } from "../utils/saleTime";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -52,7 +53,7 @@ function SaleDetail() {
           <p className="yard-sale-detail-eyebrow">YARD SALE</p>
           <h1>{sale.title}</h1>
           {distance != null && <p className="yard-sale-distance">{distance.toFixed(1)} miles away</p>}
-          <div className="yard-sale-detail-meta"><div><strong>Address</strong><span>{sale.address}</span></div><div><strong>Starts</strong><span>{sale.start_time ? new Date(sale.start_time).toLocaleString() : "Not specified"}</span></div><div><strong>Ends</strong><span>{sale.end_time ? new Date(sale.end_time).toLocaleString() : "Not specified"}</span></div></div>
+          <p className="yard-sale-detail-status">{saleStatusLabel(sale)}</p><div className="yard-sale-detail-meta"><div><strong>Address</strong><span>{sale.address}</span></div><div><strong>Starts</strong><span>{sale.start_time ? new Date(sale.start_time).toLocaleString() : "Not specified"}</span></div><div><strong>Ends</strong><span>{sale.end_time ? new Date(sale.end_time).toLocaleString() : "Not specified"}</span></div></div>
           <div className="yard-sale-description"><h2>About this yard sale</h2><p>{sale.description}</p></div>
           <div className="yard-sale-host"><span>{seller?.avatar_url ? <img src={seller.avatar_url} alt="" /> : initial}</span><div><small>Hosted by</small><strong>{sellerName}</strong></div></div>
         </section>

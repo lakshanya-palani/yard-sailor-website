@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 export default function RouteAccessibility() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+  useLayoutEffect(() => {
+    if (!hash) window.scrollTo(0, 0);
+  }, [pathname, hash]);
   useEffect(() => {
     const main = document.querySelector('main');
     if (main) { main.id = 'main-content'; main.tabIndex = -1; }

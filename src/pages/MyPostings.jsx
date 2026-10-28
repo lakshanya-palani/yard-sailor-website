@@ -72,7 +72,7 @@ function MyPostings() {
           <div className="account-placeholder-card">
             <h2>No postings yet</h2>
             <p className="account-empty">Your marketplace products will appear here.</p>
-            <Link className="account-button" to="/post-sale">Post a Sale</Link>
+            <Link className="account-button" to="/post-sale">Post an Item</Link>
           </div>
         ) : (
           <div className="account-grid">

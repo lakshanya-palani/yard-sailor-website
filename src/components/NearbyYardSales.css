@@ -52,12 +52,13 @@
   background: white;
   box-shadow: 0 5px 18px rgb(0 0 0 / 10%);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: box-shadow 0.2s ease;
 }
 
-.nearby-sale-card:hover {
-  transform: translateY(-3px);
+@media (hover: hover) {
+  .nearby-sale-card:hover { box-shadow: 0 8px 22px rgb(0 0 0 / 16%); }
 }
+.nearby-sale-card:focus-visible { outline: 3px solid #ef403a; outline-offset: 4px; }
 
 .nearby-sale-image {
   aspect-ratio: 16 / 10;
@@ -98,3 +99,8 @@
 
 @media (max-width: 900px) { .nearby-sales-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 540px) { .nearby-sales-heading { align-items: flex-start; flex-direction: column; } .nearby-sales-grid { grid-template-columns: 1fr; } }
+
+.nearby-sales-empty { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: min(1200px, calc(100% - 40px)); margin: 0 auto; padding: 22px 24px; }
+.nearby-sales-empty h3 { margin: 0 0 6px; font-size: 21px; }
+.nearby-sales-empty p { margin: 0; color: #687078; line-height: 1.4; }
+@media (max-width: 540px) { .nearby-sales-empty { align-items: flex-start; flex-direction: column; } }

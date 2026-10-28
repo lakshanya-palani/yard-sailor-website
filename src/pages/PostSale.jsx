@@ -1,3 +1,5 @@
+import SelectField from "../components/SelectField";
+import { X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -168,7 +170,7 @@ function PostSale() {
         <div className="post-sale-heading">
           <p className="post-sale-eyebrow">YARD SAILOR</p>
 
-          <h1>Post a Sale</h1>
+          <h1>Post an Item</h1>
 
           <p>
             Give your treasure a new home. Add photos and details
@@ -206,7 +208,7 @@ function PostSale() {
                     onClick={() => removeImage(image.id)}
                     aria-label="Remove image"
                   >
-                    ×
+                    <X size={18} aria-hidden="true" />
                   </button>
                 </div>
               ))}
@@ -269,7 +271,7 @@ function PostSale() {
                 Condition
               </label>
 
-              <select
+              <SelectField
                 id="sale-condition"
                 className="sale-input sale-select"
                 name="condition"
@@ -283,7 +285,7 @@ function PostSale() {
                 <option value="Good">Good</option>
                 <option value="Fair">Fair</option>
                 <option value="Poor">Poor</option>
-              </select>
+              </SelectField>
             </div>
           </div>
 

@@ -1,0 +1,22 @@
+/* Yard-sale card, sized like ShopProductCard so the two sit in the same grids */
+.sale-card { overflow: hidden; cursor: pointer; transition: box-shadow .2s ease; }
+@media (hover: hover) { .sale-card:hover { box-shadow: 0 8px 22px rgb(0 0 0 / 16%); } }
+.sale-card:focus-visible { outline: 3px solid #b52c26; outline-offset: 4px; }
+.sale-card-image { aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #ececec; color: #777; font-weight: 700; }
+.sale-card-image img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.sale-card-info { padding: 14px; }
+.sale-card-info h3 { margin: 0 0 8px; overflow: hidden; font-size: 18px; text-overflow: ellipsis; white-space: nowrap; }
+.sale-card-info p { display: flex; align-items: center; gap: 6px; height: 18px; margin: 4px 0 0; overflow: hidden; color: #555e65; font-size: 14px; white-space: nowrap; text-overflow: ellipsis; }
+.sale-card-info p svg { flex-shrink: 0; }
+.sale-card-status { display: inline-block; margin-bottom: 8px; padding: 4px 9px; border-radius: 999px; background: #f7ebd8; color: #8a5a1f; font-size: 12px; font-weight: 700; }
+.sale-card-status.is-live { background: #e1eedb; color: #2f5a2c; }
+
+/* Loading placeholders share the real cards' markup, so swapping them in keeps sizes */
+.card-skeleton { cursor: default; }
+.card-skeleton .shop-card-image, .card-skeleton .sale-card-image { background: #efe9df; }
+.card-skeleton h2, .card-skeleton h3, .card-skeleton p, .card-skeleton strong { width: 70%; border-radius: 5px; background: #efe9df; }
+.card-skeleton p + p, .card-skeleton .shop-card-price { width: 45%; }
+.card-skeleton .shop-card-seller span { background: #efe9df; }
+.card-skeleton .shop-card-seller strong { width: 40%; }
+.card-skeleton > * { animation: card-pulse 1.4s ease-in-out infinite; }
+@keyframes card-pulse { 50% { opacity: .55; } }

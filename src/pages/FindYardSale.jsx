@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SaleMap from "../components/SaleMap";
+import { getSaleStatus, saleStatusLabel } from "../utils/saleTime";
+import useSaleClock from "../utils/useSaleClock";
 import { supabase } from "../lib/supabase";
 import {
   calculateDistanceMiles,
@@ -34,10 +36,13 @@ function isThisWeekend(value) {
 
 function FindYardSale() {
   const navigate = useNavigate();
+  const mapSectionRef = useRef(null);
   const [sales, setSales] = useState([]);
+  const now = useSaleClock(sales);
   const [origin, setOrigin] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [selectedSaleId, setSelectedSaleId] = useState(null);
+  const [selectionRequest, setSelectionRequest] = useState(0);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -74,6 +79,7 @@ function FindYardSale() {
 
   const displayedSales = useMemo(() => {
     const filtered = sales.filter((sale) => {
+      if (!["upcoming", "live"].includes(getSaleStatus(sale, now))) return false;
       if (filter === "today") return isToday(sale.start_time);
       if (filter === "weekend") return isThisWeekend(sale.start_time);
       return true;
@@ -90,7 +96,7 @@ function FindYardSale() {
       withDistance.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
     }
     return withDistance;
-  }, [filter, origin, sales]);
+  }, [filter, origin, sales, now]);
 
   async function searchLocation(event) {
     event.preventDefault();
@@ -125,7 +131,14 @@ function FindYardSale() {
 
   function selectSale(sale) {
     setSelectedSaleId(sale.id);
-    setMapCenter({ latitude: Number(sale.lat), longitude: Number(sale.lng) });
+    setSelectionRequest(value => value + 1);
+    const map = mapSectionRef.current;
+    if (map) {
+      const bounds = map.getBoundingClientRect();
+      if (bounds.top < 0 || bounds.bottom > window.innerHeight) {
+        map.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+      }
+    }
   }
 
   return (
@@ -146,14 +159,16 @@ function FindYardSale() {
         <button className={filter === "weekend" ? "selected" : ""} onClick={() => setFilter("weekend")}>This Weekend</button>
       </div>
 
+      <p className="yard-sale-map-hint">Choose a numbered pin or select “Show on map” to explore a sale. The list includes all matching sales, even outside the current map view.</p>
       <div className="find-yard-sale-layout">
-        <SaleMap sales={displayedSales} selectedSaleId={selectedSaleId} onSelectSale={setSelectedSaleId} center={mapCenter} className="find-yard-sale-map" />
+        <div className="yard-sale-map-container" ref={mapSectionRef}><SaleMap sales={displayedSales} selectedSaleId={selectedSaleId} selectionRequest={selectionRequest} onSelectSale={setSelectedSaleId} center={mapCenter} className="find-yard-sale-map" /></div>
         <aside className="yard-sale-results">
           <div className="yard-sale-results-heading"><h2>Yard Sale Results</h2><span>{displayedSales.length}</span></div>
-          {loading ? <p className="yard-sale-results-message">Loading yard sales...</p> : displayedSales.length === 0 ? <p className="yard-sale-results-message">No yard sales match this search or filter.</p> : displayedSales.map((sale) => (
-            <article key={sale.id} className={`yard-sale-result-card ${sale.id === selectedSaleId ? "selected" : ""}`} onClick={() => selectSale(sale)}>
+          {loading ? <p className="yard-sale-results-message">Loading yard sales...</p> : displayedSales.length === 0 ? <p className="yard-sale-results-message">No yard sales match this search or filter.</p> : displayedSales.map((sale, index) => (
+            <article key={sale.id} className={`yard-sale-result-card ${sale.id === selectedSaleId ? "selected" : ""}`}>
+              <span className="yard-sale-result-number" aria-label={`Map pin ${index + 1}`}>{index + 1}</span>
               <div className="yard-sale-result-image">{sale.images?.[0] ? <img src={sale.images[0]} alt={sale.title} /> : <span>Yard Sale</span>}</div>
-              <div className="yard-sale-result-info"><h3>{sale.title}</h3><p>{getPublicLocation(sale.address)}</p>{sale.distance != null && <strong>{sale.distance.toFixed(1)} miles away</strong>}<time>{sale.start_time ? new Date(sale.start_time).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Time not specified"}</time><span className="yard-sale-result-status">{sale.status}</span><button type="button" onClick={(event) => { event.stopPropagation(); navigate(`/yard-sale/${sale.id}`); }}>View Yard Sale</button></div>
+              <div className="yard-sale-result-info"><h3>{sale.title}</h3><p>{getPublicLocation(sale.address)}</p>{sale.distance != null && <strong>{sale.distance.toFixed(1)} miles away</strong>}<time>{sale.start_time ? new Date(sale.start_time).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Time not specified"}</time><span className="yard-sale-result-status">{saleStatusLabel(sale, now)}</span><div className="yard-sale-result-actions"><button type="button" className="show-on-map" onClick={() => selectSale(sale)} aria-label={`Show ${sale.title} on map`}>Show on map</button><button type="button" onClick={() => navigate(`/yard-sale/${sale.id}`)}>View Yard Sale</button></div></div>
             </article>
           ))}
         </aside>

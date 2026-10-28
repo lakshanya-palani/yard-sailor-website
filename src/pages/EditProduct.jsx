@@ -1,3 +1,4 @@
+import SelectField from "../components/SelectField";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
@@ -89,7 +90,7 @@ function EditProduct() {
             <label>Title<input name="title" value={form.title || ""} onChange={updateField} /></label>
             <label>Price<input name="price" type="number" min="0" step="0.01" value={form.price ?? ""} onChange={updateField} /></label>
             <label>Brand<input name="brand" value={form.brand || ""} onChange={updateField} /></label>
-            <label>Condition<select name="condition" value={form.condition || ""} onChange={updateField}><option value="">Select condition</option><option>New</option><option>Like New</option><option>Good</option><option>Fair</option><option>Poor</option></select></label>
+            <label htmlFor="edit-condition">Condition</label><SelectField id="edit-condition" name="condition" value={form.condition || ""} onChange={updateField}><option value="">Select condition</option><option>New</option><option>Like New</option><option>Good</option><option>Fair</option><option>Poor</option></SelectField>
             <label>Description<textarea name="description" value={form.description || ""} onChange={updateField} /></label>
             <label><span><input name="pickup" type="checkbox" checked={Boolean(form.pickup)} onChange={updateField} /> Pickup</span></label>
             <label><span><input name="shipping" type="checkbox" checked={Boolean(form.shipping)} onChange={updateField} /> Shipping</span></label>

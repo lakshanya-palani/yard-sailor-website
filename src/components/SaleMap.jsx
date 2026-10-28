@@ -5,12 +5,15 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "../lib/supabase";
 import { calculateDistanceMiles, getPublicLocation, hasValidCoordinates, requestUserLocation } from "../utils/location";
 import "./SaleMap.css";
+import { getSaleStatus, saleStatusLabel } from "../utils/saleTime";
+import useSaleClock from "../utils/useSaleClock";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 function SaleMap({
   sales: providedSales,
   selectedSaleId = null,
+  selectionRequest = 0,
   onSelectSale,
   center = null,
   className = "",
@@ -18,8 +21,10 @@ function SaleMap({
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef(new Map());
+  const fittedRef = useRef(false);
   const navigate = useNavigate();
   const [loadedSales, setLoadedSales] = useState([]);
+  const now = useSaleClock(providedSales ?? loadedSales);
   const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
@@ -28,7 +33,7 @@ function SaleMap({
     async function fetchSales() {
       const { data, error } = await supabase
         .from("sales")
-        .select("id, title, description, address, lat, lng, images, start_time, status")
+        .select("id, title, description, address, lat, lng, images, start_time, end_time, status")
         .in("status", ["upcoming", "live"])
         .not("lat", "is", null)
         .not("lng", "is", null);
@@ -43,8 +48,8 @@ function SaleMap({
   }, [providedSales]);
 
   useEffect(() => {
-    requestUserLocation().then(setUserLocation);
-  }, []);
+    if (providedSales === undefined) requestUserLocation().then(setUserLocation);
+  }, [providedSales]);
 
   useEffect(() => {
     mapRef.current = new mapboxgl.Map({
@@ -71,13 +76,13 @@ function SaleMap({
     markersRef.current.forEach(({ marker }) => marker.remove());
     markersRef.current.clear();
 
-    const sales = providedSales ?? loadedSales;
+    const sales = providedSales ?? loadedSales.filter(sale => ["upcoming", "live"].includes(getSaleStatus(sale, now)));
 
     const validSales = sales.filter((sale) =>
       hasValidCoordinates(sale.lat, sale.lng)
     );
 
-    validSales.forEach((sale) => {
+    validSales.forEach((sale, index) => {
       const latitude = Number(sale.lat);
       const longitude = Number(sale.lng);
 
@@ -110,7 +115,7 @@ function SaleMap({
       }
       if (sale.status) {
         const status = document.createElement("span");
-        status.textContent = sale.status.charAt(0).toUpperCase() + sale.status.slice(1);
+        status.textContent = saleStatusLabel(sale, now);
         popupContent.appendChild(status);
       }
       const description = document.createElement("p");
@@ -122,7 +127,12 @@ function SaleMap({
       button.addEventListener("click", () => navigate(`/yard-sale/${sale.id}`));
       popupContent.appendChild(button);
 
-      const marker = new mapboxgl.Marker({ color: "#ef403a" })
+      const pin = document.createElement("button");
+      pin.type = "button";
+      pin.className = "sale-map-pin";
+      pin.textContent = String(index + 1);
+      pin.setAttribute("aria-label", `${index + 1}. ${sale.title}`);
+      const marker = new mapboxgl.Marker({ element: pin, anchor: "bottom" })
         // Mapbox always expects longitude first, then latitude.
         .setLngLat([longitude, latitude])
         .setPopup(new mapboxgl.Popup({ offset: 25 }).setDOMContent(popupContent))
@@ -130,7 +140,16 @@ function SaleMap({
       marker.getElement().addEventListener("click", () => onSelectSale?.(sale.id));
       markersRef.current.set(sale.id, { marker, latitude, longitude });
     });
-  }, [loadedSales, navigate, onSelectSale, providedSales, userLocation]);
+    if (!fittedRef.current && validSales.length && !center) {
+      fittedRef.current = true;
+      if (validSales.length === 1) mapRef.current.jumpTo({ center: [Number(validSales[0].lng), Number(validSales[0].lat)], zoom: 12 });
+      else {
+        const bounds = new mapboxgl.LngLatBounds();
+        validSales.forEach(sale => bounds.extend([Number(sale.lng), Number(sale.lat)]));
+        mapRef.current.fitBounds(bounds, { padding: 70, maxZoom: 12, duration: 0 });
+      }
+    }
+  }, [loadedSales, navigate, onSelectSale, providedSales, userLocation, center, now]);
 
   useEffect(() => {
     markersRef.current.forEach(({ marker }, id) => {
@@ -139,10 +158,10 @@ function SaleMap({
 
     const selected = markersRef.current.get(selectedSaleId);
     if (selected && mapRef.current) {
-      mapRef.current.flyTo({ center: [selected.longitude, selected.latitude], zoom: 14 });
+      mapRef.current.flyTo({ center: [selected.longitude, selected.latitude], zoom: 13 });
       if (!selected.marker.getPopup().isOpen()) selected.marker.togglePopup();
     }
-  }, [selectedSaleId]);
+  }, [selectedSaleId, selectionRequest]);
 
   useEffect(() => {
     if (mapRef.current && center && hasValidCoordinates(center.latitude, center.longitude)) {

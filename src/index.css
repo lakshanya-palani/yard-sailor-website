@@ -38,3 +38,7 @@ main { overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+.protected-loading { min-height: 60vh; padding: 48px 24px; }
+/* Keeps the footer below the fold while a lazy page loads, so it doesn't jump. */
+.route-loading { min-height: 100vh; }

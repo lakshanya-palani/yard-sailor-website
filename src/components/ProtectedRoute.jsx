@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { supabase } from "../lib/supabase";
+import Login from "../pages/Login";
 
 function ProtectedRoute({ children, requireProfile = false }) {
   const { user, loading: authLoading, error: authError } = useAuth();
@@ -79,21 +80,15 @@ function ProtectedRoute({ children, requireProfile = false }) {
     };
   }, [user, location.pathname, requireProfile]);
 
-  if (authLoading || loading || (requireProfile && user && checkedUser !== user.id)) {
-    return <main><p role="status">Checking your account…</p></main>;
-  }
-
-  if (authError) return <main><p role="alert">Unable to restore your session. Please refresh and try again.</p></main>;
+  if (authLoading) return <main className="protected-loading"><p role="status">Checking your account…</p></main>;
+  if (authError) return <main className="protected-loading"><p role="alert">Unable to restore your session. Please refresh and try again.</p></main>;
 
   if (!user) {
-    return (
-      <Navigate
-        to={`/login?redirect=${encodeURIComponent(
-          `${location.pathname}${location.search}${location.hash}`
-        )}`}
-        replace
-      />
-    );
+    return <><Login requestedPath={`${location.pathname}${location.search}${location.hash}`} /><Navigate to={`/login?redirect=${encodeURIComponent(`${location.pathname}${location.search}${location.hash}`)}`} replace /></>;
+  }
+
+  if (requireProfile && (loading || checkedUser !== user.id)) {
+    return <main className="protected-loading"><p role="status">Checking your account…</p></main>;
   }
 
   if (requireProfile && profileCheckError) {

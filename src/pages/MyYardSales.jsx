@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./AccountPages.css";
+import { saleStatusLabel } from "../utils/saleTime";
 
 function MyYardSales() {
   const [sales, setSales] = useState([]);
@@ -66,7 +67,7 @@ function MyYardSales() {
                   <h2>{sale.title}</h2>
                   <p><strong>{sale.address}</strong></p>
                   <p className="account-card-meta">{sale.start_time ? new Date(sale.start_time).toLocaleString() : "Date not set"}</p>
-                  <p className="account-card-meta">Status: {sale.status || "upcoming"}</p>
+                  <p className="account-card-meta">Status: {saleStatusLabel(sale)}</p>
                   <p>{sale.description}</p>
                   <div className="account-actions">
                     <Link className="account-button-secondary" to={`/yard-sales/${sale.id}/edit`}>Edit</Link>

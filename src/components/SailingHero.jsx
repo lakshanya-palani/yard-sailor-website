@@ -1,5 +1,4 @@
 
-import { Link } from "react-router-dom";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import {
@@ -12,9 +11,6 @@ import {
 import { Sky } from "three/examples/jsm/objects/Sky.js";
 import * as THREE from "three";
 import "./SailingHero.css";
-
-const clamp = (value, min = 0, max = 1) =>
-  Math.min(max, Math.max(min, value));
 
 // Shared sun direction for the sky, water, and lighting.
 const SUN_DIRECTION = new THREE.Vector3()
@@ -304,21 +300,6 @@ function SailingGlints({ progress, reducedMotion }) {
   </points>;
 }
 
-function LocationIcon() {
-  return <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
-    <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
-  </svg>;
-}
-
-function FloatingFinds() {
-  return <div className="sailing-finds">
-    {[0, 1, 2, 3].map(index => <Link key={index} to={index % 2 ? '/shop' : '/find-yard-sale'}
-      className={`sailing-find sailing-find-${index}`} aria-label={index % 2 ? 'Browse secondhand treasures' : 'Discover nearby yard sales'}>
-      {index % 2 ? <span className="sailing-price-tag">$</span> : <LocationIcon />}
-    </Link>)}
-  </div>;
-}
-
 function useReducedMotion() {
   const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   useEffect(() => {
@@ -363,95 +344,6 @@ function SailingScene({ progress, reducedMotion, active }) {
   );
 }
 
-// ------------------------------------------------------------
-// SCROLL PROGRESS
-// ------------------------------------------------------------
-
-function useSailingProgress(sectionRef) {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const update = () => {
-      if (!sectionRef.current) return;
-
-      const rect = sectionRef.current.getBoundingClientRect();
-
-      const distance =
-        sectionRef.current.offsetHeight -
-        sectionRef.current.firstElementChild.offsetHeight;
-
-      setProgress(
-        clamp(-rect.top / Math.max(distance, 1))
-      );
-    };
-
-    let frame = 0;
-    const schedule = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; update(); }); };
-    window.addEventListener("scroll", schedule, {
-      passive: true,
-    });
-
-    window.addEventListener("resize", schedule);
-    update();
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("resize", schedule);
-      window.removeEventListener("scroll", schedule);
-    };
-  }, [sectionRef]);
-
-  return progress;
-}
-
-// ------------------------------------------------------------
-// LOADING TEXT + PROGRESS BAR
-// ------------------------------------------------------------
-
-function SailingLoading({ progress }) {
-  const START = 0.7;
-  const COMPLETE = 0.98;
-
-  const loading = clamp(
-    (progress - START) / (COMPLETE - START)
-  );
-
-  const showLoadingText = progress >= START;
-  const showProgressBar = progress < COMPLETE;
-
-  return (
-    <div
-      className="sailing-loading"
-      style={{
-        opacity: showLoadingText ? 1 : 0,
-        visibility: showLoadingText ? "visible" : "hidden",
-        pointerEvents: "none",
-      }}
-    >
-      <span>YARD SAILOR</span>
-
-      <h2>
-        Entering Yard Sailor
-      </h2>
-
-      {showProgressBar && (
-        <div className="sailing-progress-track" role="progressbar" aria-label="Entering Yard Sailor" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(loading * 100)}>
-          <div
-            className="sailing-progress-fill"
-            style={{
-              width: `${loading * 100}%`,
-            }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ------------------------------------------------------------
-// HOMEPAGE HERO
-// ------------------------------------------------------------
-
 export default function SailingHero() {
   const sectionRef = useRef(null);
   const [inView, setInView] = useState(true);
@@ -463,46 +355,12 @@ export default function SailingHero() {
     document.addEventListener('visibilitychange', visibility);
     return () => { observer.disconnect(); document.removeEventListener('visibilitychange', visibility); };
   }, []);
-  const scrollProgress = useSailingProgress(sectionRef);
   const reducedMotion = useReducedMotion();
-  const progress = reducedMotion ? 0 : scrollProgress;
-
-  const introOpacity = clamp(1 - progress / .45);
 
   return (
-    <section ref={sectionRef} className="sailing-section" style={{ "--sail-progress": progress }} data-progress={progress.toFixed(3)}>
-      <div className="sailing-sticky">
-        <div className="sailing-canvas" role="img" aria-label="Sail forward over the ocean toward local treasures.">
-          <SailingScene progress={progress} reducedMotion={reducedMotion} active={inView && pageVisible} />
-        </div>
-        <FloatingFinds />
-        <div className="sailing-destination" aria-hidden="true" style={{ opacity: clamp((progress - .35) * 8) * clamp((.75 - progress) * 12) }}>
-          <LocationIcon />
-          <span>Local treasures ahead</span>
-        </div>
-
-        <div
-          className="sailing-content"
-          style={{
-            opacity: introOpacity,
-            visibility:
-              introOpacity > 0 ? "visible" : "hidden",
-          }}
-        >
-          <h1>YARD SAILOR</h1>
-          <p>Find what’s around the corner.</p>
-          <div className="sailing-actions">
-            <Link to="/find-yard-sale">Find a Yard Sale</Link>
-            <Link to="/shop">Shop</Link>
-          </div>
-          <a className="sailing-scroll-hint" href="#home-products">
-            Scroll to discover <span aria-hidden="true">↓</span>
-          </a>
-        </div>
-
-        <SailingLoading progress={progress} />
-      </div>
-    </section>
+    <div ref={sectionRef} className="sailing-section" role="img" aria-label="A sailboat on the ocean, inspired by the Yard Sailor name.">
+      <SailingScene progress={0} reducedMotion={reducedMotion} active={inView && pageVisible} />
+    </div>
   );
 }
 

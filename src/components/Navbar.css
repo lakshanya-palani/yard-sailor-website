@@ -403,7 +403,7 @@
     display: block;
   }
 
-  @media (max-width: 1250px) {
+  @media (max-width: 1450px) {
     .navbar { height: auto; min-height: 114px; grid-template-columns: 40px 1fr auto; gap: 20px; padding: 20px; }
     .navbar-center { gap: 18px; flex-wrap: wrap; }
     .navbar a { font-size: 18px; }
@@ -423,3 +423,122 @@
 
 .cart-button { position: relative; }
 .cart-count { position: absolute; right: -5px; top: -5px; min-width: 19px; height: 19px; padding: 2px 4px; border-radius: 10px; background: #b52c26; color: white; font: 700 12px 'League Spartan', sans-serif; }
+
+/* Compact single-row navigation */
+.navbar { position: relative; z-index: 50; height: 80px; min-height: 0; display: flex; gap: 24px; padding: 0 30px; }
+.navbar-logo { flex: 0 0 54px; width: 54px; height: 54px; }
+.navbar-center { flex: 1; gap: clamp(16px, 2vw, 32px); flex-wrap: nowrap; }
+.navbar .navbar-center a, .navbar .login-link { font-size: 17px; }
+.navbar-account { flex: 0 0 auto; gap: 16px; }
+.navbar-menu-button, .mobile-language { display: none; }
+.navbar :focus-visible { outline: 3px solid #b7e35a; outline-offset: 4px; }
+.search-box { left: auto; right: 0; top: calc(100% + 18px); transform: none; }
+@media (max-width: 1450px) {
+  .navbar { height: 72px; min-height: 0; padding: 0 20px; gap: 16px; }
+  .navbar-logo { flex-basis: 48px; width: 48px; height: 48px; }
+  .navbar-account { margin-left: auto; }
+  .navbar-menu-button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: white; font-size: 28px; cursor: pointer; }
+  .navbar-center { display: none; position: absolute; top: 100%; left: 0; right: 0; padding: 12px 20px 20px; background: #1c2a39; box-shadow: 0 12px 20px rgb(0 0 0 / 15%); }
+  .navbar-center.is-open { display: flex; align-items: stretch; flex-direction: column; gap: 0; }
+  .navbar .navbar-center a { display: block; padding: 13px 4px; font-size: 18px; }
+  .desktop-language { display: none; }
+  .mobile-language { display: block; padding: 12px 4px; }
+}
+@media (max-width: 520px) {
+  .navbar { padding: 0 12px; gap: 8px; }
+  .navbar-account { gap: 10px; }
+  .login-link span, .profile-menu-trigger > span:not(.navbar-avatar) { display: none; }
+  .login-link { min-width: 32px; min-height: 44px; justify-content: center; }
+  .search-box { right: -90px; left: auto; width: min(300px, calc(100vw - 24px)); }
+}
+
+@media (max-width: 1450px) {
+  .navbar-center {
+    left: auto;
+    right: 16px;
+    width: min(360px, calc(100vw - 32px));
+    max-height: calc(100dvh - 84px);
+    overflow-y: auto;
+    padding: 8px 16px 16px;
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 0 0 14px 14px;
+  }
+  .navbar .navbar-center a {
+    padding: 14px 4px;
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
+  }
+  .mobile-language { padding: 14px 4px 0; }
+  .mobile-language .language-selector { min-height: 36px; margin: 0; }
+  .mobile-language .language-dropdown {
+    position: static;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  .mobile-language .language-dropdown button { border-radius: 5px; }
+}
+
+.navbar svg { display: block; flex-shrink: 0; }
+.icon-rotated { transform: rotate(180deg); }
+.profile-menu-arrow svg, .language-selector svg { transition: transform .2s ease; }
+.cart-button { color: white; display: grid; place-items: center; }
+
+/* The search field gets its own row when the navigation collapses. */
+@media (min-width: 1451px) {
+  .navbar { gap: 18px; }
+  .navbar-center { gap: clamp(12px, 1.5vw, 24px); }
+}
+@media (max-width: 1450px) {
+  .navbar { height: auto; min-height: 0; display: grid; grid-template-columns: 1fr auto auto; grid-template-rows: 52px 42px; gap: 8px 12px; padding: 10px 16px 12px; }
+  .navbar-logo { grid-column: 1; grid-row: 1; }
+  .navbar-account { grid-column: 2; grid-row: 1; }
+  .navbar-menu-button { grid-column: 3; grid-row: 1; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: white; cursor: pointer; }
+  .header-search { grid-column: 1 / -1; grid-row: 2; }
+  .navbar-center { display: none; position: absolute; top: 100%; left: auto; right: 16px; width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 124px); overflow-y: auto; padding: 8px 16px 16px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 0 0 14px 14px; background: #1c2a39; box-shadow: 0 12px 20px rgb(0 0 0 / 15%); }
+  .navbar-center.is-open { display: flex; align-items: stretch; flex-direction: column; gap: 0; }
+  .navbar .navbar-center a { display: block; padding: 14px 4px; border-bottom: 1px solid rgb(255 255 255 / 10%); font-size: 18px; }
+  .desktop-language { display: none; }
+  .mobile-language { display: block; padding: 14px 4px 0; }
+}
+@media (min-width: 601px) and (max-width: 1450px) {
+  .navbar { grid-template-columns: auto minmax(140px, 1fr) auto auto; grid-template-rows: 52px; gap: 12px; padding: 10px 20px; }
+  .navbar-logo { grid-column: 1; }
+  .header-search { grid-column: 2; grid-row: 1; max-width: 480px; justify-self: center; }
+  .navbar-account { grid-column: 3; }
+  .navbar-menu-button { grid-column: 4; }
+}
+
+/* Shared sizing for header controls. */
+.navbar-logo { flex: 0 0 48px; width: 48px; height: 48px; border-radius: 10px; }
+.navbar-account { align-items: center; gap: 12px; }
+.navbar .navbar-center a { display: inline-flex; align-items: center; min-height: 44px; font-size: 16px; font-weight: 600; }
+.navbar .login-link, .profile-menu-trigger { min-height: 44px; gap: 8px; font-size: 16px; font-weight: 600; }
+.cart-button, .navbar-menu-button { width: 44px; height: 44px; flex: 0 0 44px; }
+.navbar-avatar { width: 32px; height: 32px; flex-basis: 32px; }
+.profile-menu-trigger > span:nth-child(2) { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+.cart-count { right: 0; top: 0; }
+@media (min-width: 1451px) { .navbar { gap: 20px; } .navbar-center { gap: clamp(14px, 1.4vw, 24px); } }
+@media (max-width: 1450px) { .navbar .navbar-center a { display: flex; min-height: 46px; font-size: 17px; } }
+@media (max-width: 520px) { .navbar-account { gap: 4px; } .login-link { min-width: 44px; } }
+.desktop-nav-menus { display: flex; align-items: center; gap: clamp(14px, 1.4vw, 24px); }
+.nav-menu-group { position: relative; }
+.nav-menu-trigger { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0; border: 0; background: none; color: white; font: 600 16px "League Spartan", sans-serif; cursor: pointer; }
+.nav-menu-trigger:hover { opacity: .75; }
+.nav-menu-panel { position: absolute; top: calc(100% + 6px); left: -12px; z-index: 100; width: 200px; padding: 6px; border: 1px solid #e5d9c9; border-radius: 11px; background: #fffefa; box-shadow: 0 12px 28px rgb(28 42 57 / 18%); }
+.navbar .nav-menu-panel a { display: flex; min-height: 44px; padding: 10px 12px; border-radius: 7px; color: #1c2a39; font-size: 15px; }
+.navbar .nav-menu-panel a:hover { background: #f7ebd8; opacity: 1; }
+.nav-menu-language { padding: 0 12px; border-top: 1px solid #e5d9c9; }
+.nav-menu-language .language-control, .nav-menu-language .language-control .language-select { color: #1c2a39; }
+.mobile-nav-links { display: none; }
+@media (max-width: 1450px) { .desktop-nav-menus { display: none; } .mobile-nav-links { display: contents; } }
+.navbar-center > a[aria-current="page"], .nav-menu-trigger.is-current { color: #ffd4a7; }
+@media (min-width: 1451px) {
+  .navbar-center > a[aria-current="page"], .nav-menu-trigger.is-current { box-shadow: inset 0 -2px #ffd4a7; }
+}
+.navbar .nav-menu-panel a[aria-current="page"] { background: #f7ebd8; color: #a32a25; }
+@media (max-width: 1450px) { .navbar-center a[aria-current="page"] { color: #ffd4a7; } }

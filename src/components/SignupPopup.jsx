@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useState } from "react";
 import "./SignupPopup.css";
 
@@ -19,7 +20,7 @@ function SignupPopup() {
         onClick={() => setIsVisible(false)}
         aria-label="Close sign up"
       >
-        ×
+        <X size={18} aria-hidden="true" />
       </button>
     </div>
   );

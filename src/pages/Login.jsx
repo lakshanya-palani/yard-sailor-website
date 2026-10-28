@@ -1,3 +1,4 @@
+import { Mail, LockKeyhole, Eye, EyeOff } from "lucide-react";
 import SocialLogin from "../components/SocialLogin";
 import { safeRedirect } from "../lib/redirect";
 import { useState } from "react";
@@ -5,7 +6,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from "react-router-do
 import { supabase } from "../lib/supabase";
 import "./Login.css";
 
-function Login() {
+function Login({ requestedPath }) {
   const [showPassword, setShowPassword] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -18,6 +19,9 @@ function Login() {
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const destination = safeRedirect(requestedPath || searchParams.get("redirect"));
+  const path = destination.split(/[?#]/)[0];
+  const heading = path === "/post-sale" ? "Sign in to post an item" : path === "/post-yard-sale" ? "Sign in to post a yard sale" : path === "/cart" || path === "/checkout" ? "Sign in to view your cart" : path === "/messages" ? "Sign in to view messages" : path === "/saved" || destination.includes("save=1") ? "Sign in to save items" : path === "/orders" ? "Sign in to view your orders" : path === "/profile" || path === "/profile/setup" ? "Sign in to view your profile" : path === "/my-postings" ? "Sign in to manage your items" : path === "/my-yard-sales" ? "Sign in to manage your yard sales" : path === "/settings" ? "Sign in to view your settings" : "Welcome";
 
 
   async function handleLogin(event) {
@@ -90,18 +94,14 @@ function Login() {
       </div>
 
       <section className="login-card">
-        <h1>Welcome</h1><p role="alert">{feedback}</p>
+        <h1>{heading}</h1><p role="alert">{feedback}</p>
 
         <form
           className="login-form"
           onSubmit={handleLogin}
         >
           <div className="login-input">
-            <img
-              src="/images/email.svg"
-              alt="Email"
-              className="email-icon"
-            />
+            <Mail className="email-icon" size={20} aria-hidden="true" />
 
             <input
               type="email"
@@ -117,11 +117,7 @@ function Login() {
           </div>
 
           <div className="login-input">
-            <img
-              src="/images/lock.svg"
-              alt="Lock"
-              className="input-icon"
-            />
+            <LockKeyhole className="input-icon" size={20} aria-hidden="true" />
 
             <input
               type={
@@ -151,11 +147,7 @@ function Login() {
                   : "Show password"
               }
             >
-              <img
-                src="/images/view.svg"
-                alt=""
-                className="view-password-icon"
-              />
+              {showPassword ? <EyeOff className="view-password-icon" size={20} aria-hidden="true" /> : <Eye className="view-password-icon" size={20} aria-hidden="true" />}
             </button>
           </div>
 

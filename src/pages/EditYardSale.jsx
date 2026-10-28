@@ -68,7 +68,6 @@ function EditYardSale() {
         address: form.address.trim(),
         start_time: new Date(form.start_time).toISOString(),
         end_time: new Date(form.end_time).toISOString(),
-        status: form.status,
       })
       .eq("id", id)
       .eq("host_id", hostId);
@@ -95,7 +94,7 @@ function EditYardSale() {
             <label>Address<input name="address" value={form.address || ""} onChange={updateField} /></label>
             <label>Start time<input name="start_time" type="datetime-local" value={form.start_time} onChange={updateField} /></label>
             <label>End time<input name="end_time" type="datetime-local" value={form.end_time} onChange={updateField} /></label>
-            <label>Status<select name="status" value={form.status || "active"} onChange={updateField}><option value="active">Active</option><option value="draft">Draft</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option></select></label>
+            <p>Times use your device’s time zone. The sale status updates automatically from these dates.</p>
             <div className="account-actions"><button className="account-button" disabled={saving}>{saving ? "Saving..." : "Save Yard Sale"}</button><button className="account-button-secondary" type="button" onClick={() => navigate("/my-yard-sales")}>Cancel</button></div>
           </form>
         </section>

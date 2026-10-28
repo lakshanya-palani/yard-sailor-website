@@ -1,66 +1,163 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import NeighborhoodExperience from '../components/NeighborhoodExperience';
+import { ArrowRight, MapPin, Store } from 'lucide-react';
+import SailingHero from '../components/SailingHero';
+import ShopProductCard from '../components/ShopProductCard';
+import SaleCard, { ProductSkeleton, SaleSkeleton } from '../components/SaleCard';
+import { supabase } from '../lib/supabase';
+import { getSaleStatus } from '../utils/saleTime';
+import useSaleClock from '../utils/useSaleClock';
+import '../components/ui.css';
+import './Shop.css';
+import './PostSale.css';
 import './About.css';
 
-function FindIllustration({ kind = 'lamp' }) {
-  return <svg viewBox="0 0 160 150" fill="none" aria-hidden="true">
-    {kind === 'lamp' ? <><path d="M80 62v66M57 130h46" stroke="#1c2a39" strokeWidth="6"/><path d="M54 25h52l17 53H37z" fill="#bd6543"/><path d="M43 78h74" stroke="#1c2a39" strokeWidth="3"/></> : kind === 'chair' ? <><path d="M43 36q37-15 74 0v53H43z" fill="#8a9b78"/><path d="M35 87h90v18H35z" fill="#687b57"/><path d="M44 104l-7 30m79-30 7 30" stroke="#1c2a39" strokeWidth="6"/></> : <><path d="M36 105h88v22H36z" fill="#b52c26"/><path d="M42 82h77v21H42z" fill="#879978"/><path d="M34 59h90v22H34z" fill="#c99959"/><path d="M42 68h73M50 91h59M44 115h69" stroke="#fff3df" strokeWidth="3"/></>}
-  </svg>;
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function useAboutData() {
+  const [data, setData] = useState({ products: [], sellers: {}, sales: [], productCount: null, loading: true });
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const [products, sales] = await Promise.all([
+        supabase.from('products').select('id,title,price,image_urls,user_id,brand,condition,pickup,shipping', { count: 'exact' }).order('created_at', { ascending: false }).limit(8),
+        supabase.from('sales').select('id,title,address,images,start_time,end_time,status').in('status', ['upcoming', 'live']).order('start_time', { ascending: false }),
+      ]);
+      if (products.error) console.error('Unable to load about products:', products.error);
+      if (sales.error) console.error('Unable to load about yard sales:', sales.error);
+      const productRows = products.data || [];
+      const sellerIds = [...new Set(productRows.map(product => product.user_id).filter(Boolean))];
+      const profiles = sellerIds.length ? await supabase.from('profiles').select('id, username, avatar_url').in('id', sellerIds) : { data: [] };
+      if (!active) return;
+      setData({
+        products: productRows,
+        sellers: Object.fromEntries((profiles.data || []).map(profile => [profile.id, profile])),
+        sales: sales.data || [],
+        productCount: products.error ? null : products.count ?? productRows.length,
+        loading: false,
+      });
+    })();
+    return () => { active = false; };
+  }, []);
+  return data;
 }
-function Pin({ x, y, delay }) {
-  return <g className="showcase-pin" style={{ '--delay': `${delay}ms`, transformOrigin: `${x}px ${y}px` }}><path d={`M${x} ${y}c-28-32-19-49 0-49s28 17 0 49Z`} fill="#b52c26"/><circle cx={x} cy={y-30} r="7" fill="#fff3df"/></g>;
+
+function useCountUp(target) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (target == null || prefersReducedMotion()) return;
+    let frame;
+    const start = performance.now();
+    const tick = now => {
+      const t = Math.min((now - start) / 900, 1);
+      setValue(Math.round(target * (1 - (1 - t) ** 3)));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target]);
+  return prefersReducedMotion() ? target : value;
 }
-function MapPreview() {
-  return <div className="showcase-map">
-    <svg viewBox="0 0 600 440" aria-hidden="true">
-      <rect width="600" height="440" fill="#e2e7d5"/>
-      <path d="M-20 150h650M-20 330h650M180-20v480M440-20v480" stroke="#fffaf0" strokeWidth="35"/>
-      <path d="M-20 150h650M-20 330h650M180-20v480M440-20v480" stroke="#c9c5b6" strokeWidth="2" strokeDasharray="7 9"/>
-      {[[50,45],[265,55],[495,50],[45,215],[260,220],[495,220],[65,375],[280,375]].map(([x,y])=><g key={`${x}-${y}`}><rect x={x} y={y} width="54" height="34" rx="3" fill="#d5b996"/><path d={`M${x-5} ${y}l32-20 32 20`} fill="#637578"/></g>)}
-      <path className="showcase-route" d="M180 395V150h160v-45" stroke="#b52c26" strokeWidth="5" strokeDasharray="8 7" fill="none"/>
-      <circle cx="180" cy="395" r="9" fill="#1c2a39" stroke="white" strokeWidth="4"/>
-      <Pin x={340} y={108} delay={100}/><Pin x={110} y={267} delay={250}/><Pin x={512} y={310} delay={400}/>
-    </svg>
-    <span className="showcase-north">N ↑</span>
-    <div className="showcase-sale showcase-arrival"><span className="showcase-dot"/><div><small>SELECTED DEMO SALE</small><strong>A little of everything</strong><span>Books, homewares & weekend finds</span></div><span>↗</span></div>
+
+function Stat({ value, label }) {
+  const shown = useCountUp(value);
+  return <div className="about-stat"><strong>{value == null ? '—' : shown.toLocaleString()}</strong><span>{label}</span></div>;
+}
+
+// A static, filled-in copy of the real sell form, built from the same markup and styles.
+function SellFormPreview({ product }) {
+  const photos = product.image_urls?.slice(0, 3) || [];
+  return <div className="about-sell-preview">
+    <div className="form-section">
+      <div className="section-heading"><h2>Photos</h2><span>{photos.length}/8</span></div>
+      <div className="image-grid">
+        {photos.map((url, index) => <div className="image-preview" key={url}><img src={url} alt=""/>{index === 0 && <span className="cover-label">Cover</span>}</div>)}
+        <div className="image-upload-box"><span className="upload-plus">+</span><span>Add Photo</span></div>
+      </div>
+    </div>
+    <div className="sale-details-grid form-section">
+      <div><span className="input-label">Price</span><div className="sale-input">{product.price != null ? Number(product.price).toFixed(2) : '\u00a0'}</div></div>
+      <div><span className="input-label">Brand</span><div className="sale-input">{product.brand || 'Brand (optional)'}</div></div>
+      <div><span className="input-label">Condition</span><div className="sale-input">{product.condition || '\u00a0'}</div></div>
+    </div>
+    <div className="form-section"><span className="input-label">Title</span><div className="sale-input">{product.title || '\u00a0'}</div></div>
+    <div className="form-section">
+      <h2>How can buyers get it?</h2>
+      <div className="delivery-options">
+        <div className={`delivery-option ${product.pickup !== false ? 'selected' : ''}`}><div><strong>Local Pickup</strong><span>Buyer picks it up from you</span></div><div className="delivery-check">{product.pickup !== false && '✓'}</div></div>
+        <div className={`delivery-option ${product.shipping ? 'selected' : ''}`}><div><strong>Shipping</strong><span>Ship the item to the buyer</span></div><div className="delivery-check">{product.shipping && '✓'}</div></div>
+      </div>
+    </div>
   </div>;
 }
-function ShopPreview() {
-  return <div className="showcase-shop">
-    <div className="showcase-mini-heading">Small finds. Plenty of possibility.</div>
-    <div className="showcase-products">{[['chair','Reading chair','$40'],['lamp','Table lamp','$18'],['books','A stack of stories','$12']].map(([kind,title,price],i)=><div className="showcase-product showcase-arrival" style={{'--delay':`${i*120}ms`}} key={kind}><div><FindIllustration kind={kind}/></div><strong>{title}</strong><span>{price}</span></div>)}</div>
-    <div className="showcase-detail showcase-arrival" style={{'--delay':'400ms'}}><span className="showcase-detail-icon">↗</span><div><small>A CLOSER LOOK</small><strong>Table lamp</strong><p>A warm corner starts here. Explore photos and the seller’s description.</p></div><b>$18</b></div>
-  </div>;
+
+function FeatureRow({ title, copy, link, action, path, children }) {
+  return <section className="about-feature-row about-width" data-reveal aria-label={title}>
+    <div className="about-feature-copy">
+      <h3>{title}</h3>
+      <p>{copy}</p>
+      <Link className="ui-button" to={link}>{action} <ArrowRight size={18} aria-hidden="true"/></Link>
+    </div>
+    <figure className="about-visual">
+      <div className="about-visual-bar" aria-hidden="true"><span/><span/><span/><code>{path}</code></div>
+      <div className="about-visual-body">{children}</div>
+    </figure>
+  </section>;
 }
-function PostPreview() {
-  return <div className="showcase-post"><div className="showcase-mini-heading">Give it another chapter.</div><div className="showcase-post-layout"><div className="showcase-form"><span className="showcase-upload showcase-arrival"><FindIllustration/><small>Photo added ✓</small></span><span className="showcase-field">ITEM TITLE<strong>Table lamp</strong></span><span className="showcase-field">PRICE<strong>$18</strong></span></div><div className="showcase-published showcase-arrival" style={{'--delay':'350ms'}}><span className="showcase-ready">✓ Preview ready</span><FindIllustration/><strong>Table lamp</strong><span>$18 · Home & living</span><small>Listing demonstration only</small></div></div></div>;
-}
-function MessagePreview() {
-  return <div className="showcase-messages"><div className="showcase-thread-product"><FindIllustration/><div><small>ABOUT THIS FIND</small><strong>Table lamp · $18</strong></div></div><div className="showcase-thread"><p className="showcase-bubble showcase-arrival"><small>DEMO BUYER</small>Hi! Does the lamp still work?</p><p className="showcase-bubble showcase-reply showcase-arrival" style={{'--delay':'220ms'}}><small>DEMO SELLER</small>Yes, it does. Happy to answer any questions!</p><p className="showcase-bubble showcase-arrival" style={{'--delay':'440ms'}}><small>DEMO BUYER</small>Thanks! What size is it?</p></div><div className="showcase-message-note">A conversation starts with a find.</div></div>;
-}
-const FEATURES = [
-  {id:'discover', label:'DISCOVER NEARBY', title:'Find yard sales near you.', copy:'Start with the map. Explore local yard-sale events, check the details, and choose where to head next.', details:['See sales on the map','Explore the details before you go'], link:'/find-yard-sale', action:'Explore the yard-sale map', visual:MapPreview, caption:'Illustrative map · No real addresses or live sales'},
-  {id:'shop', label:'SHOP SECONDHAND', title:'Discover something worth keeping.', copy:'Browse individual finds, open a listing, and take a closer look at the photos, price, and seller’s description.', details:['Browse individual secondhand products','Get a closer look at each listing'], link:'/shop', action:'Browse the shop', visual:ShopPreview, caption:'Illustrative products and prices · Not live listings'},
-  {id:'post', label:'MAKE ROOM', title:'Turn your extras into someone’s next find.', copy:'List one item with photos and a price, or create a yard-sale event with the details visitors need. Choose what works for your sale.', details:['Post an individual product','Create a yard-sale event'], link:'/post-sale', action:'Post an individual find', secondLink:'/post-yard-sale', secondAction:'Create a yard sale', visual:PostPreview, caption:'Posting demonstration · Nothing is uploaded or submitted'},
-  {id:'connect', label:'CONNECT LOCALLY', title:'Connect with the people behind the finds.', copy:'Ask the seller a question from the listing. Keep the conversation and its product together in your direct messages.', details:['Ask about a specific item','Return to the listing from your conversation'], link:'/messages', action:'Open your messages', visual:MessagePreview, caption:'Fictional conversation · No private messages or user information'},
-];
+
 export default function About() {
   const page = useRef(null);
+  const { products, sellers, sales, productCount, loading } = useAboutData();
+  const now = useSaleClock(sales);
+  const openSales = sales.filter(sale => ['upcoming', 'live'].includes(getSaleStatus(sale, now)));
+  // Upcoming sales first, then the most recent past postings, so real listings always show.
+  const featuredSales = [...openSales, ...sales.filter(sale => !openSales.includes(sale))];
+  const heroSale = featuredSales.find(sale => sale.images?.[0]) || featuredSales[0];
+  const heroProduct = products.find(product => product.image_urls?.[0]) || products[0];
+
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return;
     const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-      entry.target.classList.toggle('is-visible', entry.isIntersecting);
-    }), { threshold: .12 });
-    page.current.querySelectorAll('.about-showcase').forEach(section => observer.observe(section));
+      if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+    }), { threshold: .15 });
+    page.current.querySelectorAll('[data-reveal]').forEach(section => observer.observe(section));
     return () => observer.disconnect();
   }, []);
+
   return <main className="about-page" ref={page}>
-    <header className="about-hero about-width"><p className="about-label">ABOUT YARD SAILOR</p><h1>A little closer.<br/><span>A whole lot to discover.</span></h1><div className="about-hero-bottom"><p>Local yard sales, secondhand finds, and the people behind them. Get to know your next way to shop the neighborhood.</p><a className="about-text-link" href="#about-discover">Take a look around ↓</a></div></header>
-    {FEATURES.map(({id,label,title,copy,details,link,action,secondLink,secondAction,visual:Visual,caption},index)=><section id={`about-${id}`} key={id} className={`about-showcase about-width about-showcase-${id}`} aria-labelledby={`about-${id}-title`}>
-      <figure className="about-showcase-window"><div className="showcase-window-bar"><span>YARD SAILOR / {label}</span><span aria-hidden="true">0{index+1}</span></div><div className="showcase-demo" aria-hidden="true"><Visual/></div><figcaption>{caption}</figcaption></figure>
-      <div className="about-showcase-copy"><p className="about-label">0{index+1} / {label}</p><h2 id={`about-${id}-title`}>{title}</h2><p className="about-feature-description">{copy}</p><ul>{details.map((detail,i)=><li key={detail}><span aria-hidden="true">0{i+1}</span>{detail}</li>)}</ul><div className="about-feature-links"><Link className="about-text-link" to={link}>{action} ↗</Link>{secondLink && <Link className="about-text-link" to={secondLink}>{secondAction} ↗</Link>}</div></div>
-    </section>)}
-    <NeighborhoodExperience/>
+    <header className="about-hero">
+      <div className="about-hero-inner about-width">
+        <div className="about-hero-copy">
+          <h1>Yard sales and secondhand finds, <span>near you.</span></h1>
+          <p className="about-lede">Yard Sailor is a local marketplace. Find yard sales to visit, buy single items from neighbors, or sell your own.</p>
+          <div className="about-hero-actions"><Link className="ui-button about-button-red" to="/find-yard-sale"><MapPin size={18} aria-hidden="true"/> Find a yard sale</Link><Link className="ui-button ui-button-secondary" to="/shop"><Store size={18} aria-hidden="true"/> Shop items</Link></div>
+          <div className="about-stats"><Stat value={loading ? null : productCount} label="Items for sale"/>{(loading || openSales.length > 0) && <Stat value={loading ? null : openSales.length} label="Upcoming yard sales"/>}</div>
+        </div>
+        {(loading || heroSale || heroProduct) && <div className="about-hero-cards">
+          {/* One slot per card, so the entrance animation runs once and only the contents swap. */}
+          {(loading || heroSale) && <figure className="about-hero-card"><figcaption>A yard sale</figcaption>{heroSale ? <SaleCard sale={heroSale} now={now}/> : <SaleSkeleton/>}</figure>}
+          {(loading || heroProduct) && <figure className="about-hero-card"><figcaption>An item for sale</figcaption>{heroProduct ? <ShopProductCard product={heroProduct} seller={sellers[heroProduct.user_id]}/> : <ProductSkeleton/>}</figure>}
+        </div>}
+      </div>
+    </header>
+
+    <h2 className="about-features-title about-width">What you can do on Yard Sailor</h2>
+
+    <FeatureRow title="Find yard sales" copy="See local yard sales with dates, times, and photos, then plan your stops." link="/find-yard-sale" action="Open the map" path="/find-yard-sale">
+      {loading ? <div className="about-sale-list"><SaleSkeleton/><SaleSkeleton/></div> : featuredSales.length ? <div className="about-sale-list">{featuredSales.slice(0, 2).map(sale => <SaleCard key={sale.id} sale={sale} now={now}/>)}</div> : <p className="about-muted">No yard sales yet. <Link to="/post-yard-sale">Post the first one</Link>.</p>}
+    </FeatureRow>
+
+    <FeatureRow title="Shop secondhand items" copy="Browse single items from people nearby. Save favorites and message the seller." link="/shop" action="Browse the shop" path="/shop">
+      {loading ? <div className="shop-grid about-items-grid"><ProductSkeleton/><ProductSkeleton/><ProductSkeleton/></div> : products.length ? <div className="shop-grid about-items-grid">{products.slice(0, 3).map(product => <ShopProductCard key={product.id} product={product} seller={sellers[product.user_id]}/>)}</div> : <p className="about-muted">No items yet. <Link to="/post-sale">Post the first one</Link>.</p>}
+    </FeatureRow>
+
+    <FeatureRow title="Sell your stuff" copy="Add photos, a price, and how buyers can get it. Hosting a yard sale? Put it on the map instead." link="/post-sale" action="Post an item" path="/post-sale">
+      <div aria-hidden="true"><SellFormPreview product={heroProduct || (loading ? {} : { title: 'What are you selling?', price: 0 })}/></div>
+    </FeatureRow>
+
+    <section className="about-cta about-width" data-reveal aria-labelledby="about-cta-title">
+      <SailingHero/>
+      <div className="about-cta-copy"><h2 id="about-cta-title">Set sail this weekend.</h2><p>Your next favorite thing is probably a few streets away.</p><div className="about-hero-actions"><Link className="ui-button about-button-cream" to="/find-yard-sale">Find a yard sale <ArrowRight size={18} aria-hidden="true"/></Link><Link className="ui-button about-button-ghost" to="/shop">Shop items</Link></div></div>
+    </section>
   </main>;
 }

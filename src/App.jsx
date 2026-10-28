@@ -9,7 +9,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 const Cart = lazy(() => import("./pages/Cart"));
 const Messages = lazy(() => import("./pages/Messages"));
-const HomePage = lazy(() => import("./pages/HomePage"));
 const SaleDetail = lazy(() => import("./pages/SaleDetail"));
 import Login from "./pages/Login";
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -44,7 +43,7 @@ function App() {
       <RouteAccessibility />
       <Navbar />
 
-      <Suspense fallback={<main><p role="status">Loading page…</p></main>}>
+      <Suspense fallback={<main className="route-loading"><p role="status">Loading page…</p></main>}>
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
@@ -52,7 +51,7 @@ function App() {
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
         <Route path="/checkout" element={<ProtectedRoute><Cart checkout /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Shop home />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/find-yard-sale" element={<FindYardSale />} />
         <Route path="/about" element={<About />} />

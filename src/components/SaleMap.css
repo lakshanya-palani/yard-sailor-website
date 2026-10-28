@@ -58,3 +58,8 @@
   filter: drop-shadow(0 0 5px rgb(239 64 58 / 80%));
   transform: scale(1.16);
 }
+.sale-map-pin { width: 36px; height: 36px; display: grid; place-items: center; border: 3px solid white; border-radius: 50% 50% 50% 6px; rotate: -45deg; background: #b52c26; color: white; font: 800 15px "League Spartan", sans-serif; box-shadow: 0 3px 10px rgb(0 0 0 / 30%); cursor: pointer; }
+/* Counter-rotate text while keeping the pin anchored to its location. */
+.sale-map-pin { border-radius: 50%; rotate: none; }
+.sale-map-pin:hover, .sale-map-pin.selected-yard-sale-marker { background: #1c2a39; box-shadow: 0 0 0 3px #b52c26, 0 3px 10px rgb(0 0 0 / 30%); filter: none; }
+.sale-map-pin:focus-visible { outline: 3px solid #1c2a39; outline-offset: 3px; }

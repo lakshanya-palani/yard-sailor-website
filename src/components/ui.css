@@ -1,0 +1,19 @@
+.ui-select { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-width: 0; min-height: 46px; padding: 12px 15px; border: 1px solid #cbc8c2; border-radius: 10px; background: #fff; color: #1c2a39; font: 500 16px "League Spartan", sans-serif; text-align: left; cursor: pointer; }
+.ui-select:hover { border-color: #8d989e; }
+.ui-select:focus-visible, .ui-select[data-state="open"] { outline: 2px solid #b52c26; outline-offset: 2px; }
+.ui-select-chevron { display: block; transition: transform .15s ease; }
+.ui-select[data-state="open"] .ui-select-chevron { transform: rotate(180deg); }
+.ui-select-menu { z-index: 4000; min-width: 220px; max-width: calc(100vw - 24px); max-height: var(--radix-select-content-available-height); overflow: hidden; border: 1px solid #ded4c5; border-radius: 11px; background: #fffefa; box-shadow: 0 12px 28px rgb(28 42 57 / 18%); color: #1c2a39; font: 500 16px "League Spartan", sans-serif; }
+.ui-select-options { padding: 5px; }
+.ui-select-option { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 44px; padding: 10px 12px; border-radius: 7px; outline: none; cursor: pointer; }
+.ui-select-option[data-highlighted], .ui-select-option:focus-visible { background: #f7ebd8; outline: none; }
+.ui-select-option[data-state="checked"] { color: #a32a25; font-weight: 700; }
+.ui-select-option[data-disabled] { opacity: .45; cursor: default; }
+.ui-select-check { display: flex; flex-shrink: 0; }
+.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 11px 16px; border: 1px solid #1c2a39; border-radius: 9px; background: #1c2a39; color: white; font: 700 15px "League Spartan", sans-serif; text-decoration: none; cursor: pointer; }
+.ui-button:hover { background: #304356; }
+.ui-button-secondary { background: #fff; color: #1c2a39; }
+.ui-button-secondary:hover { background: #f8e9d2; }
+.ui-card { border-radius: 14px; background: white; box-shadow: 0 5px 18px rgb(0 0 0 / 10%); }
+/* The open list overlays the trigger, so its highlighted option supplies focus feedback. */
+.ui-select[data-state="open"] { outline: none; }

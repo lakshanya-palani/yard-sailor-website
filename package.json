@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.4.1",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@supabase/supabase-js": "^2.110.6",
+    "lucide-react": "^1.63.0",
     "mapbox-gl": "^3.27.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

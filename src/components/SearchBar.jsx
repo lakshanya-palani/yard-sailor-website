@@ -1,72 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./SearchBar.css";
 
-function SearchBar() {
-  const [searchOpen, setSearchOpen] = useState(false);
+export default function SearchBar({ onFocus }) {
   const [searchTerm, setSearchTerm] = useState("");
-
-  const searchRef = useRef(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target)
-      ) {
-        setSearchOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const handleSearch = (event) => {
+  function handleSearch(event) {
     event.preventDefault();
-
     const query = searchTerm.trim();
     navigate(query ? `/shop?q=${encodeURIComponent(query)}` : "/shop");
-
-    setSearchOpen(false);
     setSearchTerm("");
-  };
+  }
 
-  return (
-    <div className="search-container" ref={searchRef} onKeyDown={event => { if (event.key === 'Escape') { setSearchOpen(false); searchRef.current?.querySelector('button')?.focus(); } }}>
-      <button
-        className="search-button"
-        type="button"
-        aria-label="Search"
-        aria-expanded={searchOpen}
-        aria-controls="navbar-search"
-        onClick={() => setSearchOpen(!searchOpen)}
-      >
-        <img src="/images/search.svg" alt="" />
-      </button>
-
-      {searchOpen && (
-        <form id="navbar-search" role="search" className="search-box" onSubmit={handleSearch}>
-          <input
-            type="text"
-            aria-label="Search products"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            autoFocus
-          />
-
-          <button type="submit" className="search-submit">
-            Search
-          </button>
-        </form>
-      )}
-    </div>
-  );
+  return <form className="header-search" role="search" onSubmit={handleSearch}>
+    <input type="search" aria-label="Search products" placeholder="Search secondhand finds..." value={searchTerm} onChange={event => setSearchTerm(event.target.value)} onFocus={onFocus} />
+    <button type="submit" aria-label="Search products"><Search size={20} strokeWidth={2} aria-hidden="true" /></button>
+  </form>;
 }
-
-export default SearchBar;
