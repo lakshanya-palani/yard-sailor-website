@@ -26,11 +26,15 @@ export async function profileDestination(client,userId,redirect) {
 }
 export async function startSocial(client,provider,redirect,{origin,storage,fetcher=fetch,supabaseUrl,publicKey}) {
   if(!['google','facebook'].includes(provider))throw new Error('Unsupported sign-in provider.');
-  // The public Auth settings endpoint prevents navigating to a disabled-provider error page.
-  const response=await fetcher(`${supabaseUrl}/auth/v1/settings`,{headers:{apikey:publicKey},signal:AbortSignal.timeout(10000)});
-  if(!response.ok)throw new Error('Unable to check sign-in availability. Please try again.');
-  const settings=await response.json();
-  if(settings.external?.[provider]!==true)throw new Error(`${provider==='google'?'Google':'Facebook'} sign-in is not configured yet. Please try another sign-in option.`);
+  // Google goes straight to the standard OAuth endpoint. An extra settings
+  // request here delayed every click, even though Google is configured.
+  // Facebook still needs the availability fallback while its setup is pending.
+  if(provider==='facebook') {
+    const response=await fetcher(`${supabaseUrl}/auth/v1/settings`,{headers:{apikey:publicKey},signal:AbortSignal.timeout(10000)});
+    if(!response.ok)throw new Error('Unable to check sign-in availability. Please try again.');
+    const settings=await response.json();
+    if(settings.external?.facebook!==true)throw new Error('Facebook sign-in is not configured yet. Please try another sign-in option.');
+  }
   saveReturn(storage,redirect);
   const {data,error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:`${origin}/auth/callback`,skipBrowserRedirect:true,...(provider==='facebook'?{scopes:'email'}:{})}});
   if(error||!data?.url)throw new Error('Unable to start social sign-in. Please try again.');

@@ -1,6 +1,8 @@
 # Google and Facebook sign-in
 
-Reviewed September 8, 2026. Both providers currently report disabled through the project's public Auth settings. The application implementation is ready; successful provider consent and callback have not yet been tested with real provider credentials.
+Rechecked October 28, 2026. The project's public Auth settings report Google enabled and Facebook disabled. Google authentication, callback, profile completion, and session persistence after refresh were verified at `http://localhost:5174`. Production-domain and Facebook authentication still need verification.
+
+New profile saves must include the account email from `auth.getUser()`: the existing `profiles.email` column is required. Omitting it caused Google users to reach profile setup but fail with PostgreSQL error `23502` when completing their profile. `savePublicProfile` now supplies the verified account email, ignores draft email values, and still returns only `username` and `avatar_url`. The regression test is `node tests/profile-editor.mjs`.
 
 ## Supabase redirect configuration
 
@@ -45,6 +47,10 @@ The shared Supabase client uses PKCE. `/auth/callback` exchanges the code once, 
 
 Complete OAuth in the initiating browser/tab. Email confirmation now also uses the PKCE callback. If opened in another browser without its verifier, the page explains that the user can log in with their password after confirming email. See [PKCE flow](https://supabase.com/docs/guides/auth/sessions/pkce-flow).
 
+Social sign-in buttons stay disabled after requesting navigation to the provider, since the browser does not leave immediately. Repeated clicks during this handoff must not start another OAuth request and overwrite the active PKCE verifier. Errors allow retry; returning with Back restores the buttons through `pageshow` when the page is restored from the browser cache. The local browser harness at `/tests/social-login.html` checks repeated clicks, pending feedback, delayed navigation, Back restoration, and error recovery without navigating to a real provider.
+
+Google starts directly through the SDK's PKCE authorization URL, without waiting for a separate `/auth/v1/settings` request on every click. The unnecessary request measured about 320 ms in a local network check and previously had a 10-second timeout. Facebook retains its availability check while provider setup is pending. Supabase still processes the actual authorization request before redirecting to Google.
+
 ## Verification after configuration
 
 1. Sign out, visit `/cart`, and start Google login. Complete consent in the same tab. Confirm return to cart (through profile setup if needed), then refresh to check session restoration.
@@ -52,4 +58,4 @@ Complete OAuth in the initiating browser/tab. Email confirmation now also uses t
 3. Cancel each provider's consent and confirm a useful error/retry path. Check Login ↔ Sign Up preserves the intended destination.
 4. Test existing email/password login, new registration/email confirmation, logout, and protected routes again on localhost and production.
 
-Already checked: 14 automated cases using the installed Supabase SDK with mocked transport (OAuth URL/PKCE construction, email/password session persistence, registration, callback verification/error paths, return-path validation and profile routing); production build passed. Browser checks confirmed both disabled-provider fallbacks and signed-out `/cart` redirect to `/login?redirect=%2Fcart`. These checks do not establish successful live Google/Facebook authentication. Complete the steps above before treating the providers as operational.
+Automated checks: `node tests/social-auth.mjs` covers 15 cases using the installed Supabase SDK with mocked transport (OAuth URL/PKCE construction, Google startup without a settings request, email/password session persistence, registration, callback verification/error paths, return-path validation and profile routing). `node tests/auth-session.mjs` covers session restoration. `node tests/profile-editor.mjs` reproduces the required-email constraint and verifies profile saves use verified Auth data. These tests and the production build passed on October 28. Live Google signup reached profile setup, saved the new profile successfully after the fix, and retained the signed-in account after refresh. The remaining provider/domain checks above still apply.

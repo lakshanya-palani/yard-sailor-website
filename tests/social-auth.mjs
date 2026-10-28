@@ -10,7 +10,9 @@ for(const provider of ['google','facebook']) {
  const parsed=new URL(url);assert.equal(parsed.searchParams.get('provider'),provider);assert.equal(parsed.searchParams.get('redirect_to'),'http://localhost:5173/auth/callback');assert.equal(parsed.searchParams.get('code_challenge_method'),'s256');assert.ok(parsed.searchParams.get('code_challenge'));if(provider==='facebook')assert.equal(parsed.searchParams.get('scopes'),'email');pass(`${provider} starts with official SDK PKCE challenge and fixed callback`);
 }
 assert.equal(readReturn(storage),'/products/sample?from=cart');pass('intended product/action preserved');
-await assert.rejects(startSocial(client,'google','/',{origin:'http://localhost:5173',storage,supabaseUrl,publicKey:'public-placeholder',fetcher:async()=>Response.json({external:{google:false}})}),/not configured/);pass('disabled provider handled before navigation');
+await startSocial(client,'google','/',{origin:'http://localhost:5173',storage,supabaseUrl,publicKey:'public-placeholder',fetcher:async()=>{throw new Error('Google must not wait for settings');}});pass('Google starts without a settings network request');
+await assert.rejects(startSocial(client,'facebook','/',{origin:'http://localhost:5173',storage,supabaseUrl,publicKey:'public-placeholder',fetcher:async()=>Response.json({external:{facebook:false}})}),/not configured/);pass('disabled Facebook handled before navigation');
+saveReturn(storage,'/products/sample?from=cart');
 for(const value of ['//evil.example','/\\evil.example','https://evil.example','/auth/callback?code=bad','/login','/register'])assert.equal(returnPath(value),'/');pass('external/looping redirects rejected');
 let exchanges=0,verifies=0;
 const callbackClient={auth:{exchangeCodeForSession:async code=>{exchanges++;assert.equal(code,'fixture-code');return {data:{session:{user:{id:'user'}}}};},getUser:async()=>{verifies++;return {data:{user:{id:'user'}}};}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{username:'sailor'}})})})})};
