@@ -14,9 +14,8 @@ export async function savePublicProfile(client, expectedUserId, draft) {
   if (checkError) throw new Error('Unable to check username availability. Please try again.');
   if (existing) throw new Error('This username is already taken.');
   const saved = {username, avatar_url: draft.avatar_url};
-  // New profiles require email, including accounts created through Google OAuth.
-  // Always use verified Auth data; never accept an email from the editable draft.
-  const {data, error} = await client.from('profiles').upsert({id: auth.user.id, email: auth.user.email, ...saved})
+  // The database supplies the private email from the authenticated account.
+  const {data, error} = await client.from('profiles').upsert({id: auth.user.id, ...saved})
     .select('username, avatar_url').single();
   if (error) throw new Error(error.code === '23505' ? 'This username is already taken.' : 'Unable to save your profile. Please try again.');
   if (!data) throw new Error('Your profile could not be confirmed. Please reload and check it.');

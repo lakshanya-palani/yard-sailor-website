@@ -403,7 +403,7 @@
     display: block;
   }
 
-  @media (max-width: 1450px) {
+  @media (max-width: 1023px) {
     .navbar { height: auto; min-height: 114px; grid-template-columns: 40px 1fr auto; gap: 20px; padding: 20px; }
     .navbar-center { gap: 18px; flex-wrap: wrap; }
     .navbar a { font-size: 18px; }
@@ -433,7 +433,7 @@
 .navbar-menu-button, .mobile-language { display: none; }
 .navbar :focus-visible { outline: 3px solid #b7e35a; outline-offset: 4px; }
 .search-box { left: auto; right: 0; top: calc(100% + 18px); transform: none; }
-@media (max-width: 1450px) {
+@media (max-width: 1023px) {
   .navbar { height: 72px; min-height: 0; padding: 0 20px; gap: 16px; }
   .navbar-logo { flex-basis: 48px; width: 48px; height: 48px; }
   .navbar-account { margin-left: auto; }
@@ -452,7 +452,7 @@
   .search-box { right: -90px; left: auto; width: min(300px, calc(100vw - 24px)); }
 }
 
-@media (max-width: 1450px) {
+@media (max-width: 1023px) {
   .navbar-center {
     left: auto;
     right: 16px;
@@ -489,11 +489,11 @@
 .cart-button { color: white; display: grid; place-items: center; }
 
 /* The search field gets its own row when the navigation collapses. */
-@media (min-width: 1451px) {
+@media (min-width: 1024px) {
   .navbar { gap: 18px; }
   .navbar-center { gap: clamp(12px, 1.5vw, 24px); }
 }
-@media (max-width: 1450px) {
+@media (max-width: 1023px) {
   .navbar { height: auto; min-height: 0; display: grid; grid-template-columns: 1fr auto auto; grid-template-rows: 52px 42px; gap: 8px 12px; padding: 10px 16px 12px; }
   .navbar-logo { grid-column: 1; grid-row: 1; }
   .navbar-account { grid-column: 2; grid-row: 1; }
@@ -505,7 +505,7 @@
   .desktop-language { display: none; }
   .mobile-language { display: block; padding: 14px 4px 0; }
 }
-@media (min-width: 601px) and (max-width: 1450px) {
+@media (min-width: 601px) and (max-width: 1023px) {
   .navbar { grid-template-columns: auto minmax(140px, 1fr) auto auto; grid-template-rows: 52px; gap: 12px; padding: 10px 20px; }
   .navbar-logo { grid-column: 1; }
   .header-search { grid-column: 2; grid-row: 1; max-width: 480px; justify-self: center; }
@@ -522,8 +522,8 @@
 .navbar-avatar { width: 32px; height: 32px; flex-basis: 32px; }
 .profile-menu-trigger > span:nth-child(2) { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
 .cart-count { right: 0; top: 0; }
-@media (min-width: 1451px) { .navbar { gap: 20px; } .navbar-center { gap: clamp(14px, 1.4vw, 24px); } }
-@media (max-width: 1450px) { .navbar .navbar-center a { display: flex; min-height: 46px; font-size: 17px; } }
+@media (min-width: 1024px) { .navbar { gap: 20px; } .navbar-center { gap: clamp(14px, 1.4vw, 24px); } }
+@media (max-width: 1023px) { .navbar .navbar-center a { display: flex; min-height: 46px; font-size: 17px; } }
 @media (max-width: 520px) { .navbar-account { gap: 4px; } .login-link { min-width: 44px; } }
 .desktop-nav-menus { display: flex; align-items: center; gap: clamp(14px, 1.4vw, 24px); }
 .nav-menu-group { position: relative; }
@@ -535,10 +535,22 @@
 .nav-menu-language { padding: 0 12px; border-top: 1px solid #e5d9c9; }
 .nav-menu-language .language-control, .nav-menu-language .language-control .language-select { color: #1c2a39; }
 .mobile-nav-links { display: none; }
-@media (max-width: 1450px) { .desktop-nav-menus { display: none; } .mobile-nav-links { display: contents; } }
+@media (max-width: 1023px) { .desktop-nav-menus { display: none; } .mobile-nav-links { display: contents; } }
 .navbar-center > a[aria-current="page"], .nav-menu-trigger.is-current { color: #ffd4a7; }
-@media (min-width: 1451px) {
+@media (min-width: 1024px) {
   .navbar-center > a[aria-current="page"], .nav-menu-trigger.is-current { box-shadow: inset 0 -2px #ffd4a7; }
 }
 .navbar .nav-menu-panel a[aria-current="page"] { background: #f7ebd8; color: #a32a25; }
-@media (max-width: 1450px) { .navbar-center a[aria-current="page"] { color: #ffd4a7; } }
+@media (max-width: 1023px) { .navbar-center a[aria-current="page"] { color: #ffd4a7; } }
+
+@media (min-width: 1024px) and (max-width: 1200px) {
+  .navbar { gap: 10px; padding-inline: 14px; }
+  .navbar-center, .desktop-nav-menus { gap: 12px; }
+  .navbar .navbar-center a, .nav-menu-trigger { font-size: 14px; }
+  .profile-menu-trigger > span:nth-child(2) { max-width: 75px; }
+  .header-search { min-width: 140px; }
+}
+
+@media (min-width: 1024px) and (max-width: 1450px) {
+  .navbar .header-search { width: clamp(150px, 18vw, 260px); flex: 0 1 260px; }
+}

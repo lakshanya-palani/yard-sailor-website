@@ -218,8 +218,9 @@ function Ocean({ reducedMotion }) {
     });
   }, []);
 
+  const mesh = useRef();
   useFrame((_, delta) => {
-    if (!reducedMotion) material.uniforms.uTime.value += delta;
+    if (!reducedMotion && mesh.current) mesh.current.material.uniforms.uTime.value += delta;
   });
 
   useEffect(() => {
@@ -228,6 +229,7 @@ function Ocean({ reducedMotion }) {
 
   return (
     <mesh
+      ref={mesh}
       rotation={[-Math.PI / 2, 0, 0]}
       position={[0, -1.05, 0]}
       material={material}
@@ -266,8 +268,7 @@ function SunsetSky() {
 // ------------------------------------------------------------
 
 function SailingCamera({ progress }) {
-  const { camera, size } = useThree();
-  useFrame(() => {
+  useFrame(({ camera, size }) => {
     const mobile = size.width < 600;
     camera.fov = mobile ? 55 : 50;
     camera.position.set(0, 5, (mobile ? 30 : 26) - progress * 9);

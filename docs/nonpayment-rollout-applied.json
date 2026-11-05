@@ -1,0 +1,33 @@
+{
+  "target": "kqceoaqkqsrwgcqaergx",
+  "migrations": [
+    {
+      "version": "202609070001",
+      "path": "supabase/migrations/202609070001_product_cart_messages.sql",
+      "sha256": "3efb92ceadc74ad01be48d188844c11358eeb17614da4de30ded28025c4331b3"
+    },
+    {
+      "version": "202609070002",
+      "path": "supabase/migrations/202609070002_security_hardening.sql",
+      "sha256": "c4f279884e161c8e2f457f2bbe35fb0e74c61f1de3b2e228f83915d1e921134f"
+    },
+    {
+      "version": "20261105062818",
+      "path": "supabase/migrations/20261105062818_profile_legacy_avatar_upsert.sql",
+      "sha256": "be9cc3ad1cb695dbee43d1a7d07760bc414fb8f92a968363469f22bb777da0ed"
+    },
+    {
+      "version": "20261105022739",
+      "path": "supabase/migrations/20261105022739_profile_privacy_repair.sql",
+      "sha256": "c633e4c66cb053d337caa737991e68dbe8286f89764399b9d60b15ccf8aaf800"
+    }
+  ],
+  "bundle_sha256": "aafac7725a3787f5c8dc8c16f28094e2204dc534b405f947b65c95ed3afa5112",
+  "applied_at_observed_utc": "2026-11-05T07:20:32.412695+00:00",
+  "provider_registry": "Still absent; official explicit-version repair pending CLI authentication. Do not replay bundle or dbpush blindly.",
+  "not_applied": [
+    "202609070003",
+    "202609080004",
+    "20261105022740"
+  ]
+}

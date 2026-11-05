@@ -1,6 +1,6 @@
 // Shared, testable payment logic. All privileged database calls remain server-side.
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-export class CheckoutError extends Error { constructor(message,status=400) { super(message); this.status=status; } }
+export class CheckoutError extends Error { constructor(message,status=400,details={}) { super(message); this.status=status; this.details=details; } }
 export function validateConfiguration(env) {
   if (!env.STRIPE_SECRET_KEY?.startsWith('sk_test_')) throw new Error('A Stripe test secret key is required.');
   if (!env.STRIPE_WEBHOOK_SECRET?.startsWith('whsec_')) throw new Error('A webhook signing secret is required.');
@@ -27,7 +27,7 @@ export function verifyIntent(intent,order) {
 }
 const businessErrors=new Set(['An item is unavailable or belongs to you.','An item is reserved or already purchased in test mode.','An item is no longer in your cart.','An item has an invalid USD price.','Checkout total is too large.','Finish or cancel your pending checkout in Orders first.','Please wait before starting another checkout.']);
 export function createPaymentHandlers({admin,stripe,siteUrl,webhookSecret,cryptoProvider,enabled}) {
-  async function rpc(name,args) { const {data,error}=await admin.rpc(name,args);if(error){if(businessErrors.has(error.message))throw new CheckoutError(error.message,409);throw new Error('Database operation failed.');}return data; }
+  async function rpc(name,args) { const {data,error}=await admin.rpc(name,args);if(error){if(businessErrors.has(error.message))throw new CheckoutError(error.message,409);if(args.p_order && ['Checkout association mismatch.','Payment validation failed.','Payment identifier mismatch.','Payment after confirmed expiration requires review.','Event association mismatch.'].includes(error.message))review({id:args.p_order});throw new Error('Database operation failed.');}return data; }
   async function loadOrder(id) {
     const {data,error}=await admin.from('checkout_orders').select('*').eq('id',id).maybeSingle();
     if(error)throw new Error('Order lookup failed.');if(!data)throw new CheckoutError('Order unavailable.',404);return data;
@@ -37,21 +37,51 @@ export function createPaymentHandlers({admin,stripe,siteUrl,webhookSecret,crypto
     if(!token)throw new CheckoutError('Please sign in.',401);
     const {data,error}=await admin.auth.getUser(token);if(error||!data?.user)throw new CheckoutError('Please sign in again.',401);return data.user.id;
   }
-  async function sessionFor(order) {
-    if(order.stripe_session_id)return stripe.checkout.sessions.retrieve(order.stripe_session_id,{expand:['payment_intent']});
+  async function createParams(order) {
     const {data:items,error}=await admin.from('checkout_order_items').select('product_id,title,unit_amount,quantity').eq('order_id',order.id).order('product_id');
     if(error||!items?.length||items.some(i=>i.quantity!==1)||items.reduce((sum,i)=>sum+Number(i.unit_amount),0)!==Number(order.amount_total))throw new Error('Invalid order snapshot.');
-    // Never change these parameters for a retry of the same order.
-    const session=await stripe.checkout.sessions.create({mode:'payment',payment_method_types:['card'],
+    return {mode:'payment',payment_method_types:['card'],
       client_reference_id:order.id,metadata:{app:'yard_sailor_test',order_id:order.id,buyer_id:order.buyer_id},
       payment_intent_data:{metadata:{app:'yard_sailor_test',order_id:order.id,buyer_id:order.buyer_id}},
       line_items:items.map(item=>({quantity:1,price_data:{currency:order.currency,unit_amount:Number(item.unit_amount),product_data:{name:item.title.slice(0,120)}}})),
-      expires_at:Math.floor(new Date(order.expires_at).getTime()/1000),
       success_url:`${siteUrl}/orders?order=${order.id}&checkout=success`,cancel_url:`${siteUrl}/orders?order=${order.id}&checkout=cancelled`,
-      custom_text:{submit:{message:'TEST MODE ONLY. No real purchase, delivery, or seller payout.'}}
-    },{idempotencyKey:`yard-sailor-test-checkout:${order.id}`});
-    verifySession(session,order);
-    await rpc('bind_test_checkout',{p_order:order.id,p_session:session.id});return session;
+      custom_text:{submit:{message:'TEST MODE ONLY. No real purchase, delivery, or seller payout.'}}};
+  }
+  function review(order) {
+    throw new CheckoutError('This checkout needs review. Inventory remains held. Contact support with the order ID so the test payment can be verified.',409,{code:'checkout_review_required',orderId:order.id});
+  }
+  async function sessionFor(order,action) {
+    const params=order.protocol===2 && !order.first_dispatch_at && ['create','resume'].includes(action)?await createParams(order):null;
+    const prepare=()=>rpc('prepare_test_checkout',{p_order:order.id,p_buyer:order.buyer_id,p_action:action,p_params:params});
+    let decision=await prepare();
+    if(decision.kind==='terminal')return {state:decision.state};
+    if(decision.kind==='creating')return {state:'creating'};
+    if(decision.kind==='review')review(order);
+    let sessionId=decision.session_id;
+    if(decision.kind==='dispatch') {
+      // Recheck immediately before POST; the DB clock establishes the remaining window.
+      const started=performance.now();
+      decision=await prepare();
+      if(decision.kind==='review')review(order);
+      if(decision.kind==='terminal')return {state:decision.state};
+      if(decision.kind==='bound')sessionId=decision.session_id;
+      else {
+        if(decision.kind!=='dispatch' || Date.parse(decision.cutoff)-Date.parse(decision.db_time)<=performance.now()-started)review(order);
+        let created;
+        try {created=await stripe.checkout.sessions.create(decision.params,{idempotencyKey:`yard-sailor-test-checkout:${order.id}`,timeout:10000,maxNetworkRetries:0});}
+        catch(error) {
+          if(error?.type==='StripeIdempotencyError' && error.code!=='idempotency_key_in_use')review(order);
+          throw error;
+        }
+        try {verifySession(created,order);}catch {review(order);}
+        await rpc('bind_test_checkout',{p_order:order.id,p_session:created.id});
+        sessionId=created.id;
+      }
+    }
+    const session=await stripe.checkout.sessions.retrieve(sessionId,{expand:['payment_intent']});
+    const current=await loadOrder(order.id);
+    try {verifySession(session,current);}catch {review(current);}
+    return {session,order:current};
   }
   async function reconcile(session,order,event) {
     verifySession(session,order);
@@ -70,35 +100,41 @@ export function createPaymentHandlers({admin,stripe,siteUrl,webhookSecret,crypto
     if(origin && origin!==siteUrl)return response({error:'Origin not allowed.'},403,origin);
     if(req.method==='OPTIONS')return response({},200,origin);
     if(req.method!=='POST')return response({error:'Method not allowed.'},405,origin);
-    try{return response(await run(req),200,origin);}catch(e){return response({error:e instanceof CheckoutError?e.message:'Payment service unavailable. Your order can be checked in Orders. Please retry safely.'},e instanceof CheckoutError?e.status:503,origin);}
+    try{return response(await run(req),200,origin);}catch(e){return response({error:e instanceof CheckoutError?e.message:'Payment service unavailable. Your order can be checked in Orders. Please retry safely.',...(e instanceof CheckoutError?e.details:{})},e instanceof CheckoutError?e.status:503,origin);}
   }; }
+  async function processOrder(order,action) {
+    const prepared=await sessionFor(order,action);
+    if(prepared.state)return {orderId:order.id,state:prepared.state};
+    let {session}=prepared;order=prepared.order;
+    // Record deadline/cancellation under lock again after the provider call.
+    const decision=await rpc('prepare_test_checkout',{p_order:order.id,p_buyer:order.buyer_id,p_action:action,p_params:null});
+    order=await loadOrder(order.id);
+    if(decision.kind==='terminal')return {orderId:order.id,state:decision.state};
+    if(order.cancel_requested && session.status==='open') {
+      try {await stripe.checkout.sessions.expire(session.id);}catch { /* Retrieve current state even after an ambiguous error. */ }
+      session=await stripe.checkout.sessions.retrieve(session.id,{expand:['payment_intent']});
+    }
+    const state=await reconcile(session,order);
+    if(order.cancel_requested && state==='open')throw new CheckoutError('Checkout is still open. Please retry cancellation.',409);
+    if(state==='open' && ['create','resume'].includes(action) && !order.cancel_requested) {
+      if(!session.url?.startsWith('https://checkout.stripe.com/'))throw new Error('Invalid hosted checkout URL.');
+      return {orderId:order.id,state,url:session.url,testMode:true};
+    }
+    return {orderId:order.id,state};
+  }
   const create=endpoint(async req=>{
     if(!enabled)throw new CheckoutError('Test checkout has not been enabled.',503);
     const id=await buyer(req);const body=await jsonBody(req);validateSelection(body);
-    const orderId=await rpc('reserve_test_checkout',{p_buyer:id,p_products:body.productIds,p_request:body.requestId,p_source:body.source});
+    const orderId=await rpc('reserve_test_checkout_v2',{p_buyer:id,p_products:body.productIds,p_request:body.requestId,p_source:body.source});
     const order=await loadOrder(orderId);
     if(order.buyer_id!==id)throw new CheckoutError('Order unavailable.',404);
-    if(['paid','expired'].includes(order.state))return {orderId,state:order.state};
-    const session=await sessionFor(order);const state=await reconcile(session,order);
-    if(state!=='open')return {orderId,state};
-    if(!session.url?.startsWith('https://checkout.stripe.com/'))throw new Error('Invalid hosted checkout URL.');
-    return {orderId,state,url:session.url,testMode:true};
+    return processOrder(order,'create');
   });
   const manage=endpoint(async req=>{
     const id=await buyer(req);const body=await jsonBody(req);
     if(!body||!UUID.test(body.orderId||'')||!['resume','cancel','refresh'].includes(body.action)||Object.keys(body).some(k=>!['orderId','action'].includes(k)))throw new CheckoutError('Invalid order request.');
     const order=await loadOrder(body.orderId);if(order.buyer_id!==id)throw new CheckoutError('Order unavailable.',404);
-    if(['paid','expired'].includes(order.state))return {orderId:order.id,state:order.state};
-    // A previously ambiguous create is retried with the SAME idempotency key,
-    // even when cancelling, before it is safe to release inventory.
-    let session=await sessionFor(order);verifySession(session,order);
-    if(body.action==='cancel' && session.status==='open') {
-      try {await stripe.checkout.sessions.expire(session.id);}catch { /* It may have completed concurrently. Retrieve authoritative state. */ }
-      session=await stripe.checkout.sessions.retrieve(session.id,{expand:['payment_intent']});
-    }
-    const state=await reconcile(session,order);
-    if(body.action==='cancel' && state==='open')throw new CheckoutError('Checkout is still open. Please retry cancellation.',409);
-    return {orderId:order.id,state,url:body.action==='resume' && state==='open' && session.url?.startsWith('https://checkout.stripe.com/')?session.url:undefined};
+    return processOrder(order,body.action);
   });
   const webhook=async req=>{
     if(req.method!=='POST')return response({error:'Method not allowed.'},405);

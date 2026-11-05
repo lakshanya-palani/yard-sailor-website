@@ -26,3 +26,7 @@ dist-ssr
 # env local
 .env.local
 .env
+
+# Local audit and Supabase CLI state
+.audit/
+supabase/.temp/

@@ -1,14 +1,16 @@
 import SaveButton from "../components/SaveButton";
 import { startCheckout, checkoutDestination, PaymentError } from "../lib/payments";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useCart } from "../context/CartContext";
 import { commerceError, productLogin, startConversation } from "../lib/commerce";
+import { PAYMENTS_ENABLED } from "../lib/features";
 import "./ProductDetail.css";
 
 function ProductDetail() {
   const { id } = useParams();
+  const location = useLocation();
   const [saveParams] = useSearchParams();
   const { add } = useCart();
   const [action, setAction] = useState(null);
@@ -75,7 +77,7 @@ function ProductDetail() {
   }, [id]);
 
   async function purchaseAction(kind) {
-    if (action) return;
+    if (action || (kind === "buy" && !PAYMENTS_ENABLED)) return;
     setAction(kind); setFeedback(""); setActionError("");
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -190,6 +192,7 @@ function ProductDetail() {
         </section>
 
         <section className="product-detail-information">
+          {location.state?.confirmation === "Your listing was posted." && <p role="status">Your listing was posted.</p>}
           <h1>{product.title}</h1>
           {saveParams.get("save") === "1" && <p>Use the heart below to finish saving this item. Saving does not reserve it.</p>}
           <SaveButton productId={product.id} title={product.title} detail />
@@ -227,8 +230,8 @@ function ProductDetail() {
             </div>
           ) : (
             <div className="product-buyer-actions">
-              <p className="commerce-muted">Checkout is in test mode. No real purchase or seller payout.</p>
-              <button className="product-buy-now" disabled={!!action} onClick={() => purchaseAction('buy')}>{action === 'buy' ? 'Opening…' : 'Buy Now'}</button>
+              {PAYMENTS_ENABLED && <><p className="commerce-muted">Checkout is in test mode. No real purchase or seller payout.</p>
+              <button className="product-buy-now" disabled={!!action} onClick={() => purchaseAction('buy')}>{action === 'buy' ? 'Opening…' : 'Buy Now'}</button></>}
               <button disabled={!!action} onClick={() => purchaseAction('cart')}>{action === 'cart' ? 'Adding…' : 'Add to Cart'}</button>
               <button disabled={!!action} onClick={() => purchaseAction('message')}>{action === 'message' ? 'Opening…' : 'Message Seller'}</button>
               {feedback && <p role="status">{feedback} <Link to="/cart">View cart</Link></p>}

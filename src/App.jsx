@@ -31,6 +31,9 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const PostYardSale = lazy(() => import("./pages/PostYardSale"));
 const FindYardSale = lazy(() => import("./pages/FindYardSale"));
 import Shop from "./pages/Shop";
+import { PAYMENTS_ENABLED } from "./lib/features";
+import PaymentsUnavailable from "./pages/PaymentsUnavailable";
+import NotFound from "./pages/NotFound";
 const About = lazy(() => import("./pages/About"));
 
 import "./App.css";
@@ -46,10 +49,10 @@ function App() {
       <Suspense fallback={<main className="route-loading"><p role="status">Loading page…</p></main>}>
       <Routes>
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="/orders" element={PAYMENTS_ENABLED ? <ProtectedRoute><Orders /></ProtectedRoute> : <PaymentsUnavailable />} />
         <Route path="/accessibility" element={<Accessibility />} />
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-        <Route path="/checkout" element={<ProtectedRoute><Cart checkout /></ProtectedRoute>} />
+        <Route path="/checkout" element={PAYMENTS_ENABLED ? <ProtectedRoute><Cart checkout /></ProtectedRoute> : <PaymentsUnavailable />} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/" element={<Shop home />} />
         <Route path="/shop" element={<Shop />} />
@@ -117,6 +120,7 @@ function App() {
         <Route path="/saved" element={<ProtectedRoute><SavedItems /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
         <Route path="/help" element={<HelpSupport />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       </Suspense>
 

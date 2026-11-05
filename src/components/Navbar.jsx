@@ -8,6 +8,7 @@ import LanguageDropdown from "./LanguageDropdown";
 import { useAuth } from "../context/useAuth";
 import { returnPath } from "../lib/authFlow";
 import SearchBar from "./SearchBar";
+import { PAYMENTS_ENABLED } from "../lib/features";
 
 function Navbar() {
   const { count } = useCart();
@@ -130,10 +131,11 @@ function Navbar() {
 
         <nav id="main-navigation" className={`navbar-center${navOpen ? " is-open" : ""}`} aria-label="Main navigation">
           <NavLink to="/shop" onClick={() => setNavOpen(false)}>Shop</NavLink>
-          <NavLink to="/find-yard-sale" onClick={() => setNavOpen(false)}>Find a Yard Sale</NavLink>
+          <NavLink to="/find-yard-sale" onClick={() => setNavOpen(false)}>Yard Sales</NavLink>
+          {user && <><NavLink to="/saved" onClick={() => setNavOpen(false)}>Saved</NavLink><NavLink to="/messages" onClick={() => setNavOpen(false)}>Messages</NavLink></>}
           <div className="desktop-nav-menus" ref={desktopMenuRef}>
             <div className="nav-menu-group">
-              <button id="nav-post-button" className={`nav-menu-trigger${["/post-sale", "/post-yard-sale"].includes(location.pathname) ? " is-current" : ""}`} type="button" aria-expanded={desktopMenu === "post"} aria-controls="nav-post-menu" onClick={() => setDesktopMenu(current => current === "post" ? null : "post")}>Post <ChevronDown size={16} aria-hidden="true" /></button>
+              <button id="nav-post-button" className={`nav-menu-trigger${["/post-sale", "/post-yard-sale"].includes(location.pathname) ? " is-current" : ""}`} type="button" aria-expanded={desktopMenu === "post"} aria-controls="nav-post-menu" onClick={() => setDesktopMenu(current => current === "post" ? null : "post")}>Sell <ChevronDown size={16} aria-hidden="true" /></button>
               {desktopMenu === "post" && <div id="nav-post-menu" className="nav-menu-panel"><NavLink to="/post-sale" onClick={() => setDesktopMenu(null)}>Post an item</NavLink><NavLink to="/post-yard-sale" onClick={() => setDesktopMenu(null)}>Post a yard sale</NavLink></div>}
             </div>
             <div className="nav-menu-group">
@@ -203,7 +205,7 @@ function Navbar() {
                     <Link to="/my-yard-sales" onClick={() => setProfileMenuOpen(false)}>
                       My Yard Sale Listings
                     </Link>
-                    <Link to="/orders" onClick={() => setProfileMenuOpen(false)}>Orders</Link>
+                    {PAYMENTS_ENABLED && <Link to="/orders" onClick={() => setProfileMenuOpen(false)}>Orders</Link>}
                     <Link to="/messages" onClick={() => setProfileMenuOpen(false)}>Direct Messages</Link>
                     <Link to="/saved" onClick={() => setProfileMenuOpen(false)}>
                       Saved Items

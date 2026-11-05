@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
+const source = (await readFile(new URL('../src/lib/listingEditor.js', import.meta.url), 'utf8'))
+  .replace(/^import .*;\n/gm, '').replaceAll('export function ', 'function ');
+const { validateProduct, validateSale, validImages } = vm.runInNewContext(`${source}\n({ validateProduct, validateSale, validImages })`);
+const product = { title:'Chair', description:'Good chair', price:'0', brand:'', condition:'Good', pickup:true };
+assert.equal(validateProduct(product), '');
+assert.ok(validateProduct({ ...product, price:'' }));
+assert.ok(validateProduct({ ...product, price:'Infinity' }));
+assert.ok(validateProduct({ ...product, title:'x'.repeat(71) }));
+assert.ok(validateProduct({ ...product, brand:'x'.repeat(101) }));
+const sale = { title:'Sale', description:'Details', address:'Main Street', startTime:'2026-11-08T10:00', endTime:'2026-11-08T12:00' };
+assert.equal(validateSale(sale), '');
+assert.ok(validateSale({ ...sale, endTime:sale.startTime }));
+assert.ok(validateSale({ ...sale, address:'x'.repeat(501) }));
+assert.equal(validImages([{ type:'image/png', size:1024 }]), true);
+assert.equal(validImages([{ type:'image/svg+xml', size:1024 }]), false);
+assert.equal(validImages([{ type:'image/png', size:0 }]), false);
+console.log('Listing editor tests passed.');

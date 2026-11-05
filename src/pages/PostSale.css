@@ -384,3 +384,10 @@
       width: 100%;
     }
   }
+
+.listing-message {
+  color: #9b2828;
+  background: #fff1ef;
+  border-radius: 8px;
+  padding: 12px 16px;
+}

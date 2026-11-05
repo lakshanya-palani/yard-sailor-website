@@ -1,5 +1,5 @@
 // Local-only harness. Stub all Auth/database calls before mounting; never mutates live data.
-import React from 'react';
+
 import {createRoot} from 'react-dom/client';
 import {MemoryRouter} from 'react-router-dom';
 import {supabase} from '../src/lib/supabase';
@@ -13,7 +13,7 @@ const stored=new Set();
 supabase.auth.getSession=async()=>({data:{session:{user:{id:'fixture'}}}});
 supabase.auth.onAuthStateChange=cb=>{subscriber=cb;return {data:{subscription:{unsubscribe(){}}}};};
 supabase.from=()=>({select:()=>({eq:()=>({order:()=>({range:async()=>{reads++;return failRead?{error:{code:'503'}}:{data:[...stored].map(product_id=>({product_id}))};}})})}),insert:async row=>{writes++;await new Promise(r=>{release=r});if(failWrite)return {error:{code:'42501'}};stored.add(row.product_id);return {};},delete:()=>({eq:()=>({eq:async(_key,id)=>{writes++;stored.delete(id);return {};}})})});
-function Probe(){current=useSaved();return <SaveButton productId="item" title="Fixture" detail/>;}
+export function Probe(){current=useSaved();return <SaveButton productId="item" title="Fixture" detail/>;}
 const root=createRoot(document.querySelector('#test-root'));
 root.render(<MemoryRouter><SavedProvider><Probe/></SavedProvider></MemoryRouter>);
 try{

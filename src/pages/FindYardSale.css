@@ -238,3 +238,13 @@
 .yard-sale-result-info .show-on-map { background: #fff3df; color: #1c2a39; }
 
 .yard-sale-map-container { min-width: 0; scroll-margin-top: 16px; }
+
+.yard-sale-summary { width: min(1400px, 100%); margin: 0 auto 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.yard-sale-summary p { margin: 0; color: #555f65; }
+.yard-sale-view-toggle { display: none; }
+@media (max-width: 950px) {
+  .yard-sale-view-toggle { display: flex; gap: 6px; }
+  .yard-sale-view-toggle button { padding: 9px 16px; border: 1px solid #1c2a39; border-radius: 8px; background: white; color: #1c2a39; font: 700 15px "League Spartan", sans-serif; }
+  .yard-sale-view-toggle button[aria-pressed="true"] { background: #1c2a39; color: white; }
+  .view-list .yard-sale-map-container, .view-map .yard-sale-results { display: none; }
+}

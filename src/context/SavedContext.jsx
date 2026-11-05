@@ -25,7 +25,7 @@ export function SavedProvider({children}) {
     fetching.current=request;return request;
   },[]);
   useEffect(()=>{
-    let active=true,initialized=false;const timers=new Set();
+    let active=true,initialized=false;const timers=new Set();const generation=version;
     const update=session=>{
       if(!active)return;const next=session?.user?.id||null;
       if(initialized&&next===owner.current)return;initialized=true;
@@ -35,7 +35,7 @@ export function SavedProvider({children}) {
     update(userId ? {user: {id: userId}} : null);
     const focus=()=>{if(document.visibilityState==='visible'&&Date.now()-refreshedAt.current>30000)refresh();};
     window.addEventListener('focus',focus);
-    return()=>{active=false;version.current++;timers.forEach(clearTimeout);window.removeEventListener('focus',focus);};
+    return()=>{active=false;generation.current++;timers.forEach(clearTimeout);window.removeEventListener('focus',focus);};
   },[refresh,userId]);
   function toggle(productId){
     if(!owner.current||loading||error)return Promise.resolve();

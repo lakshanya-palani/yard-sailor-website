@@ -9,12 +9,16 @@ const time = value => value ? new Date(value).toLocaleString([], { month:'short'
 function Avatar({ src, name }) { return <span className="dm-avatar">{src ? <img src={src} alt="" /> : name?.charAt(0).toUpperCase() || 'Y'}</span>; }
 export default function Messages() {
   const { userId } = useCart();
+  const [params] = useSearchParams();
+  return <MessagesForUser key={`${userId ?? 'signed-out'}:${params.get('conversation') ?? ''}`} userId={userId} />;
+}
+function MessagesForUser({ userId }) {
   const [params, setParams] = useSearchParams();
   const activeId = params.get('conversation');
   const [conversations, setConversations] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(Boolean(activeId));
   const [error, setError] = useState('');
   const [historyError, setHistoryError] = useState('');
   const [sendError, setSendError] = useState('');
@@ -23,6 +27,7 @@ export default function Messages() {
   const [hasOlder, setHasOlder] = useState(false);
   const [limit, setLimit] = useState(100);
   const [realtime, setRealtime] = useState(false);
+  const mounted = useRef(false);
   const listRequest = useRef(0);
   const historyRequest = useRef(0);
   const currentConversation = useRef(activeId);
@@ -32,64 +37,64 @@ export default function Messages() {
   const markThrough = useRef(null);
   const selected = conversations.find(c => c.id === activeId);
   useEffect(() => {
-    setConversations([]); setHistory([]); setLoading(true); setError('');
-    return () => { listRequest.current++; historyRequest.current++; };
-  }, [userId]);
+    const lifecycle = mounted;
+    const list = listRequest;
+    const history = historyRequest;
+    const conversation = currentConversation;
+    lifecycle.current = true;
+    conversation.current = activeId;
+    return () => { lifecycle.current = false; conversation.current = null; list.current++; history.current++; };
+  }, [activeId]);
   const loadList = useCallback(async () => {
-    if (!userId) return;
+    if (!mounted.current || !userId) return;
     const request = ++listRequest.current;
     try {
       const data = await rpc('list_product_conversations');
-      if (request === listRequest.current) { setConversations(data || []); setError(''); }
-    } catch(e) { if (request === listRequest.current) setError(commerceError(e)); }
-    finally { if (request === listRequest.current) setLoading(false); }
+      if (mounted.current && request === listRequest.current) { setConversations(data || []); setError(''); }
+    } catch(e) { if (mounted.current && request === listRequest.current) setError(commerceError(e)); }
+    finally { if (mounted.current && request === listRequest.current) setLoading(false); }
   }, [userId]);
   const loadHistory = useCallback(async () => {
-    if (!activeId || !userId) return;
+    if (!mounted.current || !activeId || !userId) return;
     const request = ++historyRequest.current;
     try {
       const { data, error: loadError } = await supabase.from('messages').select('id,conversation_id,sender_id,body,created_at')
         .eq('conversation_id',activeId).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(limit + 1);
       if (loadError) throw loadError;
-      if (request !== historyRequest.current) return;
+      if (!mounted.current || request !== historyRequest.current) return;
       const rows = (data || []).slice(0,limit).reverse();
       setHasOlder((data || []).length > limit);
       setHistory(rows); setHistoryError('');
       const last = rows.at(-1);
       if (last && document.visibilityState === 'visible' && document.hasFocus() && markThrough.current !== last.id) {
         await rpc('mark_product_conversation_read',{p_conversation_id:activeId,p_message_id:last.id});
-        if (request === historyRequest.current) { markThrough.current = last.id; loadList(); }
+        if (mounted.current && request === historyRequest.current) { markThrough.current = last.id; loadList(); }
       }
-    } catch(e) { if (request === historyRequest.current) setHistoryError(commerceError(e)); }
-    finally { if (request === historyRequest.current) setHistoryLoading(false); }
+    } catch(e) { if (mounted.current && request === historyRequest.current) setHistoryError(commerceError(e)); }
+    finally { if (mounted.current && request === historyRequest.current) setHistoryLoading(false); }
   }, [activeId,userId,limit,loadList]);
   useEffect(() => {
-    currentConversation.current = activeId;
-    markThrough.current = null;
-    pendingSend.current = null;
-    setDraft(''); setHistory([]); setHistoryError(''); setSendError(''); setLimit(100);
-    setHistoryLoading(Boolean(activeId));
-    return () => { historyRequest.current++; };
-  }, [activeId,userId]);
-  useEffect(() => {
-    loadList();
-    return () => { listRequest.current++; };
+    const generation = listRequest;
+    const initial = setTimeout(loadList, 0);
+    return () => { generation.current++; clearTimeout(initial); };
   }, [loadList]);
   useEffect(() => {
-    loadHistory();
-    return () => { historyRequest.current++; };
+    const generation = historyRequest;
+    const initial = setTimeout(loadHistory, 0);
+    return () => { generation.current++; clearTimeout(initial); };
   }, [loadHistory]);
   useEffect(() => {
     if (!userId) return;
-    const refresh = () => { if (document.visibilityState === 'visible') { loadList(); loadHistory(); } };
+    let active = true;
+    const refresh = () => { if (active && document.visibilityState === 'visible') { loadList(); loadHistory(); } };
     const channel = supabase.channel(`messages-${userId}-${activeId || 'list'}`)
       .on('postgres_changes',{event:'*',schema:'public',table:'conversations'},loadList);
     if (activeId) channel.on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`conversation_id=eq.${activeId}`},loadHistory);
-    channel.subscribe(status => { setRealtime(status === 'SUBSCRIBED'); if (status === 'SUBSCRIBED') refresh(); });
+    channel.subscribe(status => { if (!active) return; setRealtime(status === 'SUBSCRIBED'); if (status === 'SUBSCRIBED') refresh(); });
     const poll = setInterval(refresh,15000);
     window.addEventListener('focus',refresh);
     document.addEventListener('visibilitychange',refresh);
-    return () => { supabase.removeChannel(channel); clearInterval(poll); window.removeEventListener('focus',refresh); document.removeEventListener('visibilitychange',refresh); };
+    return () => { active = false; supabase.removeChannel(channel); clearInterval(poll); window.removeEventListener('focus',refresh); document.removeEventListener('visibilitychange',refresh); };
   }, [userId,activeId,loadList,loadHistory]);
   const newestId = history.at(-1)?.id;
   useEffect(() => { end.current?.scrollIntoView({ block:'nearest' }); }, [newestId]);
@@ -107,10 +112,10 @@ export default function Messages() {
       const { error: insertError } = await supabase.from('messages').insert(message);
       if (insertError && insertError.code !== '23505') throw insertError;
       // UUID retries are idempotent, including an ambiguous network response.
-      if (currentConversation.current === conversation) { setDraft(''); pendingSend.current = null; await loadHistory(); }
-      await loadList();
-    } catch(e) { if (currentConversation.current === conversation) setSendError(commerceError(e)); }
-    finally { sendingRef.current = false; setSending(false); }
+      if (mounted.current && currentConversation.current === conversation) { setDraft(''); pendingSend.current = null; await loadHistory(); }
+      if (mounted.current) await loadList();
+    } catch(e) { if (mounted.current && currentConversation.current === conversation) setSendError(commerceError(e)); }
+    finally { if (mounted.current) { sendingRef.current = false; setSending(false); } }
   }
   return <main className="commerce-page"><div className="commerce-width"><h1>Direct Messages</h1>
     {error && <p role="alert" className="commerce-error">{error} <button onClick={loadList}>Try again</button></p>}

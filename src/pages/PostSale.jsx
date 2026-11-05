@@ -1,13 +1,22 @@
 import SelectField from "../components/SelectField";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 import { supabase } from "../lib/supabase";
 import "./PostSale.css";
+import { validateProduct, validImages, useListingDraft, useUnsavedChanges } from "../lib/listingEditor";
 import { uploadImage } from "../lib/uploads";
 
 
 function PostSale() {
+  const { user, loading } = useAuth();
+  if (loading) return <main className="post-sale-page">Loading…</main>;
+  if (!user) return <main className="post-sale-page">Please log in to post a listing.</main>;
+  return <PostSaleForm key={user.id} ownerId={user.id} />;
+}
+
+function PostSaleForm({ ownerId }) {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
@@ -21,21 +30,26 @@ function PostSale() {
 
   const [images, setImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+  const activeRef = useRef(false);
+  useEffect(() => {
+    activeRef.current = true;
+    return () => { activeRef.current = false; };
+  }, []);
+  const [message, setMessage] = useState("");
+  const draft = { title, price, brand, condition, description, pickup, shipping };
+  const { ready: draftReady, clear: clearDraft } = useListingDraft("product", ownerId, draft, (saved) => {
+    setTitle(saved.title || ""); setPrice(saved.price || ""); setBrand(saved.brand || "");
+    setCondition(saved.condition || ""); setDescription(saved.description || "");
+    setPickup(saved.pickup !== false); setShipping(Boolean(saved.shipping));
+  });
+  useUnsavedChanges(Boolean(title || price || brand || condition || description || images.length));
 
   const handleImageUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    const invalidFile = selectedFiles.find(
-      (file) =>
-        !allowedTypes.includes(file.type) ||
-        file.size > 5 * 1024 * 1024
-    );
-
-    if (invalidFile) {
-      alert(
-        "Each image must be a JPEG, PNG, or WebP file no larger than 5 MB."
-      );
+    if (!validImages(selectedFiles)) {
+      setMessage("Each image must be a JPEG, PNG, or WebP file no larger than 5 MB.");
       e.target.value = "";
       return;
     }
@@ -57,7 +71,7 @@ function PostSale() {
             src: reader.result,
             file,
           },
-        ]);
+        ].slice(0, 8));
       };
 
       reader.readAsDataURL(file);
@@ -75,40 +89,12 @@ function PostSale() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (submitting) return;
-
+    if (submittingRef.current) return;
     const numericPrice = Number(price);
-
-    if (!title.trim()) {
-      alert("Please enter a title.");
-      return;
-    }
-
-    if (price === "" || !Number.isFinite(numericPrice) || numericPrice < 0) {
-      alert("Please enter a valid, non-negative price.");
-      return;
-    }
-
-    if (!condition) {
-      alert("Please select a condition.");
-      return;
-    }
-
-    if (!description.trim()) {
-      alert("Please enter a description.");
-      return;
-    }
-
-    if (images.length === 0) {
-      alert("Please upload at least one image.");
-      return;
-    }
-
-    if (!pickup && !shipping) {
-      alert("Please choose pickup, shipping, or both.");
-      return;
-    }
-
+    const validation = validateProduct(draft) || (images.length === 0 ? "Please upload at least one image." : "");
+    if (validation) { setMessage(validation); return; }
+    setMessage("");
+    submittingRef.current = true;
     setSubmitting(true);
 
     try {
@@ -117,17 +103,25 @@ function PostSale() {
         error: userError,
       } = await supabase.auth.getUser();
 
-      if (userError || !user) {
+      if (!activeRef.current) return;
+      if (userError || user?.id !== ownerId) {
         console.error("Unable to verify sale owner:", userError);
-        alert("Your session has expired. Please log in again.");
+        setMessage("Your session has expired. Please log in again.");
         navigate("/login?redirect=/post-sale", { replace: true });
         return;
       }
 
       const imageUrls = [];
       for (const image of images) {
+        const { data: uploadAuth, error: uploadAuthError } = await supabase.auth.getUser();
+        if (!activeRef.current) return;
+        if (uploadAuthError || uploadAuth.user?.id !== ownerId) throw new Error("Your session has changed. Please log in again.");
         imageUrls.push(await uploadImage(image.file, 'products'));
       }
+
+      const { data: currentAuth, error: currentAuthError } = await supabase.auth.getUser();
+      if (!activeRef.current) return;
+      if (currentAuthError || currentAuth.user?.id !== user.id) throw new Error("Your session has changed. Please log in again.");
 
       const { data: insertedProduct, error: insertError } = await supabase
         .from("products")
@@ -145,22 +139,27 @@ function PostSale() {
         .select()
         .single();
 
+      if (!activeRef.current) return;
       if (insertError) {
         console.error("Product insert failed:", insertError);
-        alert(insertError.message);
+        setMessage("Unable to post your sale. Please try again.");
         return;
       }
+      if (!insertedProduct?.id) throw new Error("The listing could not be confirmed.");
+      clearDraft();
       window.dispatchEvent(
         new CustomEvent("yardSailorProductsUpdated", {
           detail: insertedProduct,
         })
       );
-      navigate("/");
+      navigate(`/products/${insertedProduct.id}`, { state: { confirmation: "Your listing was posted." } });
     } catch (error) {
+      if (!activeRef.current) return;
       console.error("Unexpected error while posting sale:", error);
-      alert("Unable to post your sale. Please try again.");
+      setMessage("Unable to post your sale. Please try again.");
     } finally {
-      setSubmitting(false);
+      submittingRef.current = false;
+      if (activeRef.current) setSubmitting(false);
     }
   };
 
@@ -179,6 +178,8 @@ function PostSale() {
         </div>
 
         <form className="post-sale-form" onSubmit={handleSubmit}>
+          <fieldset disabled={!draftReady} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+          {message && <p role="alert" className="listing-message">{message}</p>}
           <div className="form-section">
             <div className="section-heading">
               <h2>Photos</h2>
@@ -261,7 +262,7 @@ function PostSale() {
                 name="brand"
                 placeholder="Brand (optional)"
                 value={brand}
-                maxLength={60}
+                maxLength={100}
                 onChange={(e) => setBrand(e.target.value)}
               />
             </div>
@@ -388,6 +389,7 @@ function PostSale() {
               {submitting ? "Posting..." : "Post Sale"}
             </button>
           </div>
+          </fieldset>
         </form>
       </div>
     </main>

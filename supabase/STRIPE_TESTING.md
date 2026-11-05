@@ -22,9 +22,16 @@ migrations in order, once only:
 1. `202609070001_product_cart_messages.sql`
 2. `202609070002_security_hardening.sql` (see HARDENING.md)
 3. `202609070003_stripe_test_checkout.sql`
+4. `202609080004_saved_products.sql`
+5. `20261105022739_profile_privacy_repair.sql`
+6. `20261105022740_checkout_recovery_protocol.sql`
+
+Before the checkout recovery migration and compatible handler deployment, disable
+and drain both buyer endpoints as described in Recovery protocol rollout below.
+Keep webhook processing available or arrange redelivery.
 
 Use Supabase Dashboard → SQL Editor, or your reviewed migration deployment process.
-Do not rerun 001/002 if already applied. Migration 003 creates checkout_orders,
+Do not blindly rerun migrations already applied; inspect migration history first. The checkout recovery migration is intended to run once. Migration 003 creates checkout_orders,
 checkout_order_items, checkout_inventory and checkout_webhook_events, plus narrow
 RPCs. It does not create another cart or change yard-sale events. Existing order
 tables with those names cause the migration to fail/roll back; reconcile them first.
@@ -131,8 +138,11 @@ secure-image-upload function/setup from HARDENING.md is still needed for uploads
    checkout** on Orders. This explicitly expires the session through Stripe before
    releasing inventory. Verify expired state and that another buyer can buy it.
    Merely closing the browser does not cancel a Stripe session.
-8. Test natural expiration (45-minute expiry requested), its signed expired event,
-   and release. Try duplicate clicks, network interruption, and simultaneous buyers.
+8. Test that accessing an open session after the nominal 45-minute deadline
+   requests expiration and reconciles its current Stripe state. Separately test
+   unattended natural provider expiration (up to 23 hours after dispatch), its
+   signed expired event, and release. Try duplicate clicks, network interruption,
+   and simultaneous buyers.
 9. Test 3DS with **4000 0025 0000 3155**, and decline with
    **4000 0000 0000 0002**. An unsuccessful payment must not mark inventory sold.
 10. In Orders, verify buyers see their full orders; each seller sees only their
@@ -181,17 +191,17 @@ the application to test the full association.
 - Event ledger insertion, paid state, inventory and cart updates are atomic.
   Different duplicate events cannot fulfill twice; late expiry cannot undo paid.
   Failures return non-2xx for Stripe retry and log only event ID/type.
-- Expiration never releases a hold based solely on a local clock, browser redirect,
-  or failed API call. Stripe must confirm expiry. Orders → Check payment status
-  provides authenticated server-side recovery if webhook delivery is delayed.
-- **Rare ambiguous creation:** if Stripe created a session but its response/binding
-  was lost, Resume/Cancel retries the original idempotency key. If the request was
-  never created and its fixed expiry is now too close/past, or Stripe has pruned
-  the idempotency cache, recovery may require operator review. The item remains
-  held rather than risking double sale. Inspect Stripe test sessions/events using
-  metadata order_id before binding/expiring and reconciling. Never manually release
-  an ambiguous reservation without ruling out an accepted payment/open session.
-  Operational alerts/automatic stale-order reconciliation are still deployment work.
+- A v2 order proven never dispatched may be released under its row lock on cancel
+  or after its nominal deadline. Attempted and legacy orders require verified Stripe
+  expiry before release. A browser redirect, failed API call, or age alone cannot
+  establish that an attempted session is safe to release. Orders → Check payment
+  status provides authenticated recovery if webhook delivery is delayed.
+- For attempted v2 orders, recovery uses the frozen payload and same key before
+  the 22-hour cutoff. The pinned provider expiry is 23 hours after first dispatch.
+  At or after the cutoff, unbound orders require operator review and remain held.
+  Legacy unbound orders are ambiguous and also require review; their old fixed
+  45-minute provider expiry may have made a delayed first request invalid, but
+  does not prove no earlier request succeeded. See the operating procedure below.
 
 ## Stripe Connect and live-mode prerequisites (not implemented)
 
@@ -215,14 +225,19 @@ isolation, and repeat payment/race/security tests before accepting real funds.
   seller privacy and order transitions. This is not a production concurrency test.
 - `tests/stripe-checkout.mjs`: 32 checks passed using both Node and worker SDK builds; actual handler with real official SDK signing checks;
   mocked Stripe API/DB calls. No network payment is performed.
+- Recovery database and handler tests exercise the migrated SQL, frozen retries,
+  provider state and service-only access. Their ordered interleavings do not prove
+  behavior under true concurrent database transactions.
 - Existing cart/messaging/hardening suite: 45 checks passed with all three migrations.
 - Vite build and Edge Function syntax transform passed. Existing large-bundle warning remains.
 
 Run with test-only dependencies installed outside the app:
 
 ```sh
-node tests/payments-db.mjs /tmp/yard-sailor-db-check/node_modules/@electric-sql/pglite/dist/index.js
-node tests/stripe-checkout.mjs /tmp/yard-sailor-payments-test/node_modules/stripe/esm/stripe.esm.node.js
+node tests/payments-db.mjs /absolute/path/to/external/node_modules/@electric-sql/pglite/dist/index.js
+node tests/checkout-recovery-db.mjs /absolute/path/to/external/node_modules/@electric-sql/pglite/dist/index.js
+node tests/checkout-recovery-handler.mjs /absolute/path/to/external/node_modules/@electric-sql/pglite/dist/index.js
+node tests/stripe-checkout.mjs /absolute/path/to/external/node_modules/stripe/esm/stripe.esm.node.js
 npm run build
 ```
 
@@ -237,3 +252,15 @@ References: [API keys](https://docs.stripe.com/keys),
 [webhook verification](https://docs.stripe.com/webhooks?lang=node),
 [test cards](https://docs.stripe.com/testing),
 [marketplace Connect](https://docs.stripe.com/connect/marketplace).
+
+### Recovery protocol rollout and operations
+
+This additive migration and the compatible create, manage, and webhook handlers must be deployed together. Disable ingress to **both** create-checkout-session and manage-checkout, then drain all old in-flight executions and retries before applying the migration and deploying the new handlers. The create feature flag alone does not disable manage. Keep webhook processing available, or arrange Stripe event redelivery. Restore ingress only after every old mutating handler has drained and the Stripe test account and API version have been verified. A migration by itself does not make old handlers safe.
+
+For rollback, disable and drain both endpoints, stop issuing sessions, and retain the new schema and compatible reconciliation/webhook handlers for existing v2 orders. Do not restore old handlers while v2 orders exist. Do not truncate or force-expire pending orders.
+
+The 45-minute order deadline is nominal: on access, the handler requests expiration and reconciles the current Stripe state. An unattended issued session can remain payable and hold inventory until its pinned provider expiry, up to 23 hours after dispatch. Verified payment is honored even after the nominal deadline. A never-dispatched v2 reservation can be released on cancellation or opportunistically after its nominal deadline; attempted and legacy reservations cannot be released merely due to age.
+
+A `checkout_review_required` response includes the order ID. An operator should inspect the correct Stripe test account's request logs and events for that order and its `yard-sailor-test-checkout:<order ID>` idempotency key, identify any matching session, and verify its payment status through the compatible reconciliation path. No matching dashboard entry or webhook alone proves non-creation. Retain the inventory when evidence is inconclusive; do not use a blind release. Any supervised database repair requires authoritative proof, explicit operational authorization, and a fresh locked check of the unchanged order and its reservations. Legacy unbound orders are held for the same review. Retries stop creating sessions after 22 hours; the immutable 23-hour Stripe expiry also prevents a stale request from creating a session after the idempotency retention period.
+
+Cancellation can start just after a resume response's final state check, so a browser may briefly receive a previously valid URL. Cancellation still expires the provider session and reconciles its authoritative state; the URL does not itself release inventory or guarantee a payment can proceed. If payment wins the race, verified payment is applied.

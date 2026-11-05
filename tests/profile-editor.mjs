@@ -21,10 +21,6 @@ const client = createClient('https://profile-fixture.supabase.co', 'public-place
       }
       assert.equal(options.method, 'POST');
       const profile = JSON.parse(options.body);
-      // Reproduce the live schema's NOT NULL constraint for newly created profiles.
-      if (!profile.email) {
-        return Response.json({ code: '23502', message: 'email must not be null' }, { status: 400 });
-      }
       writes.push(profile);
       assert.equal(url.searchParams.get('select'), 'username,avatar_url');
       return Response.json({ username: profile.username, avatar_url: profile.avatar_url });
@@ -36,13 +32,13 @@ client.auth.getUser = async () => ({ data: { user }, error: null });
 const result = await savePublicProfile(client, user.id, {
   username: ' sailor_123 ', avatar_url: '', email: 'untrusted@example.invalid',
 });
-assert.deepEqual(writes[0], { id: user.id, email: user.email, username: 'sailor_123', avatar_url: '' });
+assert.deepEqual(writes[0], { id: user.id, username: 'sailor_123', avatar_url: '' });
 assert.deepEqual(result, { username: 'sailor_123', avatar_url: '' });
-console.log('PASS new Google profile supplies verified email and returns only public fields');
+console.log('PASS new Google profile sends and returns only public fields');
 
 await savePublicProfile(client, user.id, { username: 'updated_sailor', avatar_url: '' });
-assert.equal(writes[1].email, user.email);
-console.log('PASS existing profile saves retain the verified account email');
+assert.equal(Object.hasOwn(writes[1], 'email'), false);
+console.log('PASS existing profile saves omit private email');
 
 await assert.rejects(savePublicProfile(client, user.id, { username: 'bad name', avatar_url: '' }), /3–20/);
 client.auth.getUser = async () => ({ data: { user: { ...user, id: 'different-user' } }, error: null });

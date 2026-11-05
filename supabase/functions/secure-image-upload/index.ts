@@ -1,13 +1,23 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.110.6';
 import * as magick from 'npm:@imagemagick/magick-wasm@0.0.43';
 import { boundedBody, configureLimits, reencodeImage } from './image.js';
+import bundledOrigins from './allowed-origins.json' with { type: 'json' };
 
 const wasm = await Deno.readFile(new URL('x86/magick.wasm', import.meta.resolve('npm:@imagemagick/magick-wasm@0.0.43')));
 await magick.initializeImageMagick(wasm);
 configureLimits(magick);
 const url = Deno.env.get('SUPABASE_URL')!;
 const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession:false, autoRefreshToken:false } });
-const origins = (Deno.env.get('ALLOWED_ORIGINS') || '').split(',').map(s => s.trim()).filter(Boolean);
+// An explicitly configured value replaces the bundled public origins entirely.
+const configuredOrigins = Deno.env.get('ALLOWED_ORIGINS');
+const candidateOrigins: unknown = configuredOrigins === undefined ? bundledOrigins : configuredOrigins.split(',');
+const origins: string[] = Array.isArray(candidateOrigins) && candidateOrigins.length > 0 && candidateOrigins.every(value => {
+  if (typeof value !== 'string' || value.includes('*')) return false;
+  try {
+    const parsed = new URL(value);
+    return (parsed.protocol === 'http:' || parsed.protocol === 'https:') && parsed.origin === value;
+  } catch { return false; }
+}) ? candidateOrigins : [];
 Deno.serve(async req => {
   const origin = req.headers.get('origin') || '';
   const headers = { 'Access-Control-Allow-Origin':origins.includes(origin) ? origin : '', 'Vary':'Origin',

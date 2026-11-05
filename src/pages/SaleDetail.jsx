@@ -1,12 +1,13 @@
 import { saleStatusLabel } from "../utils/saleTime";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { calculateDistanceMiles, requestUserLocation } from "../utils/location";
 import "./SaleDetail.css";
 
 function SaleDetail() {
   const { id } = useParams();
+  const location = useLocation();
   const [sale, setSale] = useState(null);
   const [seller, setSeller] = useState(null);
   const [distance, setDistance] = useState(null);
@@ -50,6 +51,7 @@ function SaleDetail() {
           {images.length > 1 && <div className="yard-sale-thumbnails">{images.map((image, index) => <button type="button" className={index === imageIndex ? "selected" : ""} key={image} onClick={() => setImageIndex(index)} aria-label={`Show yard sale image ${index + 1}`}><img src={image} alt={`${sale.title} thumbnail ${index + 1}`} /></button>)}</div>}
         </section>
         <section className="yard-sale-detail-card">
+          {location.state?.confirmation === "Your yard sale was posted." && <p role="status">Your yard sale was posted.</p>}
           <p className="yard-sale-detail-eyebrow">YARD SALE</p>
           <h1>{sale.title}</h1>
           {distance != null && <p className="yard-sale-distance">{distance.toFixed(1)} miles away</p>}

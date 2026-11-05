@@ -31,7 +31,13 @@ grant execute on function public.consume_image_upload_budget(uuid) to service_ro
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 values('validated-images','validated-images',true,5242880,array['image/jpeg']);
 -- Restrictive policies constrain even previously broad permissive policies.
-alter table storage.objects enable row level security;
+-- Managed storage already owns this table; require its RLS without altering it.
+do $$
+begin
+ if not coalesce((select relrowsecurity from pg_class where oid=to_regclass('storage.objects')),false) then
+  raise exception 'Storage objects row level security must already be enabled.';
+ end if;
+end $$;
 create policy validated_image_insert_gate on storage.objects as restrictive for insert to anon,authenticated
  with check(bucket_id not in ('sale-images','avatars','validated-images'));
 create policy validated_image_update_gate on storage.objects as restrictive for update to anon,authenticated

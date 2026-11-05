@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SaleMap from "../components/SaleMap";
-import { getSaleStatus, saleStatusLabel } from "../utils/saleTime";
+import { getSaleStatus, saleOverlapsLocalWindow, saleStatusLabel } from "../utils/saleTime";
 import useSaleClock from "../utils/useSaleClock";
 import { supabase } from "../lib/supabase";
 import {
@@ -12,27 +12,6 @@ import {
   requestUserLocation,
 } from "../utils/location";
 import "./FindYardSale.css";
-
-function isToday(value) {
-  if (!value) return false;
-  const date = new Date(value);
-  const today = new Date();
-  return date.toDateString() === today.toDateString();
-}
-
-function isThisWeekend(value) {
-  if (!value) return false;
-  const date = new Date(value);
-  const now = new Date();
-  const day = now.getDay();
-  const daysUntilSaturday = (6 - day + 7) % 7;
-  const saturday = new Date(now);
-  saturday.setHours(0, 0, 0, 0);
-  saturday.setDate(now.getDate() + daysUntilSaturday);
-  const monday = new Date(saturday);
-  monday.setDate(saturday.getDate() + 2);
-  return date >= saturday && date < monday;
-}
 
 function FindYardSale() {
   const navigate = useNavigate();
@@ -45,7 +24,11 @@ function FindYardSale() {
   const [selectionRequest, setSelectionRequest] = useState(0);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
+  const [view, setView] = useState("list");
+  const [locationLabel, setLocationLabel] = useState("");
   const [loading, setLoading] = useState(true);
+  const [salesError, setSalesError] = useState(false);
+  const [salesRetry, setSalesRetry] = useState(0);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
 
@@ -57,9 +40,9 @@ function FindYardSale() {
         .in("status", ["upcoming", "live"])
         .order("start_time", { ascending: true });
 
+      setSalesError(Boolean(salesError));
       if (salesError) {
         console.error("Unable to load yard sales:", salesError);
-        setError("Unable to load yard sales. Please try again.");
       } else {
         setSales((data || []).filter((sale) => hasValidCoordinates(sale.lat, sale.lng)));
       }
@@ -71,17 +54,18 @@ function FindYardSale() {
       if (location) {
         setOrigin(location);
         setMapCenter(location);
+        setLocationLabel("Your location");
       }
     });
     window.addEventListener("yardSailorYardSalesUpdated", loadSales);
     return () => window.removeEventListener("yardSailorYardSalesUpdated", loadSales);
-  }, []);
+  }, [salesRetry]);
 
   const displayedSales = useMemo(() => {
     const filtered = sales.filter((sale) => {
       if (!["upcoming", "live"].includes(getSaleStatus(sale, now))) return false;
-      if (filter === "today") return isToday(sale.start_time);
-      if (filter === "weekend") return isThisWeekend(sale.start_time);
+      if (filter === "today") return saleOverlapsLocalWindow(sale, "today", now);
+      if (filter === "weekend") return saleOverlapsLocalWindow(sale, "weekend", now);
       return true;
     });
 
@@ -108,6 +92,7 @@ function FindYardSale() {
       const location = { latitude: result.latitude, longitude: result.longitude };
       setOrigin(location);
       setMapCenter(location);
+      setLocationLabel(result.placeName || query.trim());
       setSelectedSaleId(null);
     } catch (searchError) {
       console.error("Location search failed:", searchError);
@@ -118,7 +103,7 @@ function FindYardSale() {
   }
 
   async function useMyLocation() {
-    const location = await requestUserLocation();
+    const location = await requestUserLocation({ refresh: true });
     if (!location) {
       setError("Location is unavailable. You can still search by city, ZIP code, or address.");
       return;
@@ -126,19 +111,24 @@ function FindYardSale() {
     setError("");
     setOrigin(location);
     setMapCenter(location);
+    setLocationLabel("Your location");
     setSelectedSaleId(null);
   }
 
+  useEffect(() => {
+    if (!selectionRequest || view !== "map") return;
+    const map = mapSectionRef.current;
+    if (!map) return;
+    const bounds = map.getBoundingClientRect();
+    if (bounds.top < 0 || bounds.bottom > window.innerHeight) {
+      map.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    }
+  }, [view, selectionRequest]);
+
   function selectSale(sale) {
+    setView("map");
     setSelectedSaleId(sale.id);
     setSelectionRequest(value => value + 1);
-    const map = mapSectionRef.current;
-    if (map) {
-      const bounds = map.getBoundingClientRect();
-      if (bounds.top < 0 || bounds.bottom > window.innerHeight) {
-        map.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-      }
-    }
   }
 
   return (
@@ -154,17 +144,18 @@ function FindYardSale() {
       </div>
 
       <div className="yard-sale-filters" aria-label="Yard sale date filters">
-        <button className={filter === "all" ? "selected" : ""} onClick={() => setFilter("all")}>All Yard Sales</button>
-        <button className={filter === "today" ? "selected" : ""} onClick={() => setFilter("today")}>Today</button>
-        <button className={filter === "weekend" ? "selected" : ""} onClick={() => setFilter("weekend")}>This Weekend</button>
+        <button aria-pressed={filter === "all"} className={filter === "all" ? "selected" : ""} onClick={() => setFilter("all")}>All Yard Sales</button>
+        <button aria-pressed={filter === "today"} className={filter === "today" ? "selected" : ""} onClick={() => setFilter("today")}>Today</button>
+        <button aria-pressed={filter === "weekend"} className={filter === "weekend" ? "selected" : ""} onClick={() => setFilter("weekend")}>This Weekend</button>
       </div>
 
+      <div className="yard-sale-summary"><p role="status">{loading ? "Loading yard sales…" : `${displayedSales.length} ${displayedSales.length === 1 ? "yard sale" : "yard sales"}`} {locationLabel && `near ${locationLabel}`}</p><div className="yard-sale-view-toggle" aria-label="Results view"><button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button><button type="button" aria-pressed={view === "map"} onClick={() => setView("map")}>Map</button></div></div>
       <p className="yard-sale-map-hint">Choose a numbered pin or select “Show on map” to explore a sale. The list includes all matching sales, even outside the current map view.</p>
-      <div className="find-yard-sale-layout">
+      <div className={`find-yard-sale-layout view-${view}`}>
         <div className="yard-sale-map-container" ref={mapSectionRef}><SaleMap sales={displayedSales} selectedSaleId={selectedSaleId} selectionRequest={selectionRequest} onSelectSale={setSelectedSaleId} center={mapCenter} className="find-yard-sale-map" /></div>
         <aside className="yard-sale-results">
           <div className="yard-sale-results-heading"><h2>Yard Sale Results</h2><span>{displayedSales.length}</span></div>
-          {loading ? <p className="yard-sale-results-message">Loading yard sales...</p> : displayedSales.length === 0 ? <p className="yard-sale-results-message">No yard sales match this search or filter.</p> : displayedSales.map((sale, index) => (
+          {loading ? <p className="yard-sale-results-message">Loading yard sales...</p> : salesError ? <p className="yard-sale-results-message">Unable to load yard sales. <button type="button" onClick={() => { setLoading(true); setSalesRetry(value => value + 1); }}>Try again</button></p> : displayedSales.length === 0 ? <p className="yard-sale-results-message">No yard sales match this search or filter.</p> : displayedSales.map((sale, index) => (
             <article key={sale.id} className={`yard-sale-result-card ${sale.id === selectedSaleId ? "selected" : ""}`}>
               <span className="yard-sale-result-number" aria-label={`Map pin ${index + 1}`}>{index + 1}</span>
               <div className="yard-sale-result-image">{sale.images?.[0] ? <img src={sale.images[0]} alt={sale.title} /> : <span>Yard Sale</span>}</div>

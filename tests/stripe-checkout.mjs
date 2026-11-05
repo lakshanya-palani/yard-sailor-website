@@ -6,7 +6,7 @@ import {createPaymentHandlers,validateConfiguration,verifySession,verifyIntent} 
 const {default:Stripe}=await import(pathToFileURL(process.argv[2]).href);
 const stripe=new Stripe('sk_test_offline_fixture');const secret=`whsec_${crypto.randomUUID()}`;
 const buyer=crypto.randomUUID(),other=crypto.randomUUID(),product=crypto.randomUUID(),orderId=crypto.randomUUID();
-const order={id:orderId,buyer_id:buyer,amount_total:2550,currency:'usd',state:'creating',stripe_session_id:null,expires_at:new Date(Date.now()+2700000).toISOString()};
+const order={id:orderId,buyer_id:buyer,amount_total:2550,currency:'usd',state:'creating',stripe_session_id:null,protocol:2,first_dispatch_at:null,frozen_create_params:null,cancel_requested:false,expires_at:new Date(Date.now()+2700000).toISOString()};
 const metadata={app:'yard_sailor_test',order_id:orderId,buyer_id:buyer};
 const intent={id:'pi_fixture',livemode:false,status:'succeeded',amount:2550,amount_received:2550,currency:'usd',metadata};
 let session={id:'cs_test_fixture',livemode:false,mode:'payment',metadata,client_reference_id:orderId,amount_total:2550,currency:'usd',status:'open',payment_status:'unpaid',payment_intent:null,url:'https://checkout.stripe.com/c/pay/cs_test_fixture'};
@@ -17,7 +17,14 @@ stripe.checkout.sessions.expire=async()=>{if(expireFails)throw new Error('Concur
 stripe.paymentIntents.retrieve=async()=>structuredClone(intent);
 const admin={auth:{getUser:async token=>token==='buyer'?{data:{user:{id:buyer}}}:token==='other'?{data:{user:{id:other}}}:{data:{user:null},error:{}}},
  rpc:async(name,args)=>{
-  if(name==='reserve_test_checkout'){reservations.push(args);return {data:orderId};}
+  if(name==='reserve_test_checkout_v2'){reservations.push(args);return {data:orderId};}
+  if(name==='prepare_test_checkout'){
+   if(['paid','expired'].includes(order.state))return {data:{kind:'terminal',state:order.state}};
+   if(args.p_action==='cancel')order.cancel_requested=true;
+   if(order.stripe_session_id)return {data:{kind:'bound',session_id:order.stripe_session_id}};
+   if(!order.first_dispatch_at){order.first_dispatch_at=new Date().toISOString();order.frozen_create_params={...args.p_params,expires_at:Math.floor(Date.now()/1000)+23*3600};}
+   return {data:{kind:'dispatch',params:order.frozen_create_params,db_time:new Date().toISOString(),cutoff:new Date(Date.now()+22*3600000).toISOString()}};
+  }
   if(name==='bind_test_checkout'){order.stripe_session_id=args.p_session;order.state='open';return {data:null};}
   if(name==='apply_test_checkout'){applied.push(args);return {data:args.p_result};}
   throw new Error('Unexpected RPC');

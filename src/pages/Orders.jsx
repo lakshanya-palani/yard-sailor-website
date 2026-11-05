@@ -6,14 +6,18 @@ import { useCart } from '../context/CartContext';
 import './Commerce.css';
 const labels={creating:'Preparing test checkout',open:'Awaiting test payment',paid:'Test payment confirmed',expired:'Checkout expired or cancelled'};
 export default function Orders() {
+  const {userId}=useCart();
+  return <OrdersForUser key={userId ?? 'signed-out'} />;
+}
+function OrdersForUser() {
   const [orders,setOrders]=useState([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');const [busy,setBusy]=useState(null);
-  const [params]=useSearchParams();const navigate=useNavigate();const {refresh,userId}=useCart();const checked=useRef(null);
-  const load=useCallback(async()=>{try {setOrders(await rpc('list_my_checkout_orders'));setError('');}catch(e){setError(commerceError(e));}finally{setLoading(false);}},[userId]);
-  useEffect(()=>{load();const poll=setInterval(()=>{if(document.visibilityState==='visible')load();},5000);return()=>clearInterval(poll);},[load]);
+  const [params]=useSearchParams();const navigate=useNavigate();const {refresh}=useCart();const checked=useRef(null);const version=useRef(0);const active=useRef(false);
+  const load=useCallback(async()=>{const current=++version.current;try {const rows=await rpc('list_my_checkout_orders');if(current===version.current){setOrders(rows);setError('');}}catch(e){if(current===version.current)setError(commerceError(e));}finally{if(current===version.current)setLoading(false);}},[]);
+  useEffect(()=>{const generation=version;active.current=true;const initial=setTimeout(load,0);const poll=setInterval(()=>{if(document.visibilityState==='visible')load();},5000);return()=>{active.current=false;generation.current++;clearTimeout(initial);clearInterval(poll);};},[load]);
   const act=useCallback(async(id,action)=>{
     setBusy(id);setError('');
-    try {const result=await manageCheckout(id,action);if(action==='resume' && result.url)checkoutDestination(result,navigate);await load();await refresh();}
-    catch(e){setError(e instanceof PaymentError?e.message:commerceError(e));}finally{setBusy(null);}
+    try {const result=await manageCheckout(id,action);if(!active.current)return;if(action==='resume' && result.url)checkoutDestination(result,navigate);await load();if(active.current)await refresh();}
+    catch(e){if(active.current)setError(e instanceof PaymentError?e.message:commerceError(e));}finally{if(active.current)setBusy(null);}
   },[load,navigate,refresh]);
   const orderId=params.get('order');
   useEffect(()=>{if(params.get('checkout')==='success' && orderId && checked.current!==orderId){checked.current=orderId;act(orderId,'refresh');}},[params,orderId,act]);

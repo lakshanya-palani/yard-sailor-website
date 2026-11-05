@@ -21,6 +21,7 @@ create table products(id uuid primary key,user_id uuid references auth.users(id)
 create table profiles(id uuid primary key references auth.users(id),username text,avatar_url text,email text,updated_at timestamptz);
 create table sales(id uuid primary key,host_id uuid,title text,description text,address text,start_time timestamptz,end_time timestamptz,lat numeric,lng numeric,images text[]);
 create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid,bucket_id text,name text);
+alter table storage.objects enable row level security;
 grant all on products,profiles,sales to authenticated;create policy old_products on products for all to authenticated using(true) with check(true);create policy old_profiles on profiles for all to authenticated using(true) with check(true);create policy old_sales on sales for all to authenticated using(true) with check(true);
 insert into auth.users(id) values('${seller}'),('${buyer}'),('${other}'),('${seller2}');
 insert into products(id,user_id,title,price,image_urls) values('${product}','${seller}','Chair',25.50,array['/chair.jpg']),('${product2}','${seller2}','Table',30,array['/table.jpg']);

@@ -1,12 +1,13 @@
 import { supabase } from './supabase';
-export class PaymentError extends Error {}
+export class PaymentError extends Error { constructor(message,details={}) { super(message); this.code=details.code; this.orderId=details.orderId; } }
 const attempts=new Map();
 async function invoke(name,body) {
   const {data,error}=await supabase.functions.invoke(name,{body});
   if(error) {
     let message='Test checkout is unavailable. Please check Orders before retrying.';
-    try {const details=await error.context?.json();if(typeof details?.error==='string')message=details.error;}catch { /* Generic feedback for network/gateway errors. */ }
-    throw new PaymentError(message);
+    let details={};
+    try {details=await error.context?.json()||{};if(typeof details.error==='string')message=details.error;}catch { /* Generic feedback for network/gateway errors. */ }
+    throw new PaymentError(message,details);
   }
   return data;
 }

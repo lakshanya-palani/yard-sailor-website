@@ -4,13 +4,36 @@ import { readFile } from 'node:fs/promises';
 import { transformWithOxc } from 'vite';
 import { boundedBody, MAX_BYTES } from '../supabase/functions/secure-image-upload/image.js';
 let source=await readFile(new URL('../supabase/functions/secure-image-upload/index.ts',import.meta.url),'utf8');
+const bundledOrigins=JSON.parse(await readFile(new URL('../supabase/functions/secure-image-upload/allowed-origins.json',import.meta.url),'utf8'));
 source=source.replace(/^import .*;\n/gm,'').replace(/const wasm =[\s\S]*?configureLimits\(magick\);/,'');
 const {code}=await transformWithOxc(source,'index.ts');
 let handler; let budget=true; const stored=[]; const records=[];
 const admin={auth:{getUser:async token=>token==='valid'?{data:{user:{id:'owner-uuid'}},error:null}:{data:{user:null},error:{}}},rpc:async()=>({data:budget,error:null}),storage:{from:()=>({upload:async(path,bytes,options)=>{stored.push({path,bytes,options});return {error:null};},getPublicUrl:path=>({data:{publicUrl:`https://storage.example/${path}`}}),remove:async()=>({error:null})})},from:()=>({insert:async value=>{records.push(value);return {error:null};}})};
-const Deno={env:{get:key=>key==='ALLOWED_ORIGINS'?'https://yardsailor.example':'server-only'},serve:fn=>{handler=fn;}};
-await new Function('createClient','boundedBody','reencodeImage','magick','Deno',code)(()=>admin,boundedBody,()=>new Uint8Array([255,216,255]),{},Deno);
+async function makeHandler(config, fallback=bundledOrigins) {
+  let result;
+  const Deno={env:{get:key=>key==='ALLOWED_ORIGINS'?config:'server-only'},serve:fn=>{result=fn;}};
+  await new Function('createClient','boundedBody','reencodeImage','magick','Deno','bundledOrigins',code)(()=>admin,boundedBody,()=>new Uint8Array([255,216,255]),{},Deno,fallback);
+  return result;
+}
+handler=await makeHandler('https://yardsailor.example');
 const request=(token,origin='https://yardsailor.example',body=new Uint8Array([1]),kind='avatars')=>new Request('https://edge.example',{method:'POST',headers:{...(token?{authorization:`Bearer ${token}`} : {}),origin,'x-upload-kind':kind},body});
+assert.deepEqual(bundledOrigins,['http://localhost:5174']);
+const fallbackHandler=await makeHandler(undefined);
+assert.equal((await fallbackHandler(request(null,'http://localhost:5174'))).status,401);
+assert.equal((await fallbackHandler(request(null,'http://localhost:5173'))).status,403);
+assert.equal((await handler(request(null,'http://localhost:5174'))).status,403);
+assert.equal((await handler(request(null,'https://sub.yardsailor.example'))).status,403);
+assert.equal((await handler(request(null,'https://yardsailor.example.evil'))).status,403);
+for (const invalid of ['', 'https://yardsailor.example/', 'https://yardsailor.example/path', 'https://yardsailor.example?x=1', 'https://yardsailor.example#x', 'https://user@yardsailor.example', 'https://*.example', 'null', 'https://EXAMPLE.com', 'https://example.com:443', ' https://example.com', 'https://example.com,']) {
+  const invalidHandler=await makeHandler(invalid);
+  assert.equal((await invalidHandler(request(null,'http://localhost:5174'))).status,503,`invalid config: ${invalid}`);
+}
+for (const invalidFallback of [[], ['http://localhost:5174/'], ['http://localhost:5174', null], null]) {
+  const invalidHandler=await makeHandler(undefined,invalidFallback);
+  assert.equal((await invalidHandler(request(null,'http://localhost:5174'))).status,503);
+}
+const multiple=await makeHandler('https://yardsailor.example,http://localhost:5174');
+assert.equal((await multiple(request(null,'http://localhost:5174'))).status,401);
 assert.equal((await handler(request(null))).status,401);
 assert.equal((await handler(request('forged'))).status,401);
 assert.equal((await handler(request('valid','https://evil.example'))).status,403);

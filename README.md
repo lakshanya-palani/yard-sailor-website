@@ -1,16 +1,11 @@
-# React + Vite
+# Yard Sailor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Local setup
 
-Currently, two official plugins are available:
+1. Run `npm install`.
+2. Copy `.env.example` to `.env.local` and add the browser-safe Supabase project URL and publishable (or legacy anon) key. Add the public Mapbox token for map features. Never put service credentials in frontend environment files.
+3. Run `npm run dev` and open [http://localhost:5174](http://localhost:5174). The server uses this port strictly and will report an error if it is already in use.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Payments are disabled by default. A Supabase administrator must allow the exact redirect URL `http://localhost:5174/auth/callback` for local authentication.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The image upload function bundles a public origin list that includes `http://localhost:5174`; a configured `ALLOWED_ORIGINS` environment variable takes precedence over that bundled list. See [deployment readiness](docs/DEPLOYMENT_READINESS.md) for backend configuration, deployment requirements, and verification steps.
