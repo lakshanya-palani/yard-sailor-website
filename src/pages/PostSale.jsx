@@ -22,6 +22,7 @@ function PostSaleForm({ ownerId }) {
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [brand, setBrand] = useState("");
+  const [category, setCategory] = useState("");
   const [condition, setCondition] = useState("");
   const [description, setDescription] = useState("");
 
@@ -37,13 +38,10 @@ function PostSaleForm({ ownerId }) {
     return () => { activeRef.current = false; };
   }, []);
   const [message, setMessage] = useState("");
-  const draft = { title, price, brand, condition, description, pickup, shipping };
-  const { ready: draftReady, clear: clearDraft } = useListingDraft("product", ownerId, draft, (saved) => {
-    setTitle(saved.title || ""); setPrice(saved.price || ""); setBrand(saved.brand || "");
-    setCondition(saved.condition || ""); setDescription(saved.description || "");
-    setPickup(saved.pickup !== false); setShipping(Boolean(saved.shipping));
-  });
-  useUnsavedChanges(Boolean(title || price || brand || condition || description || images.length));
+  const draft = {title,price,brand,category,condition,description,pickup,shipping,};
+  const { ready: draftReady, clear: clearDraft } = useListingDraft("product", ownerId, draft, (saved) => {setTitle(saved.title || ""); setPrice(saved.price || ""); setBrand(saved.brand || ""); setCategory(saved.category || ""); setCondition(saved.condition || ""); setDescription(saved.description || ""); setPickup(saved.pickup !== false); setShipping(Boolean(saved.shipping));});
+  
+  useUnsavedChanges(Boolean(title || price || brand || category || condition || description || images.length));
 
   const handleImageUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -130,6 +128,7 @@ function PostSaleForm({ ownerId }) {
           title: title.trim(),
           price: numericPrice,
           brand: brand.trim() || null,
+          category,
           condition,
           description: description.trim(),
           pickup,
@@ -288,6 +287,33 @@ function PostSaleForm({ ownerId }) {
                 <option value="Poor">Poor</option>
               </SelectField>
             </div>
+
+            {/* NEW CATEGORY FIELD — ADD HERE */}
+            <div>
+              <label className="input-label" htmlFor="sale-category">
+                Category
+              </label>
+
+              <SelectField
+                id="sale-category"
+                className="sale-input sale-select"
+                name="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              >
+                <option value="">Select category</option>
+                <option value="furniture">Furniture</option>
+                <option value="clothing">Clothing & Accessories</option>
+                <option value="electronics">Electronics</option>
+                <option value="collectibles">Collectibles</option>
+                <option value="home & kitchen">Home & Kitchen</option>
+                <option value="sports & outdoors">Sports & Outdoors</option>
+                <option value="books & media">Books & Media</option>
+                <option value="other">Other</option>
+              </SelectField>
+            </div>
+
           </div>
 
           <div className="form-section">

@@ -59,9 +59,9 @@ function Shop({ home = false }) {
   const search = home ? "" : (searchParams.get("q") ?? searchParams.get("search") ?? "");
   const sort = home ? "newest" : (searchParams.get("sort") || "newest");
   const condition = searchParams.get("condition") || "";
-  const min = searchParams.get("min") || "";
+  const category = home ? "" : (searchParams.get("category") || "");  const min = searchParams.get("min") || "";
   const max = searchParams.get("max") || "";
-  const queryKey = JSON.stringify([home, search, sort, condition, min, max]);
+  const queryKey = JSON.stringify([home, search, sort, condition, category, min, max]);
   const [pagination, setPagination] = useState({ key: queryKey, page: 0 });
   const page = pagination.key === queryKey ? pagination.page : 0;
   const [count, setCount] = useState(0);
@@ -86,6 +86,7 @@ function Shop({ home = false }) {
         query = query.or(`title.ilike."%${term}%",description.ilike."%${term}%"`);
       }
       if (!home && condition) query = query.eq("condition", condition);
+      if (!home && category) query = query.eq("category", category);
       if (!home && min !== "" && Number.isFinite(Number(min)) && Number(min) >= 0) query = query.gte("price", Number(min));
       if (!home && max !== "" && Number.isFinite(Number(max)) && Number(max) >= 0) query = query.lte("price", Number(max));
       query = query.order(sort === "price-low" || sort === "price-high" ? "price" : "created_at", { ascending: sort === "price-low" })
@@ -113,7 +114,7 @@ function Shop({ home = false }) {
     loadProducts();
     window.addEventListener("yardSailorProductsUpdated", loadProducts);
     return () => { active = false; window.removeEventListener("yardSailorProductsUpdated", loadProducts); };
-  }, [home, search, sort, condition, min, max, page, retry]);
+  }, [home, search, sort, condition, category, min, max, page, retry]);
 
   return (
     <main className="shop-page">
@@ -127,7 +128,7 @@ function Shop({ home = false }) {
           <div className="shop-controls">
             <label>Sort <select value={sort} onChange={event => updateFilter("sort", event.target.value)}><option value="newest">Newest</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></select></label>
             <label>Condition <select value={condition} onChange={event => updateFilter("condition", event.target.value)}><option value="">Any condition</option>{["New", "Like New", "Good", "Fair", "Poor"].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
-            <label>Min price <input type="number" min="0" step="0.01" value={min} onChange={event => updateFilter("min", event.target.value)} /></label>
+            <label>Category <select value={searchParams.get("category") || ""} onChange={(event) => updateFilter("category", event.target.value)}> <option value="">All categories</option> <option value="furniture">Furniture</option> <option value="clothing">Clothing & Accessories</option> <option value="electronics">Electronics</option> <option value="collectibles">Collectibles</option> <option value="home & kitchen">Home & Kitchen</option> <option value="sports & outdoors">Sports & Outdoors</option> <option value="books & media">Books & Media</option> <option value="other">Other</option> </select> </label>            <label>Min price <input type="number" min="0" step="0.01" value={min} onChange={event => updateFilter("min", event.target.value)} /></label>
             <label>Max price <input type="number" min="0" step="0.01" value={max} onChange={event => updateFilter("max", event.target.value)} /></label>
             <button type="button" onClick={() => setSearchParams({})}>Reset</button>
           </div>

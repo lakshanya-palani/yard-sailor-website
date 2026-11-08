@@ -93,7 +93,7 @@ function EditProductForm({ id, ownerId }) {
       if (currentAuthError || currentAuth.user?.id !== userId || String(routeIdRef.current) !== String(id)) throw new Error("Your session or listing has changed. Please reopen the editor.");
       const { data, error } = await supabase.from("products").update({
         title: form.title.trim(), price: Number(form.price), brand: form.brand?.trim() || null,
-        condition: form.condition, description: form.description.trim(), pickup: form.pickup,
+        category: form.category, condition: form.condition, description: form.description.trim(), pickup: form.pickup,
         shipping: form.shipping, image_urls: imageUrls,
       }).eq("id", id).eq("user_id", userId).select("id").maybeSingle();
       if (error) throw error;
@@ -129,6 +129,7 @@ function EditProductForm({ id, ownerId }) {
             <label>Price<input name="price" type="number" min="0" step="0.01" value={form.price ?? ""} onChange={updateField} /></label>
             <label>Brand<input name="brand" maxLength={100} value={form.brand || ""} onChange={updateField} /></label>
             <label htmlFor="edit-condition">Condition</label><SelectField id="edit-condition" name="condition" value={form.condition || ""} onChange={updateField}><option value="">Select condition</option><option>New</option><option>Like New</option><option>Good</option><option>Fair</option><option>Poor</option></SelectField>
+            <label htmlFor="edit-category">Category</label><SelectField id="edit-category" name="category" value={form.category || ""} onChange={updateField} required><option value="">Select category</option><option value="furniture">Furniture</option><option value="clothing">Clothing & Accessories</option><option value="electronics">Electronics</option><option value="collectibles">Collectibles</option><option value="home & kitchen">Home & Kitchen</option><option value="sports & outdoors">Sports & Outdoors</option><option value="books & media">Books & Media</option><option value="other">Other</option></SelectField>
             <label>Description<textarea name="description" maxLength={500} value={form.description || ""} onChange={updateField} /></label>
             <label><span><input name="pickup" type="checkbox" checked={Boolean(form.pickup)} onChange={updateField} /> Pickup</span></label>
             <label><span><input name="shipping" type="checkbox" checked={Boolean(form.shipping)} onChange={updateField} /> Shipping</span></label>

@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
+export const PRODUCT_CATEGORIES = [
+  "furniture", "clothing", "electronics", "collectibles", "home & kitchen", "sports & outdoors", "books & media", "other",
+];
+
 export function validateProduct(form) {
   const title = (form.title || "").trim(), description = (form.description || "").trim();
   if (!title || title.length > 70) return "Enter a title of 1–70 characters.";
@@ -7,6 +11,7 @@ export function validateProduct(form) {
   if ((form.brand || "").trim().length > 100) return "Brand must be 100 characters or fewer.";
   if (form.price === "" || form.price == null || !Number.isFinite(Number(form.price)) || Number(form.price) < 0) return "Enter a valid, non-negative price.";
   if (!form.condition) return "Select a condition.";
+  if (!PRODUCT_CATEGORIES.includes(form.category)) return "Select a valid category.";
   if (!form.pickup && !form.shipping) return "Choose pickup, shipping, or both.";
   return "";
 }
