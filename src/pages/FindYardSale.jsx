@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import SaleMap from "../components/SaleMap";
 import { getSaleStatus, saleOverlapsLocalWindow, saleStatusLabel } from "../utils/saleTime";
 import useSaleClock from "../utils/useSaleClock";
@@ -15,6 +15,8 @@ import "./FindYardSale.css";
 
 function FindYardSale() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get("q") || "";
   const mapSectionRef = useRef(null);
   const [sales, setSales] = useState([]);
   const now = useSaleClock(sales);
@@ -22,7 +24,39 @@ function FindYardSale() {
   const [mapCenter, setMapCenter] = useState(null);
   const [selectedSaleId, setSelectedSaleId] = useState(null);
   const [selectionRequest, setSelectionRequest] = useState(0);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialSearch); 
+  useEffect(() => {
+    const search = searchParams.get("q")?.trim();
+    if (!search) return;
+    let active = true;
+    async function searchFromHomepage() {
+      setSearching(true);
+      setError("");
+      try {
+        const result = await geocodeAddress(search);
+        if (!active) return;
+        const location = {
+          latitude: result.latitude,
+          longitude: result.longitude,
+        };
+        setOrigin(location);
+        setMapCenter(location);
+        setLocationLabel(result.placeName || search);
+        setSelectedSaleId(null);
+      } catch (searchError) {
+        if (!active) return;
+        console.error("Homepage location search failed:", searchError);
+        setError(searchError.message);
+      } finally {
+        if (active) setSearching(false);
+      }
+    }
+    searchFromHomepage();
+    return () => {
+      active = false;
+    };
+  }, [searchParams]);
+
   const [filter, setFilter] = useState("all");
   const [view, setView] = useState("list");
   const [locationLabel, setLocationLabel] = useState("");
@@ -50,13 +84,15 @@ function FindYardSale() {
     }
 
     loadSales();
-    requestUserLocation().then((location) => {
-      if (location) {
-        setOrigin(location);
-        setMapCenter(location);
-        setLocationLabel("Your location");
-      }
-    });
+    if (!initialSearch) {
+      requestUserLocation().then((location) => {
+        if (location) {
+          setOrigin(location);
+          setMapCenter(location);
+          setLocationLabel("Your location");
+        }
+      });
+    }
     window.addEventListener("yardSailorYardSalesUpdated", loadSales);
     return () => window.removeEventListener("yardSailorYardSalesUpdated", loadSales);
   }, [salesRetry]);
