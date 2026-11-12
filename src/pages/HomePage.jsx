@@ -5,12 +5,15 @@ import Products from "../components/Products";
 import SaleMap from "../components/SaleMap";
 import NearbyYardSales from "../components/NearbyYardSales";
 import ScrollScene from "../components/ScrollScene";
+import { requestUserLocation } from "../utils/location";
 import "./HomePage.css";
 
 function HomePage() {
   const navigate = useNavigate();
   const [location, setLocation] = useState("");
-
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  
   function handleSearch(event) {
     event.preventDefault();
 
@@ -20,6 +23,35 @@ function HomePage() {
       navigate(`/find-yard-sale?q=${encodeURIComponent(query)}`);
     } else {
       navigate("/find-yard-sale");
+    }
+  }
+
+  async function handleUseMyLocation() {
+    if (locating) return;
+
+    setLocating(true);
+    setLocationError("");
+
+    try {
+      const userLocation = await requestUserLocation({ refresh: true });
+
+      if (!userLocation) {
+        setLocationError(
+          "Unable to access your location. Try searching by city or ZIP code."
+        );
+        return;
+      }
+
+      navigate("/find-yard-sale", {
+        state: { requestedLocation: userLocation },
+      });
+    } catch (error) {
+      console.error("Location request failed:", error);
+      setLocationError(
+        "Unable to access your location. Try searching by city or ZIP code."
+      );
+    } finally {
+      setLocating(false);
     }
   }
 
@@ -59,7 +91,23 @@ function HomePage() {
               <button type="submit">
                 Find Yard Sales
               </button>
+
+              <button
+                type="button"
+                className="home-use-location-button"
+                onClick={handleUseMyLocation}
+                disabled={locating}
+              >
+                {locating ? "Finding your location..." : "Use My Location"}
+              </button>
             </form>
+
+            {locationError && (
+              <p className="home-location-error" role="alert">
+                {locationError}
+              </p>
+            )}
+            
           </div>
 
           <div className="home-finder-map">

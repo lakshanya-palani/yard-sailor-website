@@ -116,3 +116,10 @@
   .home-main-content .home-finder-map .homepage-sale-map {height: 320px;}
   .home-ad-sidebar {grid-template-columns: 1fr; gap: 20px;}
 }
+
+/* Homepage Use My Location Button */
+
+.home-finder-search .home-use-location-button {background: transparent; color: #1c2a39; border: 2px solid #1c2a39; border-radius: 12px; padding: 14px 24px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.2s ease, color 0.2s ease;}
+.home-finder-search .home-use-location-button:hover {background: #e8edf0; color: #1c2a39;}
+.home-finder-search .home-use-location-button:disabled {opacity: 0.6; cursor: wait;}
+.home-location-error {color: #b52c26; font-size: 14px; line-height: 1.5; margin-top: 12px;}
