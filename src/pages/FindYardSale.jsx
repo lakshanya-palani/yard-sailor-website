@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import SaleMap from "../components/SaleMap";
 import { getSaleStatus, saleOverlapsLocalWindow, saleStatusLabel } from "../utils/saleTime";
 import useSaleClock from "../utils/useSaleClock";
@@ -15,6 +15,8 @@ import "./FindYardSale.css";
 
 function FindYardSale() {
   const navigate = useNavigate();
+  const routeLocation = useLocation();
+  const requestedLocation = routeLocation.state?.requestedLocation;
   const [searchParams] = useSearchParams();
   const initialSearch = searchParams.get("q") || "";
   const mapSectionRef = useRef(null);
@@ -67,6 +69,22 @@ function FindYardSale() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (
+      !requestedLocation ||
+      !hasValidCoordinates(
+        requestedLocation.latitude,
+        requestedLocation.longitude
+      )
+    ) {
+      return;
+    }
+    setOrigin(requestedLocation);
+    setMapCenter(requestedLocation);
+    setLocationLabel("Your location");
+    setSelectedSaleId(null);
+  }, [requestedLocation]);
+
+  useEffect(() => {
     async function loadSales() {
       const { data, error: salesError } = await supabase
         .from("sales")
@@ -84,7 +102,7 @@ function FindYardSale() {
     }
 
     loadSales();
-    if (!initialSearch) {
+    if (!initialSearch && !requestedLocation) {
       requestUserLocation().then((location) => {
         if (location) {
           setOrigin(location);
