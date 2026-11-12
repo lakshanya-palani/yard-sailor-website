@@ -25,59 +25,87 @@ function HomePage() {
 
   return (
     <main className="home-page">
+      <div className="home-page-layout">
+        <div className="home-main-content">
+      
+        {/* Homepage yard sale finder */}
+        <section className="home-yard-sale-finder">
+          <div className="home-finder-content">
+            <p className="home-finder-eyebrow">
+              EXPLORE YOUR NEIGHBORHOOD
+            </p>
 
-      {/* Homepage yard sale finder */}
-      <section className="home-yard-sale-finder">
-        <div className="home-finder-content">
-          <p className="home-finder-eyebrow">
-            EXPLORE YOUR NEIGHBORHOOD
-          </p>
+            <h1>Find Your Next Yard Sale</h1>
 
-          <h1>Find Your Next Yard Sale</h1>
+            <p className="home-finder-description">
+              Discover nearby yard sales, hidden treasures,
+              and unique finds in your community.
+            </p>
 
-          <p className="home-finder-description">
-            Discover nearby yard sales, hidden treasures,
-            and unique finds in your community.
-          </p>
+            <form
+              className="home-finder-search"
+              onSubmit={handleSearch}
+            >
+              <input
+                type="text"
+                value={location}
+                onChange={(event) =>
+                  setLocation(event.target.value)
+                }
+                placeholder="City, ZIP code, or address"
+                aria-label="Search yard sales by location"
+              />
 
-          <form
-            className="home-finder-search"
-            onSubmit={handleSearch}
-          >
-            <input
-              type="text"
-              value={location}
-              onChange={(event) =>
-                setLocation(event.target.value)
-              }
-              placeholder="City, ZIP code, or address"
-              aria-label="Search yard sales by location"
-            />
+              <button type="submit">
+                Find Yard Sales
+              </button>
+            </form>
+          </div>
 
-            <button type="submit">
-              Find Yard Sales
-            </button>
-          </form>
+          <div className="home-finder-map">
+            <SaleMap className="homepage-sale-map" />
+          </div>
+        </section>
+
+        {/* Existing homepage content */}
+        <ScrollScene id="home-products" className="home-products">
+          <div className="scene-reveal">
+            <Products previewLimit={5} />
+          </div>
+        </ScrollScene>
+
+        <ScrollScene>
+          <div className="scene-reveal">
+            <NearbyYardSales />
+          </div>
+        </ScrollScene>
+
+
         </div>
 
-        <div className="home-finder-map">
-          <SaleMap className="homepage-sale-map" />
-        </div>
-      </section>
+        {/* Advertisement sidebar */}
+        <aside
+          className="home-ad-sidebar"
+          aria-label="Future advertisement spaces"
+        >
+          <div className="home-ad-slot">
+            <span className="home-ad-label">ADVERTISEMENT</span>
+            <div className="home-ad-placeholder">
+              <span>Advertisement Space</span>
+              <small>Local businesses and promotions</small>
+            </div>
+          </div>
 
-      {/* Existing homepage content */}
-      <ScrollScene id="home-products" className="home-products">
-        <div className="scene-reveal">
-          <Products previewLimit={5} />
-        </div>
-      </ScrollScene>
-
-      <ScrollScene>
-        <div className="scene-reveal">
-          <NearbyYardSales />
-        </div>
-      </ScrollScene>
-
+          <div className="home-ad-slot">
+            <span className="home-ad-label">ADVERTISEMENT</span>
+            <div className="home-ad-placeholder">
+              <span>Advertisement Space</span>
+              <small>Sponsored listings and local deals</small>
+            </div>
+          </div>
+        </aside>
+      
+      </div>
     </main>
   );
 }
