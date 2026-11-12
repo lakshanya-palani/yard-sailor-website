@@ -31,6 +31,7 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const PostYardSale = lazy(() => import("./pages/PostYardSale"));
 const FindYardSale = lazy(() => import("./pages/FindYardSale"));
 import Shop from "./pages/Shop";
+import HomePage from "./pages/HomePage";
 import { PAYMENTS_ENABLED } from "./lib/features";
 import PaymentsUnavailable from "./pages/PaymentsUnavailable";
 import NotFound from "./pages/NotFound";
@@ -54,7 +55,7 @@ function App() {
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
         <Route path="/checkout" element={PAYMENTS_ENABLED ? <ProtectedRoute><Cart checkout /></ProtectedRoute> : <PaymentsUnavailable />} />
         <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-        <Route path="/" element={<Shop home />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/find-yard-sale" element={<FindYardSale />} />
         <Route path="/about" element={<About />} />

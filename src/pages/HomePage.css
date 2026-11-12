@@ -44,3 +44,142 @@
 @media (max-width: 850px) { .home-page .products-grid > :nth-child(n + 4) { display: none; } }
 @media (max-width: 650px) { .home-page .products-grid > :nth-child(n + 3) { display: none; } }
 @media (max-width: 450px) { .home-page .products-grid > :nth-child(n + 2) { display: none; } }
+
+
+/* Homepage Yard Sale Finder */
+
+.home-yard-sale-finder {
+  display: grid;
+  grid-template-columns: 42% 58%;
+  align-items: center;
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 64px 0 72px;
+  gap: 0;
+}
+
+.home-finder-content {
+  padding: 40px 48px 40px 0;
+}
+
+.home-finder-eyebrow {
+  color: #b52c26;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.home-finder-content h1 {
+  color: #1c2a39;
+  font-size: clamp(38px, 4vw, 60px);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin: 0 0 24px;
+}
+
+.home-finder-description {
+  color: #5e6873;
+  font-size: 18px;
+  line-height: 1.65;
+  margin-bottom: 32px;
+  max-width: 400px;
+}
+
+.home-finder-search {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+}
+
+.home-finder-search input {
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid #c8c6b8;
+  border-radius: 12px;
+  background: #fff;
+  color: #1c2a39;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.home-finder-search input:focus {
+  outline: 2px solid #b52c26;
+  outline-offset: 2px;
+}
+
+.home-finder-search button {
+  padding: 16px 24px;
+  border: 0;
+  border-radius: 12px;
+  background: #1c2a39;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.home-finder-search button:hover {
+  background: #30485f;
+}
+
+.home-finder-map {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 12px 36px rgba(28, 42, 57, 0.12);
+}
+
+.home-page .home-finder-map .homepage-sale-map {
+  width: 100%;
+  height: 470px;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .home-yard-sale-finder {
+    grid-template-columns: 1fr;
+    padding: 40px 0 56px;
+  }
+
+  .home-finder-content {
+    padding: 0 0 32px;
+  }
+
+  .home-finder-description {
+    max-width: 600px;
+  }
+
+  .home-finder-search {
+    max-width: 600px;
+  }
+
+  .home-page .home-finder-map .homepage-sale-map {
+    height: 400px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .home-yard-sale-finder {
+    width: calc(100% - 32px);
+    padding: 32px 0 48px;
+  }
+
+  .home-finder-content h1 {
+    font-size: 38px;
+  }
+
+  .home-finder-description {
+    font-size: 16px;
+  }
+
+  .home-page .home-finder-map .homepage-sale-map {
+    height: 320px;
+  }
+}
