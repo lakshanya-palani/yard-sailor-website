@@ -1,0 +1,43 @@
+.ui-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+
+/* sm is visually 36px; a transparent ::before keeps the touch target at 44px. */
+.ui-icon-btn--sm { position: relative; width: 36px; height: 36px; }
+.ui-icon-btn--sm::before { content: ""; position: absolute; inset: -4px; }
+
+.ui-icon-btn__icon { display: inline-flex; }
+.ui-icon-btn__icon svg { width: 20px; height: 20px; }
+.ui-icon-btn--sm .ui-icon-btn__icon svg { width: 18px; height: 18px; }
+
+.ui-icon-btn--ghost:hover { background: var(--color-cream-dark); }
+
+.ui-icon-btn--secondary { background: var(--color-surface); border-color: var(--color-ink); }
+.ui-icon-btn--secondary:hover { background: var(--color-cream-dark); }
+
+.ui-icon-btn--dark { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-on-dark); }
+.ui-icon-btn--dark:hover { background: var(--color-ink-soft); border-color: var(--color-ink-soft); }
+
+.ui-icon-btn--overlay { border-radius: 50%; background: var(--color-surface); color: var(--color-ink); box-shadow: var(--shadow-sm); }
+.ui-icon-btn--overlay:hover { box-shadow: var(--shadow-md); }
+
+.ui-icon-btn:disabled { opacity: .55; cursor: not-allowed; }
+.ui-icon-btn:disabled:hover { box-shadow: none; }
+.ui-icon-btn--ghost:disabled:hover { background: transparent; }
+.ui-icon-btn--secondary:disabled:hover { background: var(--color-surface); }
+.ui-icon-btn--dark:disabled:hover { background: var(--color-ink); border-color: var(--color-ink); }
+.ui-icon-btn--overlay:disabled:hover { box-shadow: var(--shadow-sm); }

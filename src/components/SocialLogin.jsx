@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { startSocial, authReturnStorage } from '../lib/authFlow';
+import { Button } from './ui/Button';
+import { FormAlert } from './ui/FormAlert';
 import '../pages/Login.css';
 const noop = () => {};
+const PROVIDERS = [['google','Google','/images/Google.svg','google-icon'],['facebook','Facebook','/images/fbicon.png','facebook-icon']];
 const navigateToProvider = url => window.location.assign(url);
 export default function SocialLogin({redirect='/',disabled=false,onBusy=noop,navigate=navigateToProvider}) {
   const [busy,setBusy]=useState(null);const [error,setError]=useState('');const running=useRef(false);
@@ -28,7 +31,25 @@ export default function SocialLogin({redirect='/',disabled=false,onBusy=noop,nav
       running.current=false;setBusy(null);onBusy(false);
     }
   }
-  return <div className="social-auth-options"><div className="social-login">
-    {[['google','Google','/images/Google.svg','google-icon'],['facebook','Facebook','/images/fbicon.png','facebook-icon']].map(([provider,name,icon,style])=><button key={provider} type="button" className="social-button" disabled={disabled||!!busy} aria-busy={busy===provider} onClick={()=>start(provider)}><img src={icon} className={style} alt=""/>{busy===provider?`Opening ${name}…`:`Continue with ${name}`}</button>)}
-  </div>{busy && <p role="status">Connecting to {busy==='google'?'Google':'Facebook'}… Please wait.</p>}<p role="alert">{error}</p></div>;
+  return <div className="social-auth-options">
+    <div className="social-login">
+      {PROVIDERS.map(([provider,name,icon,style])=>(
+        <Button
+          key={provider}
+          variant="secondary"
+          block
+          className="social-button"
+          icon={<img src={icon} className={`social-button__icon ${style}`} alt=""/>}
+          loading={busy===provider}
+          disabled={disabled||!!busy}
+          aria-busy={busy===provider}
+          onClick={()=>start(provider)}
+        >
+          {busy===provider?`Opening ${name}…`:`Continue with ${name}`}
+        </Button>
+      ))}
+    </div>
+    {busy && <p className="social-auth-status" role="status">Connecting to {busy==='google'?'Google':'Facebook'}… Please wait.</p>}
+    {error && <FormAlert>{error}</FormAlert>}
+  </div>;
 }

@@ -1,0 +1,95 @@
+.listing-uploader__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listing-uploader__item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-cream-light);
+}
+
+.listing-uploader__item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listing-uploader__cover {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.listing-uploader__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.listing-uploader__add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 2px dashed var(--color-control-border);
+  border-radius: inherit;
+  background: var(--color-cream-light);
+  color: var(--color-ink);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--dur-fast), background-color var(--dur-fast);
+}
+
+.listing-uploader__add:hover { border-color: var(--color-control-border-hover); background: var(--color-cream-dark); }
+
+/* The input is visually hidden, so mirror base.css's focus ring onto the tile. */
+.listing-uploader__add:has(.listing-uploader__input:focus-visible) {
+  outline: 3px solid var(--color-accent-strong);
+  outline-offset: -3px;
+}
+
+.listing-uploader__add.is-disabled,
+.listing-uploader__add:has(.listing-uploader__input:disabled) {
+  cursor: not-allowed;
+  color: var(--color-muted);
+  background: var(--color-cream-light);
+  border-color: var(--color-border);
+}
+
+.listing-uploader__add-label { font-size: 15px; font-weight: 700; }
+.listing-uploader__add-hint { color: var(--color-muted); font-size: 13px; }
+
+.listing-uploader__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .listing-uploader__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

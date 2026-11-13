@@ -1,66 +1,84 @@
-import { saleStatusLabel } from "../utils/saleTime";
-import { useEffect, useState } from "react";
-import { Link, useParams, useLocation } from "react-router-dom";
+import { fetchProfilesByIds } from "../lib/profiles";
+import { useAsync } from "../hooks/useAsync";
+import { useParams, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { calculateDistanceMiles, requestUserLocation } from "../utils/location";
+import { formatDistance, formatSaleRange } from "../lib/format";
+import { Button } from "../components/ui/Button";
+import { FormAlert } from "../components/ui/FormAlert";
+import { StatusMessage } from "../components/ui/StatusMessage";
+import { PageShell } from "../components/layout/PageShell";
+import { SaleStatusBadge } from "../components/listing/SaleStatusBadge";
+import { SellerChip } from "../components/listing/SellerChip";
+import { ImageGallery } from "../components/listing/ImageGallery";
+import { DetailLayout } from "../components/listing/DetailLayout";
+import { MetaList } from "../components/listing/MetaList";
 import "./SaleDetail.css";
 
 function SaleDetail() {
   const { id } = useParams();
+  return <SaleDetailForListing key={id} id={id} />;
+}
+
+function SaleDetailForListing({ id }) {
   const location = useLocation();
-  const [sale, setSale] = useState(null);
-  const [seller, setSeller] = useState(null);
-  const [distance, setDistance] = useState(null);
-  const [imageIndex, setImageIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadSale() {
-      const { data, error } = await supabase.from("sales").select("*").eq("id", id).maybeSingle();
-      if (error) console.error("Unable to load yard sale:", error);
-      if (!data || error) {
-        setLoading(false);
-        return;
-      }
-      setSale(data);
-
-      const [{ data: sellerData, error: sellerError }, location] = await Promise.all([
-        supabase.from("profiles").select("username, avatar_url").eq("id", data.host_id).maybeSingle(),
-        requestUserLocation(),
-      ]);
-      if (sellerError) console.error("Unable to load yard sale host:", sellerError);
-      setSeller(sellerData || null);
-      if (location) setDistance(calculateDistanceMiles(location.latitude, location.longitude, data.lat, data.lng));
-      setLoading(false);
-    }
-    loadSale();
+  const { data: listing, loading, error: loadError, reload } = useAsync(async () => {
+    const { data: sale, error } = await supabase.from("sales").select("*").eq("id", id).maybeSingle();
+    if (error) throw error;
+    if (!sale) return null;
+    const [profiles, userLocation] = await Promise.all([
+      fetchProfilesByIds([sale.host_id]),
+      requestUserLocation(),
+    ]);
+    const distance = userLocation ? calculateDistanceMiles(userLocation.latitude, userLocation.longitude, sale.lat, sale.lng) : null;
+    return { sale, seller: profiles[sale.host_id] || null, distance };
   }, [id]);
+  const { sale = null, seller = null, distance = null } = listing || {};
 
-  if (loading) return <main className="yard-sale-detail-page"><p className="yard-sale-detail-status">Loading yard sale...</p></main>;
-  if (!sale) return <main className="yard-sale-detail-page"><div className="yard-sale-detail-card"><h1>Yard sale not found</h1><Link to="/">Return home</Link></div></main>;
+  if (loading) return <PageShell><StatusMessage kind="loading" title="Loading yard sale..." /></PageShell>;
+  if (loadError) return <PageShell><StatusMessage kind="error" titleAs="h1" title="Unable to load yard sale" onRetry={reload}>Please try again.</StatusMessage></PageShell>;
+  if (!sale) {
+    return (
+      <PageShell width="narrow">
+        <StatusMessage kind="empty" titleAs="h1" title="Yard sale not found" action={<Button variant="secondary" to="/">Return home</Button>}>
+          <p>This yard sale may no longer be available.</p>
+        </StatusMessage>
+      </PageShell>
+    );
+  }
 
   const images = sale.images || [];
-  const sellerName = seller?.username?.trim() || "Yard Sailor host";
-  const initial = seller?.username?.trim()?.charAt(0).toUpperCase() || "Y";
+  const distanceLabel = formatDistance(distance);
 
   return (
-    <main className="yard-sale-detail-page">
-      <div className="yard-sale-detail-layout">
-        <section className="yard-sale-gallery">
-          <div className="yard-sale-main-image">{images[imageIndex] ? <img src={images[imageIndex]} alt={`${sale.title} image ${imageIndex + 1}`} /> : <span>No image available</span>}</div>
-          {images.length > 1 && <div className="yard-sale-thumbnails">{images.map((image, index) => <button type="button" className={index === imageIndex ? "selected" : ""} key={image} onClick={() => setImageIndex(index)} aria-label={`Show yard sale image ${index + 1}`}><img src={image} alt={`${sale.title} thumbnail ${index + 1}`} /></button>)}</div>}
-        </section>
-        <section className="yard-sale-detail-card">
-          {location.state?.confirmation === "Your yard sale was posted." && <p role="status">Your yard sale was posted.</p>}
-          <p className="yard-sale-detail-eyebrow">YARD SALE</p>
+    <PageShell className="yard-sale-detail-page">
+      <DetailLayout media={<ImageGallery images={images} alt={sale.title} label="Yard sale images" />}>
+        {location.state?.confirmation === "Your yard sale was posted." && <FormAlert tone="success">Your yard sale was posted.</FormAlert>}
+
+        <header className="yard-sale-detail-heading">
+          <p className="yard-sale-detail-eyebrow">Yard sale</p>
           <h1>{sale.title}</h1>
-          {distance != null && <p className="yard-sale-distance">{distance.toFixed(1)} miles away</p>}
-          <p className="yard-sale-detail-status">{saleStatusLabel(sale)}</p><div className="yard-sale-detail-meta"><div><strong>Address</strong><span>{sale.address}</span></div><div><strong>Starts</strong><span>{sale.start_time ? new Date(sale.start_time).toLocaleString() : "Not specified"}</span></div><div><strong>Ends</strong><span>{sale.end_time ? new Date(sale.end_time).toLocaleString() : "Not specified"}</span></div></div>
-          <div className="yard-sale-description"><h2>About this yard sale</h2><p>{sale.description}</p></div>
-          <div className="yard-sale-host"><span>{seller?.avatar_url ? <img src={seller.avatar_url} alt="" /> : initial}</span><div><small>Hosted by</small><strong>{sellerName}</strong></div></div>
+          <div className="yard-sale-detail-facts">
+            <SaleStatusBadge sale={sale} />
+            {distanceLabel && <span className="yard-sale-detail-distance">{distanceLabel}</span>}
+          </div>
+        </header>
+
+        <MetaList
+          items={[
+            { label: "When", value: formatSaleRange(sale.start_time, sale.end_time, "Not specified") },
+            { label: "Address", value: sale.address },
+          ]}
+        />
+
+        <section className="yard-sale-detail-description" aria-labelledby="yard-sale-about-heading">
+          <h2 id="yard-sale-about-heading">About this yard sale</h2>
+          <p>{sale.description}</p>
         </section>
-      </div>
-    </main>
+
+        <SellerChip className="yard-sale-detail-host" profile={seller} label="Hosted by" fallbackName="Yard Sailor host" size={44} />
+      </DetailLayout>
+    </PageShell>
   );
 }
 

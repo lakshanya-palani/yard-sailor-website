@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8" />
+<title>Responsive UI checks</title>
+<style>
+  body { margin: 0; font: 14px system-ui; }
+  #report { white-space: pre-wrap; margin: 16px; }
+  iframe { display: block; border: 0; transform-origin: top left; }
+</style>
+<pre id="report">Running…</pre>
+<iframe title="Page under test"></iframe>
+<script type="module">
+  const params = new URLSearchParams(location.search);
+  const frame = document.querySelector('iframe');
+  const report = document.querySelector('#report');
+  const routes = params.has('route') ? [params.get('route')] : ['/', '/shop', '/find-yard-sale', '/about', '/login', '/register', '/contact', '/privacy', '/accessibility', '/help', '/products/6a8fe163-e17b-48af-bfd8-e137aaece1aa', '/yard-sale/missing', '/unknown'];
+  const widths = params.has('width') ? [Number(params.get('width'))] : [375, 1280];
+  const results = [];
+  for (const width of widths) for (const route of routes) {
+    const scale = Math.min(1, document.documentElement.clientWidth / width);
+    frame.style.width = `${width}px`;
+    frame.style.height = '1000px';
+    frame.style.transform = `scale(${scale})`;
+    await new Promise(resolve => { frame.onload = resolve; frame.src = route; });
+    await new Promise(resolve => setTimeout(resolve, 1600));
+    const doc = frame.contentDocument;
+    const main = doc.querySelector('main');
+    const overflow = doc.documentElement.scrollWidth > width;
+    const missingLabels = Array.from(doc.querySelectorAll('main input:not([type=hidden]), main textarea, main [role=combobox]')).filter(input => !input.labels?.length && !input.getAttribute('aria-label') && !input.getAttribute('aria-labelledby')).map(input => input.outerHTML.slice(0, 160));
+    const badDescriptions = Array.from(doc.querySelectorAll('[aria-describedby]')).flatMap(element => element.getAttribute('aria-describedby').split(/\s+/).filter(id => !doc.getElementById(id)));
+    const result = { route, width: frame.contentWindow.innerWidth, main: doc.querySelectorAll('main').length, overflow, missingLabels, badDescriptions, heading: main?.querySelector('h1')?.textContent || null };
+    results.push(result);
+    report.textContent = JSON.stringify(results, null, 2);
+  }
+  document.title = results.every(result => result.main === 1 && !result.overflow && !result.missingLabels.length && !result.badDescriptions.length) ? 'Responsive UI checks passed' : 'Responsive UI checks failed';
+</script>
+</html>

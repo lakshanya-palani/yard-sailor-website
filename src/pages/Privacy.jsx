@@ -1,7 +1,10 @@
+import { PageShell } from '../components/layout/PageShell';
+import { PageHeader } from '../components/layout/PageHeader';
 import './Privacy.css';
 export default function Privacy() {
-  return <main className="privacy-page"><article className="privacy-container">
-    <h1>Privacy Policy</h1><p className="privacy-updated">Last reviewed: September 7, 2026</p>
+  return <PageShell width="narrow">
+    <PageHeader title="Privacy Policy" subtitle="Last reviewed: September 7, 2026" />
+    <article className="prose-page">
     <section><h2>Accounts and profiles</h2><p>Yard Sailor uses Supabase for account authentication, database storage, and uploaded images. Registration collects a name, email address, and password. Your username and avatar identify you on listings and in conversations. Your account email is not intended as public profile information. Do not include private contact details in your public username or images.</p></section>
     <section><h2>Listings and images</h2><p>Product titles, descriptions, prices, images, and seller display information are shown to visitors. Yard-sale listings also include event times, addresses, and map coordinates. Publish only information and photographs you intend to share publicly. Public image links may be accessible outside Yard Sailor and copied by others.</p><p>New uploads use an image-processing service designed to validate and re-encode supported images and remove embedded metadata. Older images may still contain metadata; do not rely on this processing to conceal information visible in a photograph.</p></section>
     <section><h2>Location and maps</h2><p>With your browser’s permission, the site uses device location to show nearby sales and calculate distances. The current site uses this location in memory rather than adding it to your account record. You can deny or revoke location permission in your browser.</p><p>Mapbox provides maps and address lookup. Map requests, map areas, and addresses entered for lookup are sent to Mapbox, which also receives connection information such as an IP address. A yard-sale address and coordinates submitted as part of a listing are stored and published with that listing. The About page neighborhood uses illustrative locations, not live addresses.</p></section>
@@ -11,5 +14,6 @@ export default function Privacy() {
     <section><h2>Retention and deletion</h2><p>Records are stored to support your account, listings, cart, and conversations. You can edit your profile, remove cart entries, and manage your listings using the account tools. Removing a listing does not automatically erase its message history or every stored image. There is no automatic deletion schedule defined in the current application.</p><p>Contact us to request access, correction, or deletion of your information, or to ask about retained images and messages. We may need to verify your account before acting on a request. Provider backups and logs may have separate retention arrangements. Specific retention periods and request procedures are still being reviewed by the site owner.</p></section>
     <section><h2>Security and your choices</h2><p>The application uses authenticated access and database access policies to restrict private records, along with input and upload validation. No online system can guarantee complete security. Keep your password private and sign out on shared devices.</p><p>You can choose what to publish, manage browser location permission, and contact us about your information. Rights available to you may depend on where you live and applicable law. This policy does not establish certification or compliance with any privacy law.</p></section>
     <section><h2>Contact and policy updates</h2><p>Email <a href="mailto:app.yardsailor@gmail.com">app.yardsailor@gmail.com</a> or visit <a href="/contact">Contact</a>. Changes to this policy will be reflected in its review date.</p><p>Owner review pending: the operator’s legal identity, applicable jurisdictions, provider retention arrangements, and formal privacy-request procedures must be confirmed.</p></section>
-  </article></main>;
+  </article>
+  </PageShell>;
 }

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { TextInput } from "./ui/TextInput";
 import "./SearchBar.css";
 
-export default function SearchBar({ onFocus }) {
+export default function SearchBar({ onFocus, className = "" }) {
   const [draft, setDraft] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,8 +23,21 @@ export default function SearchBar({ onFocus }) {
     setDraft(null);
   }
 
-  return <form className="header-search" role="search" onSubmit={handleSearch}>
-    <input type="search" aria-label="Search products" placeholder="Search secondhand finds..." value={searchTerm} onChange={event => setDraft({ key, value: event.target.value })} onFocus={onFocus} />
-    <button type="submit" aria-label="Search products"><Search size={20} strokeWidth={2} aria-hidden="true" /></button>
-  </form>;
+  return (
+    <form className={`header-search ${className}`.trim()} role="search" onSubmit={handleSearch}>
+      <TextInput
+        type="search"
+        aria-label="Search products"
+        placeholder="Search secondhand finds..."
+        value={searchTerm}
+        onChange={event => setDraft({ key, value: event.target.value })}
+        onFocus={onFocus}
+        trailing={
+          <button type="submit" className="header-search__submit" aria-label="Search products">
+            <Search size={20} strokeWidth={2} aria-hidden="true" />
+          </button>
+        }
+      />
+    </form>
+  );
 }

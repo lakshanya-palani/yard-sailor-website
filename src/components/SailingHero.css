@@ -1,7 +1,7 @@
 .sailing-section {
   height: clamp(300px, 44vw, 500px);
   overflow: hidden;
-  border-radius: 16px;
-  background: #0861a0;
+  border-radius: var(--radius-lg);
+  background: var(--color-sea);
 }
 .sailing-section canvas { display: block; }

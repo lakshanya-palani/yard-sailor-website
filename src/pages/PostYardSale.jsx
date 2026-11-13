@@ -1,23 +1,34 @@
-import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { supabase } from "../lib/supabase";
 import { geocodeAddress, hasValidCoordinates } from "../utils/location";
-import "./PostSale.css";
+import { ListingFormPage, ListingFormStatus } from "../components/listing/ListingFormPage";
+import { YardSaleFormFields } from "../components/listing/YardSaleFormFields";
 import { validateSale, validImages, useListingDraft, useUnsavedChanges } from "../lib/listingEditor";
 import { uploadImage } from "../lib/uploads";
 
 
 function PostYardSale() {
   const { user, loading } = useAuth();
-  if (loading) return <main className="post-sale-page">Loading…</main>;
-  if (!user) return <main className="post-sale-page">Please log in to post a listing.</main>;
+  if (loading) return <ListingFormStatus kind="loading">Loading…</ListingFormStatus>;
+  if (!user) return <ListingFormStatus>Please log in to post a listing.</ListingFormStatus>;
   return <PostYardSaleForm key={user.id} ownerId={user.id} />;
 }
 
 function PostYardSaleForm({ ownerId }) {
   const navigate = useNavigate();
+  const previewUrls = useRef(new Set());
+  useEffect(() => {
+    const urls = previewUrls.current;
+    return () => { urls.forEach(url => URL.revokeObjectURL(url)); urls.clear(); };
+  }, []);
+  function createPreview(file) {
+    const url = URL.createObjectURL(file);
+    previewUrls.current.add(url);
+    return url;
+  }
+
   const [form, setForm] = useState({ title: "", description: "", address: "", startTime: "", endTime: "" });
   const [images, setImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
@@ -31,8 +42,7 @@ function PostYardSaleForm({ ownerId }) {
   const { ready: draftReady, clear: clearDraft } = useListingDraft("yard-sale", ownerId, form, (saved) => setForm((current) => ({ ...current, ...saved })));
   useUnsavedChanges(Boolean(Object.values(form).some(Boolean) || images.length));
 
-  function updateField(event) {
-    const { name, value } = event.target;
+  function updateValue(name, value) {
     setForm((current) => ({ ...current, [name]: value }));
   }
 
@@ -43,7 +53,7 @@ function PostYardSaleForm({ ownerId }) {
       event.target.value = "";
       return;
     }
-    const additions = files.map((file) => ({ id: crypto.randomUUID(), file, preview: URL.createObjectURL(file) }));
+    const additions = files.map((file) => ({ id: crypto.randomUUID(), file, preview: createPreview(file) }));
     setImages((current) => {
       const accepted = additions.slice(0, Math.max(0, 8 - current.length));
       additions.slice(accepted.length).forEach((image) => URL.revokeObjectURL(image.preview));
@@ -144,24 +154,29 @@ function PostYardSaleForm({ ownerId }) {
     }
   }
 
+  const imageItems = images.map((image) => ({ key: image.id, src: image.preview }));
+
   return (
-    <main className="post-sale-page">
-      <div className="post-sale-container">
-        <div className="post-sale-heading"><p className="post-sale-eyebrow">YARD SAILOR</p><h1>Post a Yard Sale</h1><p>Share your event so nearby sailors can discover it on the map.</p></div>
-        <form className="post-sale-form" onSubmit={handleSubmit}>
-          <fieldset disabled={!draftReady} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-          {message && <p role="alert" className="listing-message">{message}</p>}
-          <div className="form-section"><div className="section-heading"><h2>Photos</h2><span>{images.length}/8</span></div><p className="section-description">Add up to 8 photos. Your first photo will be the cover image.</p><div className="image-grid">{images.map((image, index) => <div className="image-preview" key={image.id}><img src={image.preview} alt={`Yard sale preview ${index + 1}`} />{index === 0 && <span className="cover-label">Cover</span>}<button className="remove-image" type="button" onClick={() => removeImage(image)} aria-label="Remove image"><X size={18} aria-hidden="true" /></button></div>)}{images.length < 8 && <label className="image-upload-box"><span className="upload-plus">+</span><span>Add Photo</span><input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={selectImages} /></label>}</div></div>
-          <div className="form-section"><label className="input-label" htmlFor="yard-sale-title">Title</label><input className="sale-input" id="yard-sale-title" name="title" value={form.title} onChange={updateField} maxLength={80} placeholder="Neighborhood garage sale" /></div>
-          <div className="form-section"><label className="input-label" htmlFor="yard-sale-description">Description</label><textarea className="sale-textarea" id="yard-sale-description" name="description" value={form.description} onChange={updateField} maxLength={1000} placeholder="Tell visitors what they can find..." /></div>
-          <div className="form-section"><label className="input-label" htmlFor="yard-sale-address">Yard Sale Address</label><input className="sale-input" id="yard-sale-address" name="address" maxLength={500} value={form.address} onChange={updateField} autoComplete="street-address" placeholder="123 Main St, Santa Cruz, CA 95060" /><p className="section-description">The address will be converted into a map location.</p></div>
-          <p className="section-description">Times use your device’s time zone. Sales are shown until the end time.</p>
-          <div className="sale-details-grid form-section"><div><label className="input-label" htmlFor="yard-sale-start">Start</label><input className="sale-input" id="yard-sale-start" name="startTime" type="datetime-local" value={form.startTime} onChange={updateField} /></div><div><label className="input-label" htmlFor="yard-sale-end">End</label><input className="sale-input" id="yard-sale-end" name="endTime" type="datetime-local" value={form.endTime} onChange={updateField} /></div></div>
-          <div className="post-sale-actions"><button className="cancel-post-button" type="button" onClick={() => navigate("/")}>Cancel</button><button className="publish-sale-button" disabled={submitting}>{submitting ? "Posting..." : "Post Yard Sale"}</button></div>
-          </fieldset>
-        </form>
-      </div>
-    </main>
+    <ListingFormPage
+      title="Post a Yard Sale"
+      subtitle="Share your event so nearby sailors can discover it on the map."
+      onSubmit={handleSubmit}
+      locked={!draftReady}
+      message={message}
+      submitting={submitting}
+      submitLabel="Post Yard Sale"
+      submittingLabel="Posting..."
+      onCancel={() => navigate("/")}
+    >
+      <YardSaleFormFields
+        values={form}
+        onChange={updateValue}
+        images={imageItems}
+        maxImages={8}
+        onSelectImages={selectImages}
+        onRemoveImage={(index) => removeImage(images[index])}
+      />
+    </ListingFormPage>
   );
 }
 

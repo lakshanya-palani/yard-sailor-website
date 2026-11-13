@@ -1,189 +1,117 @@
-import SaveButton from "./SaveButton";
-import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { cancelProductPosting } from "../lib/productActions";
+import { useAsync } from "../hooks/useAsync";
+import { useToast } from "../hooks/useToast";
+import { SectionHeader } from "./layout/SectionHeader";
+import { CardGrid } from "./layout/CardGrid";
+import { ProductCard } from "./listing/ProductCard";
+import { ListingSkeletonGroup } from "./listing/ListingSkeleton";
+import { OwnerActions } from "./listing/OwnerActions";
+import { Button } from "./ui/Button";
+import { StatusMessage } from "./ui/StatusMessage";
 import "./products.css";
 
+const NO_PRODUCTS = [];
+
 function Products({ onProductsLoaded, previewLimit = 10 }) {
-  const [sales, setSales] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    onProductsLoaded?.(sales);
-  }, [sales, onProductsLoaded]);
-
-  const loadSales = useCallback(async () => {
-    const [{ data, error }, { data: authData }] = await Promise.all([
+  const toast = useToast();
+  const { user } = useAuth();
+  const [cancellingId, setCancellingId] = useState(null);
+  const { data, error, loading, reload, setData } = useAsync(async () => {
+    const { data, error } = await
       supabase
         .from("products")
         .select("id,title,description,price,image_urls,user_id,brand,condition,pickup,shipping")
         .order("created_at", { ascending: false })
-        .limit(10),
-      supabase.auth.getSession(),
-    ]);
+        .limit(10);
 
     if (error) {
       console.error("Unable to load sales:", error);
-      setSales([]);
-    } else {
-      setSales(data || []);
+      throw error;
     }
 
-    setCurrentUserId(authData?.session?.user?.id || null);
-  }, []);
+    return {
+      products: data || [],
+    };
+  }, [], { refetchOnEvents: ["yardSailorProductsUpdated"] });
+
+  const products = error ? NO_PRODUCTS : data?.products ?? NO_PRODUCTS;
+  const currentUserId = user?.id ?? null;
 
   useEffect(() => {
-    const initialLoad = window.setTimeout(loadSales, 0);
+    onProductsLoaded?.(products);
+  }, [products, onProductsLoaded]);
 
-    window.addEventListener(
-      "yardSailorProductsUpdated",
-      loadSales
-    );
-
-    return () => {
-      window.clearTimeout(initialLoad);
-      window.removeEventListener(
-        "yardSailorProductsUpdated",
-        loadSales
-      );
-    };
-  }, [loadSales]);
-
-  const cancelSale = async (sale) => {
-    if (!currentUserId || sale.user_id !== currentUserId) {
-      alert("Only the seller can cancel this sale.");
+  async function cancelSale(product) {
+    if (!currentUserId || product.user_id !== currentUserId) {
+      toast.show("Only the seller can cancel this sale.", { tone: "error" });
       return;
     }
 
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", sale.id)
-      .eq("user_id", currentUserId);
+    setCancellingId(product.id);
+    const { error: deleteError } = await cancelProductPosting(product.id, currentUserId);
+    setCancellingId(null);
 
-    if (error) {
-      console.error("Unable to cancel sale:", error);
-      alert(error.message);
+    if (deleteError) {
+      toast.show(deleteError.message, { tone: "error" });
       return;
     }
 
-    setSales((currentSales) =>
-      currentSales.filter((currentSale) => currentSale.id !== sale.id)
-    );
-  };
-
-  const placeholdersNeeded = Math.max(
-    0,
-    previewLimit - sales.slice(0, previewLimit).length
-  );
-
-  const placeholders = Array.from(
-    { length: placeholdersNeeded },
-    (_, index) => index
-  );
+    setData((current) => current && {
+      ...current,
+      products: current.products.filter((row) => row.id !== product.id),
+    });
+  }
 
   return (
     <section className="products-section">
-      <div className="products-heading">
-        <h2>Newest Sailor Products</h2>
-      </div>
+      <SectionHeader
+        className="products-heading"
+        title="Newest Sailor Products"
+        linkTo="/shop"
+        linkLabel="View All"
+      />
 
-      <div className="products-grid">
-        {sales.slice(0, previewLimit).map((sale) => (
-          <article
-            className="product-card real-product-card"
-            key={sale.id}
-            onClick={() => navigate(`/products/${sale.id}`)}
-          >
-            <div className="product-image-container">
-              <SaveButton productId={sale.id} title={sale.title} />
-              <img
-                src={sale.image_urls?.[0]}
-                alt={sale.title}
-                className="product-image"
-                loading="lazy"
-              />
-            </div>
-
-            <div className="product-information">
-              <h3><Link to={`/products/${sale.id}`}>{sale.title}</Link></h3>
-
-              <p className="product-price">
-                ${Number(sale.price).toFixed(2)}
-              </p>
-
-              {(sale.brand || sale.condition) && (
-                <p className="product-meta">
-                  {[sale.brand, sale.condition].filter(Boolean).join(" · ")}
-                </p>
-              )}
-
-              <p className="product-description">
-                {sale.description}
-              </p>
-
-              <div className="delivery-tags">
-                {sale.pickup && (
-                  <span>Pickup</span>
-                )}
-
-                {sale.shipping && (
-                  <span>Shipping</span>
-                )}
-              </div>
-
-              {sale.user_id === currentUserId && (
-                <button
-                  type="button"
-                  className="cancel-sale-button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    cancelSale(sale);
-                  }}
-                  onKeyDown={(event) => event.stopPropagation()}
-                >
-                  Cancel Sale
-                </button>
-              )}
-            </div>
-          </article>
-        ))}
-
-        {placeholders.map((placeholder) => (
-          <article
-            className="product-card placeholder-card"
-            key={`placeholder-${placeholder}`}
-          >
-            <div className="product-image-container placeholder-image">
-              <span>Coming Soon</span>
-            </div>
-
-            <div className="product-information">
-              <div className="placeholder-line placeholder-title"></div>
-
-              <div className="placeholder-line"></div>
-
-              <div className="placeholder-line short"></div>
-
-              <div className="placeholder-tags">
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <div className="view-all-container">
-        <button
-          type="button"
-          className="view-all-button"
-          onClick={() => navigate("/shop")}
+      {loading && !data ? (
+        <ListingSkeletonGroup className="ui-card-grid products-grid" count={previewLimit} label="Loading products…" />
+      ) : error ? (
+        <StatusMessage
+          className="products-status"
+          kind="error"
+          title="Unable to load products."
+          onRetry={reload}
+        />
+      ) : products.length === 0 ? (
+        <StatusMessage
+          className="products-status"
+          title="No products yet"
+          action={<Button to="/post-sale">Post an item</Button>}
         >
-          View All
-        </button>
-      </div>
+          <p>Be the first to list a secondhand find.</p>
+        </StatusMessage>
+      ) : (
+        <CardGrid className="products-grid" min={200} limit={previewLimit}>
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              showSeller={false}
+              showDescription
+              actions={product.user_id === currentUserId ? (
+                <OwnerActions
+                  size="sm"
+                  cancelLabel="Cancel Sale"
+                  busyLabel="Cancelling..."
+                  busy={cancellingId === product.id}
+                  onCancel={() => cancelSale(product)}
+                />
+              ) : null}
+            />
+          ))}
+        </CardGrid>
+      )}
     </section>
   );
 }

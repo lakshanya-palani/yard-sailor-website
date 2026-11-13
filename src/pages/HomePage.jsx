@@ -5,6 +5,7 @@ import Products from "../components/Products";
 import SaleMap from "../components/SaleMap";
 import NearbyYardSales from "../components/NearbyYardSales";
 import ScrollScene from "../components/ScrollScene";
+import { LocationSearch } from "../components/listing/LocationSearch";
 import { requestUserLocation } from "../utils/location";
 import "./HomePage.css";
 
@@ -74,39 +75,17 @@ function HomePage() {
               and unique finds in your community.
             </p>
 
-            <form
-              className="home-finder-search"
+            <LocationSearch
+              value={location}
+              onChange={setLocation}
               onSubmit={handleSearch}
-            >
-              <input
-                type="text"
-                value={location}
-                onChange={(event) =>
-                  setLocation(event.target.value)
-                }
-                placeholder="City, ZIP code, or address"
-                aria-label="Search yard sales by location"
-              />
-
-              <button type="submit">
-                Find Yard Sales
-              </button>
-
-              <button
-                type="button"
-                className="home-use-location-button"
-                onClick={handleUseMyLocation}
-                disabled={locating}
-              >
-                {locating ? "Finding your location..." : "Use My Location"}
-              </button>
-            </form>
-
-            {locationError && (
-              <p className="home-location-error" role="alert">
-                {locationError}
-              </p>
-            )}
+              onUseLocation={handleUseMyLocation}
+              locating={locating}
+              error={locationError}
+              placeholder="City, ZIP code, or address"
+              label="Search yard sales by location"
+              searchLabel="Find Yard Sales"
+            />
             
           </div>
 

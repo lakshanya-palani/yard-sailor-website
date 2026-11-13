@@ -1,0 +1,4 @@
+.listing-meta { display: grid; gap: 10px; margin: 0; padding-block: 18px; border-block: 1px solid var(--color-border-subtle); }
+.listing-meta__row { display: grid; grid-template-columns: minmax(96px, auto) 1fr; gap: 16px; align-items: baseline; }
+.listing-meta dt { color: var(--color-muted); font-size: 14px; }
+.listing-meta dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }

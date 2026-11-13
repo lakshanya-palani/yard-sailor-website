@@ -1,5 +1,11 @@
-import { Mail, LockKeyhole, Eye, EyeOff } from "lucide-react";
+import { Mail } from "lucide-react";
 import SocialLogin from "../components/SocialLogin";
+import { PasswordInput } from "../components/PasswordInput";
+import { AuthCard } from "../components/layout/AuthCard";
+import { Field } from "../components/ui/Field";
+import { TextInput } from "../components/ui/TextInput";
+import { Button } from "../components/ui/Button";
+import { FormAlert } from "../components/ui/FormAlert";
 import { safeRedirect } from "../lib/redirect";
 import { useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
@@ -7,13 +13,13 @@ import { supabase } from "../lib/supabase";
 import "./Login.css";
 
 function Login({ requestedPath }) {
-  const [showPassword, setShowPassword] = useState(false);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const location = useLocation();
-  const [feedback, setFeedback] = useState(location.state?.notice || "");
+  // Notice handed over from Register; any error message below replaces it.
+  const notice = location.state?.notice || "";
+  const [feedback, setFeedback] = useState("");
   const [socialBusy, setSocialBusy] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -88,112 +94,67 @@ function Login({ requestedPath }) {
   }
 
   return (
-    <main className="login-page">
-      <div className="login-brand">
-        Yard Sailor
-      </div>
-
-      <section className="login-card">
-        <h1>{heading}</h1><p role="alert">{feedback}</p>
-
-        <form
-          className="login-form"
-          onSubmit={handleLogin}
-        >
-          <div className="login-input">
-            <Mail className="email-icon" size={20} aria-hidden="true" />
-
-            <input
-              type="email"
-              name="email" aria-label="Email"
-              autoComplete="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              required
-            />
-          </div>
-
-          <div className="login-input">
-            <LockKeyhole className="input-icon" size={20} aria-hidden="true" />
-
-            <input
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
-              name="password" aria-label="Password"
-              autoComplete="current-password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              required
-            />
-
-            <button
-              type="button"
-              className="password-toggle"
-              onClick={() =>
-                setShowPassword(!showPassword)
-              }
-              aria-label={
-                showPassword
-                  ? "Hide password"
-                  : "Show password"
-              }
-            >
-              {showPassword ? <EyeOff className="view-password-icon" size={20} aria-hidden="true" /> : <Eye className="view-password-icon" size={20} aria-hidden="true" />}
-            </button>
-          </div>
-
-          <a
-            href="/contact"
-            className="forgot-password"
-          >
-            Need help signing in?
-          </a>
-
-          <button
-            type="submit"
-            className="login-submit"
-            disabled={loading || socialBusy}
-          >
-            {loading ? "Logging in..." : "Log in"}
-          </button>
-        </form>
-
-        <div className="login-divider">
-          <span></span>
-          <p>Or</p>
-          <span></span>
+    <AuthCard
+      title={heading}
+      footer={(
+        <div className="auth-footer">
+          <p>
+            Don&apos;t have an account?{" "}
+            <Link to={`/register?redirect=${encodeURIComponent(safeRedirect(searchParams.get("redirect")))}`}>
+              Sign up
+            </Link>
+          </p>
+          <a href="/privacy" className="auth-footer__legal">Privacy Policy</a>
         </div>
+      )}
+    >
+      {feedback ? (
+        <FormAlert>{feedback}</FormAlert>
+      ) : notice ? (
+        <FormAlert tone="success">{notice}</FormAlert>
+      ) : null}
 
-        <SocialLogin redirect={safeRedirect(searchParams.get('redirect'))} disabled={loading} onBusy={setSocialBusy} />
+      <form className="auth-form" onSubmit={handleLogin}>
+        <Field label="Email">
+          <TextInput
+            type="email"
+            name="email"
+            autoComplete="email"
+            leadingIcon={<Mail size={20} />}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </Field>
 
-        <p className="no-account">
-          Have no account yet?
-        </p>
+        <Field label="Password">
+          <PasswordInput
+            name="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </Field>
 
-        <Link
-          to={`/register?redirect=${encodeURIComponent(safeRedirect(searchParams.get("redirect")))}`}
-          className="registration-button"
-        >
-          Sign Up
-        </Link>
-
-        <a
-          href="/privacy"
-          className="privacy-button"
-        >
-          Privacy Policy
+        <a href="/contact" className="auth-help-link">
+          Need help signing in?
         </a>
-      </section>
-    </main>
+
+        <Button
+          type="submit"
+          block
+          loading={loading}
+          disabled={socialBusy}
+        >
+          {loading ? "Logging in..." : "Log in"}
+        </Button>
+      </form>
+
+      <div className="auth-divider"><span>Or</span></div>
+
+      <SocialLogin redirect={safeRedirect(searchParams.get('redirect'))} disabled={loading} onBusy={setSocialBusy} />
+    </AuthCard>
   );
 }
 

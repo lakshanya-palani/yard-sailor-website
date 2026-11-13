@@ -1,556 +1,209 @@
-/* =========================
-   TOP BLACK BAR
-========================= */
+/*
+ * Site header. Layout by width:
+ *   ≥1024  one row: logo · search · nav (centered) · account
+ *   640–1023  one row: logo · search · account · menu button; nav becomes a drawer
+ *   <640   two rows: logo · account · menu button / search
+ * The search field's width is owned by SearchBar.css; this file only places it.
+ */
 
-.top-bar {
-    width: 100%;
-    height: 64px;
-  
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-  
-    padding: 0 32px;
-  
-    background-color: #000;
-    color: white;
-  
-    font-family: "League Spartan", sans-serif;
-  }
-  
-  .top-bar-center {
-    grid-column: 2;
-  
-    font-size: 18px;
-    font-weight: 700;
-  }
-  
-  .top-bar-right {
-    grid-column: 3;
-    justify-self: end;
-  
-    display: flex;
-    align-items: center;
-  
-    gap: 18px;
-  }
-  
-  .top-bar-right img {
-    width: 22px;
-    height: 22px;
-  
-    object-fit: contain;
-  
-    cursor: pointer;
-  }
-  
-  /* English text */
-  
-  .language-selector {
-    display: flex;
-    align-items: center;
-  
-    gap: 10px;
-  
-    margin-left: 4px;
-  
-    color: white;
-  
-    font-family: "League Spartan", sans-serif;
-    font-size: 18px;
-    font-weight: 400;
-  
-    cursor: pointer;
-  }
-  
-  /* Down arrow */
-  
-  .language-arrow {
-    width: 14px;
-    height: 14px;
-  
-    border-right: 2px solid white;
-    border-bottom: 2px solid white;
-  
-    transform: rotate(45deg);
-    margin-top: -6px;
-  }
-  
-  /* =========================
-     MAIN NAVBAR
-  ========================= */
-  
-  .navbar {
-    width: 100%;
-    height: 114px;
-  
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-  
-    padding: 0 30px;
-  
-    background-color: #1c2a39;
-    color: white;
-  
-    font-family: "League Spartan", sans-serif;
-  }
-  
-  /* =========================
-     NAV LINKS
-  ========================= */
-  
-  .navbar-center {
-    grid-column: 2;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    gap: 40px;
-  }
-  
-  .navbar-center a {
-    color: white;
-  
-    text-decoration: none;
-  
-    font-size: 21px;
-    font-weight: 500;
-  
-    white-space: nowrap;
-  }
-  
-  .navbar-center a:hover {
-    opacity: 0.75;
-  }
-  
-  .navbar a {
-    color: white;
-  
-    text-decoration: none;
-  
-    font-size: 21px;
-    font-weight: 500;
-  }
-  
-  .navbar a:hover {
-    opacity: 0.75;
-  }
-  
-  /* =========================
-     LOGO
-  ========================= */
-  
-  .navbar-logo {
-    width: 62px;
-    height: 62px;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    overflow: hidden;
-  }
-  
-  .navbar-logo img {
-    width: 100%;
-    height: 100%;
-  
-    object-fit: contain;
-  
-    display: block;
-  }
-  
-  /* =========================
-     LOGIN + CART
-  ========================= */
-  
-  .navbar-account {
-    justify-self: end;
-  
-    display: flex;
-    align-items: center;
-  
-    gap: 22px;
-  }
-  
-  .login-link {
-    display: flex;
-    align-items: center;
-  
-    gap: 8px;
-  
-    white-space: nowrap;
-  }
-  
-  .lock-icon {
-    width: 23px;
-    height: 23px;
-  
-    object-fit: contain;
-  }
-
-  .profile-menu-container {
-    position: relative;
-  }
-
-  .profile-menu-trigger {
-    gap: 9px;
-    display: flex;
-    align-items: center;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: white;
-    font: 500 18px "League Spartan", sans-serif;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .navbar-avatar {
-    width: 36px;
-    height: 36px;
-    flex: 0 0 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 50%;
-    background: #ef403a;
-    color: white;
-    font-size: 17px;
-    font-weight: 700;
-  }
-
-  .navbar-avatar img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    object-position: center;
-  }
-
-  .profile-menu-arrow {
-    font-size: 9px;
-    opacity: 0.8;
-  }
-
-  .profile-dropdown {
-    position: absolute;
-    z-index: 1000;
-    top: calc(100% + 16px);
-    right: 0;
-    width: 275px;
-    overflow: hidden;
-    border: 1px solid rgb(28 42 57 / 12%);
-    border-radius: 14px;
-    background: white;
-    color: #1c2a39;
-    box-shadow: 0 14px 35px rgb(0 0 0 / 18%);
-  }
-
-  .profile-dropdown-header {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    padding: 16px;
-    border-bottom: 1px solid #ece7df;
-    background: #fff8ec;
-  }
-
-  .dropdown-avatar {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 50%;
-    background: #ef403a;
-    color: white;
-    font-weight: 700;
-  }
-
-  .dropdown-avatar img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-  }
-
-  .profile-dropdown-header div {
-    min-width: 0;
-  }
-
-  .profile-dropdown-header strong,
-  .profile-dropdown-header span {
-    display: block;
-  }
-
-  .profile-dropdown-header strong {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 16px;
-  }
-
-  .profile-dropdown-header div span {
-    margin-top: 3px;
-    overflow: hidden;
-    color: #6d7379;
-    font-size: 13px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .profile-dropdown-links {
-    padding: 7px;
-  }
-
-  .navbar .profile-dropdown-links a {
-    display: block;
-    padding: 10px 11px;
-    border-radius: 8px;
-    color: #1c2a39;
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .navbar .profile-dropdown-links a:hover {
-    background: #fff3df;
-    color: #ef403a;
-    opacity: 1;
-  }
-
-  .profile-dropdown-footer {
-    padding: 8px;
-    border-top: 1px solid #ece7df;
-  }
-
-  .profile-dropdown-footer button {
-    width: 100%;
-    padding: 10px 11px;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: #ef403a;
-    font: 700 15px "League Spartan", sans-serif;
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .profile-dropdown-footer button:hover {
-    background: #fff0ee;
-  }
-
-  .profile-dropdown-footer button:disabled {
-    opacity: 0.55;
-    cursor: wait;
-  }
-  
-  /* Cart */
-  
-  .cart-button {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: none;  
-    background: transparent;
-    cursor: pointer;
-  }
-  
-  .cart-button img {
-    width: 100%;
-    height: 100%;
-  
-    object-fit: contain;
-    position: relative;
-    top: -2px;
-  }
-  
-  /* =========================
-     SEARCH
-  ========================= */
-  
-  .search-button {
-    justify-self: start;
-  
-    width: 32px;
-    height: 32px;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    padding: 0;
-  
-    border: none;
-  
-    background: transparent;
-    color: white;
-  
-    cursor: pointer;
-  }
-  
-  .search-button img {
-    width: 24px;
-    height: 24px;
-  
-    object-fit: contain;
-  
-    display: block;
-  }
-
-  @media (max-width: 1023px) {
-    .navbar { height: auto; min-height: 114px; grid-template-columns: 40px 1fr auto; gap: 20px; padding: 20px; }
-    .navbar-center { gap: 18px; flex-wrap: wrap; }
-    .navbar a { font-size: 18px; }
-    .navbar-account { gap: 12px; }
-  }
-  @media (max-width: 850px) {
-    .navbar { grid-template-columns: 1fr auto; padding: 16px; gap: 16px; }
-    .navbar > .search-container { grid-column: 1; grid-row: 1; z-index: 10; }
-    .navbar-account { grid-column: 2; grid-row: 1; }
-    .navbar-center { grid-column: 1 / -1; grid-row: 2; gap: 16px 22px; }
-    .navbar-center .navbar-logo { width: 44px; height: 44px; }
-    .top-bar { padding: 12px 16px; height: auto; min-height: 54px; grid-template-columns: 1fr auto; gap: 15px; }
-    .top-bar-center { grid-column: 1; font-size: 14px; }
-    .top-bar-right { grid-column: 2; gap: 10px; }
-    .top-bar-right > img { display: none; }
-  }
-
-.cart-button { position: relative; }
-.cart-count { position: absolute; right: -5px; top: -5px; min-width: 19px; height: 19px; padding: 2px 4px; border-radius: 10px; background: #b52c26; color: white; font: 700 12px 'League Spartan', sans-serif; }
-
-/* Compact single-row navigation */
-.navbar { position: relative; z-index: 50; height: 80px; min-height: 0; display: flex; gap: 24px; padding: 0 30px; }
-.navbar-logo { flex: 0 0 54px; width: 54px; height: 54px; }
-.navbar-center { flex: 1; gap: clamp(16px, 2vw, 32px); flex-wrap: nowrap; }
-.navbar .navbar-center a, .navbar .login-link { font-size: 17px; }
-.navbar-account { flex: 0 0 auto; gap: 16px; }
-.navbar-menu-button, .mobile-language { display: none; }
-.navbar :focus-visible { outline: 3px solid #b7e35a; outline-offset: 4px; }
-.search-box { left: auto; right: 0; top: calc(100% + 18px); transform: none; }
-@media (max-width: 1023px) {
-  .navbar { height: 72px; min-height: 0; padding: 0 20px; gap: 16px; }
-  .navbar-logo { flex-basis: 48px; width: 48px; height: 48px; }
-  .navbar-account { margin-left: auto; }
-  .navbar-menu-button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: white; font-size: 28px; cursor: pointer; }
-  .navbar-center { display: none; position: absolute; top: 100%; left: 0; right: 0; padding: 12px 20px 20px; background: #1c2a39; box-shadow: 0 12px 20px rgb(0 0 0 / 15%); }
-  .navbar-center.is-open { display: flex; align-items: stretch; flex-direction: column; gap: 0; }
-  .navbar .navbar-center a { display: block; padding: 13px 4px; font-size: 18px; }
-  .desktop-language { display: none; }
-  .mobile-language { display: block; padding: 12px 4px; }
+.navbar {
+  position: relative;
+  /* One above leaflet's map controls (1000), so menus and the drawer cover the map. */
+  z-index: calc(var(--z-header) + 1);
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  grid-template-areas: "logo search nav account";
+  align-items: center;
+  column-gap: clamp(10px, 1.6vw, 20px);
+  height: 80px;
+  padding: 0 clamp(14px, 2vw, 30px);
+  background-color: var(--color-ink);
+  color: var(--color-on-dark);
 }
-@media (max-width: 520px) {
-  .navbar { padding: 0 12px; gap: 8px; }
-  .navbar-account { gap: 10px; }
-  .login-link span, .profile-menu-trigger > span:not(.navbar-avatar) { display: none; }
-  .login-link { min-width: 32px; min-height: 44px; justify-content: center; }
-  .search-box { right: -90px; left: auto; width: min(300px, calc(100vw - 24px)); }
-}
-
-@media (max-width: 1023px) {
-  .navbar-center {
-    left: auto;
-    right: 16px;
-    width: min(360px, calc(100vw - 32px));
-    max-height: calc(100dvh - 84px);
-    overflow-y: auto;
-    padding: 8px 16px 16px;
-    border: 1px solid rgb(255 255 255 / 12%);
-    border-radius: 0 0 14px 14px;
-  }
-  .navbar .navbar-center a {
-    padding: 14px 4px;
-    border-bottom: 1px solid rgb(255 255 255 / 10%);
-  }
-  .mobile-language { padding: 14px 4px 0; }
-  .mobile-language .language-selector { min-height: 36px; margin: 0; }
-  .mobile-language .language-dropdown {
-    position: static;
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 4px;
-    margin-top: 10px;
-    padding: 8px;
-    border-radius: 8px;
-    box-shadow: none;
-  }
-  .mobile-language .language-dropdown button { border-radius: 5px; }
-}
-
+.navbar.is-nav-open { z-index: var(--z-modal); }
 .navbar svg { display: block; flex-shrink: 0; }
-.icon-rotated { transform: rotate(180deg); }
-.profile-menu-arrow svg, .language-selector svg { transition: transform .2s ease; }
-.cart-button { color: white; display: grid; place-items: center; }
 
-/* The search field gets its own row when the navigation collapses. */
-@media (min-width: 1024px) {
-  .navbar { gap: 18px; }
-  .navbar-center { gap: clamp(12px, 1.5vw, 24px); }
-}
-@media (max-width: 1023px) {
-  .navbar { height: auto; min-height: 0; display: grid; grid-template-columns: 1fr auto auto; grid-template-rows: 52px 42px; gap: 8px 12px; padding: 10px 16px 12px; }
-  .navbar-logo { grid-column: 1; grid-row: 1; }
-  .navbar-account { grid-column: 2; grid-row: 1; }
-  .navbar-menu-button { grid-column: 3; grid-row: 1; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: white; cursor: pointer; }
-  .header-search { grid-column: 1 / -1; grid-row: 2; }
-  .navbar-center { display: none; position: absolute; top: 100%; left: auto; right: 16px; width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 124px); overflow-y: auto; padding: 8px 16px 16px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 0 0 14px 14px; background: #1c2a39; box-shadow: 0 12px 20px rgb(0 0 0 / 15%); }
-  .navbar-center.is-open { display: flex; align-items: stretch; flex-direction: column; gap: 0; }
-  .navbar .navbar-center a { display: block; padding: 14px 4px; border-bottom: 1px solid rgb(255 255 255 / 10%); font-size: 18px; }
-  .desktop-language { display: none; }
-  .mobile-language { display: block; padding: 14px 4px 0; }
-}
-@media (min-width: 601px) and (max-width: 1023px) {
-  .navbar { grid-template-columns: auto minmax(140px, 1fr) auto auto; grid-template-rows: 52px; gap: 12px; padding: 10px 20px; }
-  .navbar-logo { grid-column: 1; }
-  .header-search { grid-column: 2; grid-row: 1; max-width: 480px; justify-self: center; }
-  .navbar-account { grid-column: 3; }
-  .navbar-menu-button { grid-column: 4; }
-}
+/* Logo */
+.navbar-logo { grid-area: logo; display: flex; width: 48px; height: 48px; overflow: hidden; border-radius: var(--radius-md); }
+.navbar-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
 
-/* Shared sizing for header controls. */
-.navbar-logo { flex: 0 0 48px; width: 48px; height: 48px; border-radius: 10px; }
-.navbar-account { align-items: center; gap: 12px; }
-.navbar .navbar-center a { display: inline-flex; align-items: center; min-height: 44px; font-size: 16px; font-weight: 600; }
-.navbar .login-link, .profile-menu-trigger { min-height: 44px; gap: 8px; font-size: 16px; font-weight: 600; }
-.cart-button, .navbar-menu-button { width: 44px; height: 44px; flex: 0 0 44px; }
-.navbar-avatar { width: 32px; height: 32px; flex-basis: 32px; }
-.profile-menu-trigger > span:nth-child(2) { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
-.cart-count { right: 0; top: 0; }
-@media (min-width: 1024px) { .navbar { gap: 20px; } .navbar-center { gap: clamp(14px, 1.4vw, 24px); } }
-@media (max-width: 1023px) { .navbar .navbar-center a { display: flex; min-height: 46px; font-size: 17px; } }
-@media (max-width: 520px) { .navbar-account { gap: 4px; } .login-link { min-width: 44px; } }
-.desktop-nav-menus { display: flex; align-items: center; gap: clamp(14px, 1.4vw, 24px); }
-.nav-menu-group { position: relative; }
-.nav-menu-trigger { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 0; border: 0; background: none; color: white; font: 600 16px "League Spartan", sans-serif; cursor: pointer; }
-.nav-menu-trigger:hover { opacity: .75; }
-.nav-menu-panel { position: absolute; top: calc(100% + 6px); left: -12px; z-index: 100; width: 200px; padding: 6px; border: 1px solid #e5d9c9; border-radius: 11px; background: #fffefa; box-shadow: 0 12px 28px rgb(28 42 57 / 18%); }
-.navbar .nav-menu-panel a { display: flex; min-height: 44px; padding: 10px 12px; border-radius: 7px; color: #1c2a39; font-size: 15px; }
-.navbar .nav-menu-panel a:hover { background: #f7ebd8; opacity: 1; }
-.nav-menu-language { padding: 0 12px; border-top: 1px solid #e5d9c9; }
-.nav-menu-language .language-control, .nav-menu-language .language-control .language-select { color: #1c2a39; }
+.navbar-search { grid-area: search; }
+
+/* Primary navigation (desktop row) */
+.navbar-center {
+  grid-area: nav;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 1.4vw, 24px);
+  min-width: 0;
+}
+.navbar-center > a,
+.mobile-nav-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-on-dark);
+  font-size: clamp(14px, 1.25vw, 16px);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.navbar-center > a:hover { opacity: .75; }
+.navbar-center > a[aria-current="page"] { color: var(--color-lime); box-shadow: inset 0 -2px var(--color-lime); }
+
+.desktop-nav-menus { display: flex; align-items: center; gap: clamp(12px, 1.4vw, 24px); }
+.navbar .nav-menu-trigger {
+  gap: 5px;
+  padding: 0;
+  color: var(--color-on-dark);
+  font-size: clamp(14px, 1.25vw, 16px);
+  font-weight: 600;
+}
+.navbar .nav-menu-trigger:hover { background: none; opacity: .75; }
+.navbar .nav-menu-trigger.is-current { color: var(--color-lime); box-shadow: inset 0 -2px var(--color-lime); border-radius: 0; }
 .mobile-nav-links { display: none; }
-@media (max-width: 1023px) { .desktop-nav-menus { display: none; } .mobile-nav-links { display: contents; } }
-.navbar-center > a[aria-current="page"], .nav-menu-trigger.is-current { color: #ffd4a7; }
-@media (min-width: 1024px) {
-  .navbar-center > a[aria-current="page"], .nav-menu-trigger.is-current { box-shadow: inset 0 -2px #ffd4a7; }
-}
-.navbar .nav-menu-panel a[aria-current="page"] { background: #f7ebd8; color: #a32a25; }
-@media (max-width: 1023px) { .navbar-center a[aria-current="page"] { color: #ffd4a7; } }
 
-@media (min-width: 1024px) and (max-width: 1200px) {
-  .navbar { gap: 10px; padding-inline: 14px; }
-  .navbar-center, .desktop-nav-menus { gap: 12px; }
-  .navbar .navbar-center a, .nav-menu-trigger { font-size: 14px; }
-  .profile-menu-trigger > span:nth-child(2) { max-width: 75px; }
-  .header-search { min-width: 140px; }
+/* Account + cart */
+.navbar-account { grid-area: account; justify-self: end; display: flex; align-items: center; gap: 12px; }
+.navbar-account-loading { font-size: 15px; white-space: nowrap; }
+
+.login-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--color-on-dark);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.login-link:hover { opacity: .75; }
+
+.navbar .nav-account-trigger { gap: 8px; padding: 0 4px; color: var(--color-on-dark); white-space: nowrap; }
+.navbar .nav-account-trigger:hover { background: none; opacity: .85; }
+.nav-account-name { max-width: clamp(75px, 9vw, 140px); overflow: hidden; text-overflow: ellipsis; }
+.nav-account-chevron { opacity: .8; transition: transform var(--dur) ease; }
+.nav-account-trigger[aria-expanded="true"] .nav-account-chevron { transform: rotate(180deg); }
+.navbar .navbar-avatar { background: var(--color-accent-strong); }
+
+.nav-account-header { display: flex; align-items: center; gap: 11px; color: var(--color-ink); }
+.nav-account-header__text { min-width: 0; }
+.nav-account-header__text strong,
+.nav-account-header__text span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-account-header__text strong { font-size: 16px; }
+.nav-account-header__text span { margin-top: 3px; color: var(--color-muted); font-size: 13px; }
+
+.cart-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-on-dark);
+  cursor: pointer;
+}
+.cart-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 19px;
+  height: 19px;
+  padding: 2px 4px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-strong);
+  color: var(--color-on-dark);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-@media (min-width: 1024px) and (max-width: 1450px) {
-  .navbar .header-search { width: clamp(150px, 18vw, 260px); flex: 0 1 260px; }
+.navbar-menu-button { display: none; }
+.navbar-backdrop { display: none; }
+
+/* Drawer navigation */
+@media (max-width: 1023px) {
+  .navbar {
+    grid-template-columns: auto minmax(140px, 1fr) auto auto;
+    grid-template-areas: "logo search account menu";
+    gap: 12px;
+    height: 72px;
+    padding: 0 20px;
+  }
+
+  .navbar-menu-button {
+    grid-area: menu;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-on-dark);
+    cursor: pointer;
+  }
+
+  .navbar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-modal) - 1);
+    display: block;
+    background: color-mix(in srgb, var(--color-ink-deep) 55%, transparent);
+  }
+
+  .navbar-center {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: none;
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px 20px 16px;
+    border-top: 1px solid color-mix(in srgb, var(--color-on-dark) 12%, transparent);
+    background: var(--color-ink);
+    box-shadow: var(--shadow-md);
+  }
+  .navbar-center.is-open { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+  .navbar-center > a,
+  .mobile-nav-links a {
+    display: flex;
+    min-height: 48px;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-on-dark) 10%, transparent);
+    font-size: 17px;
+  }
+  .navbar-center a[aria-current="page"] { color: var(--color-lime); box-shadow: none; }
+
+  .desktop-nav-menus { display: none; }
+  .mobile-nav-links { display: contents; }
+}
+
+/* Phones: search drops to its own row. */
+@media (max-width: 639px) {
+  .navbar {
+    grid-template-columns: 1fr auto auto;
+    grid-template-rows: 52px auto;
+    grid-template-areas: "logo account menu" "search search search";
+    gap: 8px 12px;
+    height: auto;
+    padding: 10px 16px 12px;
+  }
+  .navbar-center { max-height: calc(100dvh - 128px); padding-inline: 16px; }
+
+  /* Anchor the account menu to the header's right gutter instead of the
+     trigger, so the panel can't run off the left edge. */
+  .navbar .nav-account-menu { position: static; }
+  .navbar .nav-account-menu .ui-menu__panel { right: 16px; }
+}
+
+@media (max-width: 480px) {
+  .navbar-account { gap: 4px; }
+  .login-link span,
+  .nav-account-name { display: none; }
+  .login-link { justify-content: center; min-width: 44px; }
 }

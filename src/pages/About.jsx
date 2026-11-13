@@ -1,15 +1,18 @@
+import { fetchProfilesByIds } from "../lib/profiles";
+import { formatPrice } from "../lib/format";
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, Store } from 'lucide-react';
 import SailingHero from '../components/SailingHero';
-import ShopProductCard from '../components/ShopProductCard';
-import SaleCard, { ProductSkeleton, SaleSkeleton } from '../components/SaleCard';
+import { CardGrid } from '../components/layout/CardGrid';
+import { SectionHeader } from '../components/layout/SectionHeader';
+import { ListingSkeleton, ListingSkeletonGroup } from '../components/listing/ListingSkeleton';
+import { ProductCard } from '../components/listing/ProductCard';
+import { SaleListingCard } from '../components/listing/SaleListingCard';
+import { Button } from '../components/ui/Button';
+import { StatusMessage } from '../components/ui/StatusMessage';
 import { supabase } from '../lib/supabase';
 import { getSaleStatus } from '../utils/saleTime';
 import useSaleClock from '../utils/useSaleClock';
-import '../components/ui.css';
-import './Shop.css';
-import './PostSale.css';
 import './About.css';
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -27,11 +30,11 @@ function useAboutData() {
       if (sales.error) console.error('Unable to load about yard sales:', sales.error);
       const productRows = products.data || [];
       const sellerIds = [...new Set(productRows.map(product => product.user_id).filter(Boolean))];
-      const profiles = sellerIds.length ? await supabase.from('profiles').select('id, username, avatar_url').in('id', sellerIds) : { data: [] };
+      const profiles = await fetchProfilesByIds(sellerIds);
       if (!active) return;
       setData({
         products: productRows,
-        sellers: Object.fromEntries((profiles.data || []).map(profile => [profile.id, profile])),
+        sellers: profiles,
         sales: sales.data || [],
         productCount: products.error ? null : products.count ?? productRows.length,
         loading: false,
@@ -76,7 +79,7 @@ function SellFormPreview({ product }) {
       </div>
     </div>
     <div className="sale-details-grid form-section">
-      <div><span className="input-label">Price</span><div className="sale-input">{product.price != null ? Number(product.price).toFixed(2) : '\u00a0'}</div></div>
+      <div><span className="input-label">Price</span><div className="sale-input">{product.price != null ? formatPrice(product.price) : '\u00a0'}</div></div>
       <div><span className="input-label">Brand</span><div className="sale-input">{product.brand || 'Brand (optional)'}</div></div>
       <div><span className="input-label">Condition</span><div className="sale-input">{product.condition || '\u00a0'}</div></div>
     </div>
@@ -96,7 +99,7 @@ function FeatureRow({ title, copy, link, action, path, children }) {
     <div className="about-feature-copy">
       <h3>{title}</h3>
       <p>{copy}</p>
-      <Link className="ui-button" to={link}>{action} <ArrowRight size={18} aria-hidden="true"/></Link>
+      <Button variant="secondary" to={link} iconAfter={<ArrowRight size={18} />}>{action}</Button>
     </div>
     <figure className="about-visual">
       <div className="about-visual-bar" aria-hidden="true"><span/><span/><span/><code>{path}</code></div>
@@ -130,25 +133,25 @@ export default function About() {
         <div className="about-hero-copy">
           <h1>Yard sales and secondhand finds, <span>near you.</span></h1>
           <p className="about-lede">Yard Sailor is a local marketplace. Find yard sales to visit, buy single items from neighbors, or sell your own.</p>
-          <div className="about-hero-actions"><Link className="ui-button about-button-red" to="/find-yard-sale"><MapPin size={18} aria-hidden="true"/> Find a yard sale</Link><Link className="ui-button ui-button-secondary" to="/shop"><Store size={18} aria-hidden="true"/> Shop items</Link></div>
+          <div className="about-hero-actions"><Button to="/find-yard-sale" icon={<MapPin size={18} />}>Find a yard sale</Button><Button variant="secondary" to="/shop" icon={<Store size={18} />}>Shop items</Button></div>
           <div className="about-stats"><Stat value={loading ? null : productCount} label="Items for sale"/>{(loading || openSales.length > 0) && <Stat value={loading ? null : openSales.length} label="Upcoming yard sales"/>}</div>
         </div>
         {(loading || heroSale || heroProduct) && <div className="about-hero-cards">
           {/* One slot per card, so the entrance animation runs once and only the contents swap. */}
-          {(loading || heroSale) && <figure className="about-hero-card"><figcaption>A yard sale</figcaption>{heroSale ? <SaleCard sale={heroSale} now={now}/> : <SaleSkeleton/>}</figure>}
-          {(loading || heroProduct) && <figure className="about-hero-card"><figcaption>An item for sale</figcaption>{heroProduct ? <ShopProductCard product={heroProduct} seller={sellers[heroProduct.user_id]}/> : <ProductSkeleton/>}</figure>}
+          {(loading || heroSale) && <figure className="about-hero-card"><figcaption>A yard sale</figcaption>{heroSale ? <SaleListingCard sale={heroSale} now={now}/> : <ListingSkeleton seller={false}/>}</figure>}
+          {(loading || heroProduct) && <figure className="about-hero-card"><figcaption>An item for sale</figcaption>{heroProduct ? <ProductCard product={heroProduct} seller={sellers[heroProduct.user_id]}/> : <ListingSkeleton/>}</figure>}
         </div>}
       </div>
     </header>
 
-    <h2 className="about-features-title about-width">What you can do on Yard Sailor</h2>
+    <SectionHeader className="about-features-title about-width" title="What you can do on Yard Sailor" />
 
     <FeatureRow title="Find yard sales" copy="See local yard sales with dates, times, and photos, then plan your stops." link="/find-yard-sale" action="Open the map" path="/find-yard-sale">
-      {loading ? <div className="about-sale-list"><SaleSkeleton/><SaleSkeleton/></div> : featuredSales.length ? <div className="about-sale-list">{featuredSales.slice(0, 2).map(sale => <SaleCard key={sale.id} sale={sale} now={now}/>)}</div> : <p className="about-muted">No yard sales yet. <Link to="/post-yard-sale">Post the first one</Link>.</p>}
+      {loading ? <ListingSkeletonGroup className="about-sale-list" count={2} seller={false} label="Loading yard sales…"/> : featuredSales.length ? <CardGrid className="about-sale-list" columns={{ base: 2, md: 2, lg: 2 }} gap="sm" limit={2}>{featuredSales.map(sale => <SaleListingCard key={sale.id} sale={sale} now={now}/>)}</CardGrid> : <StatusMessage compact title="No yard sales yet." action={<Button to="/post-yard-sale" variant="secondary" size="sm">Post the first one</Button>}/>}
     </FeatureRow>
 
     <FeatureRow title="Shop secondhand items" copy="Browse single items from people nearby. Save favorites and message the seller." link="/shop" action="Browse the shop" path="/shop">
-      {loading ? <div className="shop-grid about-items-grid"><ProductSkeleton/><ProductSkeleton/><ProductSkeleton/></div> : products.length ? <div className="shop-grid about-items-grid">{products.slice(0, 3).map(product => <ShopProductCard key={product.id} product={product} seller={sellers[product.user_id]}/>)}</div> : <p className="about-muted">No items yet. <Link to="/post-sale">Post the first one</Link>.</p>}
+      {loading ? <ListingSkeletonGroup className="about-items-grid" count={3} label="Loading items…"/> : products.length ? <CardGrid className="about-items-grid" columns={{ base: 2, md: 3, lg: 3 }} gap="sm" limit={3}>{products.map(product => <ProductCard key={product.id} product={product} seller={sellers[product.user_id]}/>)}</CardGrid> : <StatusMessage compact title="No items yet." action={<Button to="/post-sale" variant="secondary" size="sm">Post the first one</Button>}/>}
     </FeatureRow>
 
     <FeatureRow title="Sell your stuff" copy="Add photos, a price, and how buyers can get it. Hosting a yard sale? Put it on the map instead." link="/post-sale" action="Post an item" path="/post-sale">
@@ -157,7 +160,7 @@ export default function About() {
 
     <section className="about-cta about-width" data-reveal aria-labelledby="about-cta-title">
       <SailingHero/>
-      <div className="about-cta-copy"><h2 id="about-cta-title">Set sail this weekend.</h2><p>Your next favorite thing is probably a few streets away.</p><div className="about-hero-actions"><Link className="ui-button about-button-cream" to="/find-yard-sale">Find a yard sale <ArrowRight size={18} aria-hidden="true"/></Link><Link className="ui-button about-button-ghost" to="/shop">Shop items</Link></div></div>
+      <div className="about-cta-copy"><h2 id="about-cta-title">Set sail this weekend.</h2><p>Your next favorite thing is probably a few streets away.</p><div className="about-hero-actions"><Button variant="secondary" className="about-button-cream" to="/find-yard-sale" iconAfter={<ArrowRight size={18} />}>Find a yard sale</Button><Button variant="ghost" className="about-button-ghost" to="/shop">Shop items</Button></div></div>
     </section>
   </main>;
 }

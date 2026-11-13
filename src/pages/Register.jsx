@@ -1,9 +1,16 @@
+import { Mail, UserRound } from "lucide-react";
 import SocialLogin from "../components/SocialLogin";
+import { PasswordInput } from "../components/PasswordInput";
+import { AuthCard } from "../components/layout/AuthCard";
+import { Field } from "../components/ui/Field";
+import { TextInput } from "../components/ui/TextInput";
+import { Button } from "../components/ui/Button";
+import { FormAlert } from "../components/ui/FormAlert";
 import { returnPath, saveReturn } from "../lib/authFlow";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-import "./Register.css";
+import "./Login.css";
 
 function Register() {
   const navigate = useNavigate();
@@ -16,8 +23,8 @@ function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [showPassword, setShowPassword] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleRegister(event) {
@@ -72,7 +79,8 @@ function Register() {
     if (data.session) {
       navigate(`/profile/setup?redirect=${encodeURIComponent(redirect)}`, { replace: true });
     } else {
-      setFeedback(
+      setFeedback("");
+      setSuccess(
         "Account created! Check your email to confirm your account, then log in."
       );
 
@@ -83,108 +91,85 @@ function Register() {
   }
 
   return (
-    <main className="register-page">
-      <div className="register-brand">
-        Yard Sailor
-      </div>
+    <AuthCard
+      title="Create Account"
+      subtitle="Join Yard Sailor and start discovering neighborhood treasures."
+      footer={(
+        <div className="auth-footer">
+          <p>
+            Already have an account?{" "}
+            <Link to={`/login?redirect=${encodeURIComponent(redirect)}`}>Log in</Link>
+          </p>
+          <a href="/privacy" className="auth-footer__legal">Privacy Policy</a>
+        </div>
+      )}
+    >
+      {feedback ? (
+        <FormAlert>{feedback}</FormAlert>
+      ) : success ? (
+        <FormAlert tone="success">{success}</FormAlert>
+      ) : null}
 
-      <section className="register-card">
-        <h1>Create Account</h1><p role="alert">{feedback}</p>
+      <form className="auth-form" onSubmit={handleRegister}>
+        <Field label="Full name">
+          <TextInput
+            type="text"
+            name="name"
+            autoComplete="name"
+            maxLength={100}
+            leadingIcon={<UserRound size={20} />}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </Field>
 
-        <p className="register-subtitle">
-          Join Yard Sailor and start discovering neighborhood treasures.
-        </p>
+        <Field label="Email">
+          <TextInput
+            type="email"
+            name="email"
+            autoComplete="email"
+            leadingIcon={<Mail size={20} />}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </Field>
 
-        <form
-          className="register-form"
-          onSubmit={handleRegister}
+        <Field label="Password" hint="At least 6 characters.">
+          <PasswordInput
+            name="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </Field>
+
+        <Field label="Confirm password">
+          <PasswordInput
+            name="confirmPassword"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </Field>
+
+        <Button
+          type="submit"
+          block
+          loading={loading}
+          disabled={socialBusy}
         >
-          <div className="register-input">
-            <input
-              type="text"
-              placeholder="Full name" aria-label="Full name" autoComplete="name" maxLength={100}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
+          {loading ? "Creating account..." : "Sign Up"}
+        </Button>
+      </form>
 
-          <div className="register-input">
-            <input
-              type="email"
-              name="email" aria-label="Email"
-              autoComplete="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+      <div className="auth-divider"><span>Or</span></div>
 
-          <div className="register-input">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password" aria-label="Password"
-              autoComplete="new-password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="register-input">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="confirmPassword" aria-label="Confirm password"
-              autoComplete="new-password"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <label className="show-password">
-            <input
-              type="checkbox"
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-            />
-
-            Show password
-          </label>
-
-          <button
-            type="submit"
-            className="register-submit"
-            disabled={loading || socialBusy}
-          >
-            {loading ? "Creating account..." : "Sign Up"}
-          </button>
-        </form>
-
-        <SocialLogin redirect={redirect} disabled={loading} onBusy={setSocialBusy} />
-
-        <p className="already-account">
-          Already have an account?
-        </p>
-
-        <Link
-          to={`/login?redirect=${encodeURIComponent(redirect)}`}
-          className="login-link-button"
-        >
-          Log In
-        </Link>
-
-        <a
-          href="/privacy"
-          className="register-privacy-button"
-        >
-          Privacy Policy
-        </a>
-      </section>
-    </main>
+      <SocialLogin redirect={redirect} disabled={loading} onBusy={setSocialBusy} />
+    </AuthCard>
   );
 }
 

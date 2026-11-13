@@ -1,0 +1,15 @@
+.ui-checkbox { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 10px 0; }
+.ui-checkbox__input {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: var(--color-ink);
+  cursor: pointer;
+}
+.ui-checkbox__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ui-checkbox__label { color: var(--color-ink); font-size: 16px; line-height: 1.35; cursor: pointer; }
+.ui-checkbox__description { margin: 0; color: var(--color-muted); font-size: 14px; line-height: 1.4; }
+.ui-checkbox.is-disabled .ui-checkbox__input,
+.ui-checkbox.is-disabled .ui-checkbox__label { cursor: not-allowed; }
+.ui-checkbox.is-disabled .ui-checkbox__label { color: var(--color-muted); }

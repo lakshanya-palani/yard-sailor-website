@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { completeCallback, profileDestination, readReturn, clearReturn, authReturnStorage } from '../lib/authFlow';
-import './Login.css';
+import { AuthCard } from '../components/layout/AuthCard';
+import { FormAlert } from '../components/ui/FormAlert';
+import { StatusMessage } from '../components/ui/StatusMessage';
 // One exchange per page load, including React StrictMode remounts. Never log/store the code.
 let completion;
 export default function AuthCallback() {
@@ -23,7 +25,15 @@ export default function AuthCallback() {
     return()=>{active=false;};
   },[navigate,retry,location.key]);
   const redirect=readReturn(authReturnStorage);
-  return <main className="login-page"><section className="login-card"><h1>Finishing sign-in</h1>
-    {error?<><p role="alert">{error}</p>{canRetry && <button className="login-submit" onClick={()=>{setError('');setRetry(v=>v+1);}}>Retry session check</button>}<p><Link to={`/login?redirect=${encodeURIComponent(redirect)}`}>Return to login</Link></p></>:<p role="status">Restoring your account…</p>}
-  </section></main>;
+  return <AuthCard
+    title="Finishing sign-in"
+    footer={error ? <Link to={`/login?redirect=${encodeURIComponent(redirect)}`}>Return to login</Link> : null}
+  >
+    {error
+      ? <FormAlert
+        onRetry={canRetry ? ()=>{setError('');setRetry(v=>v+1);} : undefined}
+        retryLabel="Retry session check"
+      >{error}</FormAlert>
+      : <StatusMessage kind="loading">Restoring your account…</StatusMessage>}
+  </AuthCard>;
 }

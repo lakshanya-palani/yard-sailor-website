@@ -1,20 +1,39 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
+import { MapPinned } from "lucide-react";
 import SaleMap from "../components/SaleMap";
-import { getSaleStatus, saleOverlapsLocalWindow, saleStatusLabel } from "../utils/saleTime";
+import { PageShell } from "../components/layout/PageShell";
+import { PageHeader } from "../components/layout/PageHeader";
+import { SectionHeader } from "../components/layout/SectionHeader";
+import { LocationSearch } from "../components/listing/LocationSearch";
+import { SaleListingCard } from "../components/listing/SaleListingCard";
+import { ListingSkeletonGroup } from "../components/listing/ListingSkeleton";
+import { Button } from "../components/ui/Button";
+import { SegmentedControl } from "../components/ui/SegmentedControl";
+import { StatusMessage } from "../components/ui/StatusMessage";
+import { getSaleStatus, saleOverlapsLocalWindow } from "../utils/saleTime";
 import useSaleClock from "../utils/useSaleClock";
 import { supabase } from "../lib/supabase";
 import {
   calculateDistanceMiles,
   geocodeAddress,
-  getPublicLocation,
   hasValidCoordinates,
   requestUserLocation,
 } from "../utils/location";
 import "./FindYardSale.css";
 
+const DATE_FILTERS = [
+  { value: "all", label: "All Yard Sales" },
+  { value: "today", label: "Today" },
+  { value: "weekend", label: "This Weekend" },
+];
+
+const VIEWS = [
+  { value: "list", label: "List" },
+  { value: "map", label: "Map" },
+];
+
 function FindYardSale() {
-  const navigate = useNavigate();
   const routeLocation = useLocation();
   const requestedLocation = routeLocation.state?.requestedLocation;
   const [searchParams] = useSearchParams();
@@ -26,7 +45,30 @@ function FindYardSale() {
   const [mapCenter, setMapCenter] = useState(null);
   const [selectedSaleId, setSelectedSaleId] = useState(null);
   const [selectionRequest, setSelectionRequest] = useState(0);
-  const [query, setQuery] = useState(initialSearch); 
+  const [query, setQuery] = useState(initialSearch);
+  const [filter, setFilter] = useState("all");
+  const [view, setView] = useState("list");
+  const [locationLabel, setLocationLabel] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [salesError, setSalesError] = useState(false);
+  const [salesRetry, setSalesRetry] = useState(0);
+  const [searching, setSearching] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [error, setError] = useState("");
+
+  // A location handed over by the homepage ("Use my location") is applied once per
+  // navigation state object, during render rather than in an effect.
+  const [appliedRequestedLocation, setAppliedRequestedLocation] = useState(null);
+  if ((requestedLocation ?? null) !== appliedRequestedLocation) {
+    setAppliedRequestedLocation(requestedLocation ?? null);
+    if (requestedLocation && hasValidCoordinates(requestedLocation.latitude, requestedLocation.longitude)) {
+      setOrigin(requestedLocation);
+      setMapCenter(requestedLocation);
+      setLocationLabel("Your location");
+      setSelectedSaleId(null);
+    }
+  }
+
   useEffect(() => {
     const search = searchParams.get("q")?.trim();
     if (!search) return;
@@ -59,30 +101,9 @@ function FindYardSale() {
     };
   }, [searchParams]);
 
-  const [filter, setFilter] = useState("all");
-  const [view, setView] = useState("list");
-  const [locationLabel, setLocationLabel] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [salesError, setSalesError] = useState(false);
-  const [salesRetry, setSalesRetry] = useState(0);
-  const [searching, setSearching] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (
-      !requestedLocation ||
-      !hasValidCoordinates(
-        requestedLocation.latitude,
-        requestedLocation.longitude
-      )
-    ) {
-      return;
-    }
-    setOrigin(requestedLocation);
-    setMapCenter(requestedLocation);
-    setLocationLabel("Your location");
-    setSelectedSaleId(null);
-  }, [requestedLocation]);
+  // Read at effect time (latest render), so a retry still skips auto-locating when the
+  // visitor arrived with a search or a location.
+  const shouldAutoLocate = useEffectEvent(() => !initialSearch && !requestedLocation);
 
   useEffect(() => {
     async function loadSales() {
@@ -102,7 +123,7 @@ function FindYardSale() {
     }
 
     loadSales();
-    if (!initialSearch && !requestedLocation) {
+    if (shouldAutoLocate()) {
       requestUserLocation().then((location) => {
         if (location) {
           setOrigin(location);
@@ -157,7 +178,13 @@ function FindYardSale() {
   }
 
   async function useMyLocation() {
-    const location = await requestUserLocation({ refresh: true });
+    setLocating(true);
+    let location;
+    try {
+      location = await requestUserLocation({ refresh: true });
+    } finally {
+      setLocating(false);
+    }
     if (!location) {
       setError("Location is unavailable. You can still search by city, ZIP code, or address.");
       return;
@@ -185,40 +212,64 @@ function FindYardSale() {
     setSelectionRequest(value => value + 1);
   }
 
+  let results;
+  if (loading) {
+    results = <ListingSkeletonGroup variant="row" count={3} seller={false} label="Loading yard sales…" />;
+  } else if (salesError) {
+    results = <StatusMessage kind="error" compact title="Unable to load yard sales." onRetry={() => { setLoading(true); setSalesRetry(value => value + 1); }} />;
+  } else if (displayedSales.length === 0) {
+    results = <StatusMessage compact title="No yard sales match this search or filter." />;
+  } else {
+    results = (
+      <ol className="yard-sale-result-list">
+        {displayedSales.map((sale, index) => (
+          <li key={sale.id}>
+            <SaleListingCard
+              sale={sale}
+              now={now}
+              variant="row"
+              number={index + 1}
+              className={sale.id === selectedSaleId ? "yard-sale-result is-selected" : "yard-sale-result"}
+              actions={(
+                <Button size="sm" variant="secondary" className="show-on-map" icon={<MapPinned size={16} />} onClick={() => selectSale(sale)} aria-label={`Show ${sale.title} on map`}>
+                  Show on map
+                </Button>
+              )}
+            />
+          </li>
+        ))}
+      </ol>
+    );
+  }
+
   return (
-    <main className="find-yard-sale-page">
-      <div className="find-yard-sale-header">
-        <h1>Find a Yard Sale</h1>
-        <form onSubmit={searchLocation} className="yard-sale-search-form">
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search city, ZIP code, or address" aria-label="Search city, ZIP code, or address" />
-          <button type="submit" disabled={searching}>{searching ? "Searching..." : "Search"}</button>
-          <button type="button" className="use-location-button" onClick={useMyLocation}>Use My Location</button>
-        </form>
-        {error && <p className="find-yard-sale-error">{error}</p>}
-      </div>
+    <PageShell width="wide" className="find-yard-sale-page">
+      <PageHeader title="Find a Yard Sale" />
+      <LocationSearch
+        value={query}
+        onChange={setQuery}
+        onSubmit={searchLocation}
+        onUseLocation={useMyLocation}
+        searching={searching}
+        locating={locating}
+        error={error}
+      />
 
-      <div className="yard-sale-filters" aria-label="Yard sale date filters">
-        <button aria-pressed={filter === "all"} className={filter === "all" ? "selected" : ""} onClick={() => setFilter("all")}>All Yard Sales</button>
-        <button aria-pressed={filter === "today"} className={filter === "today" ? "selected" : ""} onClick={() => setFilter("today")}>Today</button>
-        <button aria-pressed={filter === "weekend"} className={filter === "weekend" ? "selected" : ""} onClick={() => setFilter("weekend")}>This Weekend</button>
-      </div>
+      <SegmentedControl className="yard-sale-filters" label="Yard sale date filters" options={DATE_FILTERS} value={filter} onChange={setFilter} />
 
-      <div className="yard-sale-summary"><p role="status">{loading ? "Loading yard sales…" : `${displayedSales.length} ${displayedSales.length === 1 ? "yard sale" : "yard sales"}`} {locationLabel && `near ${locationLabel}`}</p><div className="yard-sale-view-toggle" aria-label="Results view"><button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button><button type="button" aria-pressed={view === "map"} onClick={() => setView("map")}>Map</button></div></div>
-      <p className="yard-sale-map-hint">Choose a numbered pin or select “Show on map” to explore a sale. The list includes all matching sales, even outside the current map view.</p>
+      <div className="yard-sale-summary">
+        <p role="status">{loading ? "Loading yard sales…" : `${displayedSales.length} ${displayedSales.length === 1 ? "yard sale" : "yard sales"}`} {locationLabel && `near ${locationLabel}`}</p>
+        <SegmentedControl className="yard-sale-view-toggle" size="sm" label="Results view" options={VIEWS} value={view} onChange={setView} />
+      </div>
+      <p className={`yard-sale-map-hint is-${view}`}>Choose a numbered pin or select “Show on map” to explore a sale. The list includes all matching sales, even outside the current map view.</p>
       <div className={`find-yard-sale-layout view-${view}`}>
         <div className="yard-sale-map-container" ref={mapSectionRef}><SaleMap sales={displayedSales} selectedSaleId={selectedSaleId} selectionRequest={selectionRequest} onSelectSale={setSelectedSaleId} center={mapCenter} className="find-yard-sale-map" /></div>
-        <aside className="yard-sale-results">
-          <div className="yard-sale-results-heading"><h2>Yard Sale Results</h2><span>{displayedSales.length}</span></div>
-          {loading ? <p className="yard-sale-results-message">Loading yard sales...</p> : salesError ? <p className="yard-sale-results-message">Unable to load yard sales. <button type="button" onClick={() => { setLoading(true); setSalesRetry(value => value + 1); }}>Try again</button></p> : displayedSales.length === 0 ? <p className="yard-sale-results-message">No yard sales match this search or filter.</p> : displayedSales.map((sale, index) => (
-            <article key={sale.id} className={`yard-sale-result-card ${sale.id === selectedSaleId ? "selected" : ""}`}>
-              <span className="yard-sale-result-number" aria-label={`Map pin ${index + 1}`}>{index + 1}</span>
-              <div className="yard-sale-result-image">{sale.images?.[0] ? <img src={sale.images[0]} alt={sale.title} /> : <span>Yard Sale</span>}</div>
-              <div className="yard-sale-result-info"><h3>{sale.title}</h3><p>{getPublicLocation(sale.address)}</p>{sale.distance != null && <strong>{sale.distance.toFixed(1)} miles away</strong>}<time>{sale.start_time ? new Date(sale.start_time).toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Time not specified"}</time><span className="yard-sale-result-status">{saleStatusLabel(sale, now)}</span><div className="yard-sale-result-actions"><button type="button" className="show-on-map" onClick={() => selectSale(sale)} aria-label={`Show ${sale.title} on map`}>Show on map</button><button type="button" onClick={() => navigate(`/yard-sale/${sale.id}`)}>View Yard Sale</button></div></div>
-            </article>
-          ))}
-        </aside>
+        <section className="yard-sale-results" aria-labelledby="yard-sale-results-title">
+          <SectionHeader title={<span id="yard-sale-results-title">Yard Sale Results</span>} count={displayedSales.length} />
+          {results}
+        </section>
       </div>
-    </main>
+    </PageShell>
   );
 }
 

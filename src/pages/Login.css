@@ -1,329 +1,65 @@
-.login-page {
-    min-height: calc(100vh - 178px);
-  
-    position: relative;
-  
-    padding: 28px 30px 80px;
-  
-    background-color: #fff3df;
-  
-    font-family: "League Spartan", sans-serif;
-  }
-  
-  /* Yard Sailor title */
-  
-  .login-brand {
-    position: absolute;
-  
-    top: 22px;
-    left: 32px;
-  
-    color: #ef403a;
-  
-    font-size: 46px;
-    font-weight: 800;
-  }
-  
-  /* Center login content */
-  
-  .login-card {
-    width: min(390px, calc(100% - 40px));
-  
-    margin: 75px auto 0;
-  
-    text-align: center;
-  }
-  
-  .login-card h1 {
-    margin: 0 0 16px;
-  
-    color: #111;
-  
-    font-size: 25px;
-    font-weight: 800;
-  }
-  
-  /* Form */
-  
-  .login-form {
-    width: 100%;
-  }
-  
-  .login-input {
-    width: 100%;
-    height: 44px;
-  
-    display: flex;
-    align-items: center;
-  
-    gap: 10px;
-  
-    padding: 0 12px;
-  
-    margin-bottom: 16px;
-  
-    border: 1px solid #cfcfcf;
-    border-radius: 9px;
-  
-    background: transparent;
-  }
-  
-  .login-input:focus-within {
-    border-color: #999;
-  }
-  
-  /* Same size + spacing for email and lock */
-  .login-field-icon {
-    width: 20px;
-    height: 20px;
-  
-    flex-shrink: 0;
-  
-    object-fit: contain;
-  }
-  
-  .login-input input {
-    flex: 1;
-    min-width: 0;
-    height: 100%;
-  
-    padding: 0;
-  
-    border: none;
-    outline: none;
-  
-    background: transparent;
-  
-    font-family: "League Spartan", sans-serif;
-    font-size: 16px;
-  
-    color: #222;
-  }
-  
-  .login-input input::placeholder {
-    color: #999;
-  }
-  
-  .password-toggle {
-    width: 28px;
-    height: 100%;
-  
-    flex-shrink: 0;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    padding: 0;
-  
-    border: none;
-    background: transparent;
-  
-    cursor: pointer;
-  }
-  
-  .view-password-icon {
-    width: 20px;
-    height: 20px;
-  
-    display: block;
-    object-fit: contain;
-  }
-  
-  /* Forgot password */
-  
-  .forgot-password {
-    display: block;
-  
-    margin-top: 4px;
-  
-    color: #6f6df6;
-  
-    text-align: right;
-  
-    font-size: 15px;
-  
-    text-decoration: none;
-  }
-  
-  /* Login button */
-  
-  .login-submit {
-    width: 100%;
-    height: 44px;
-  
-    margin-top: 36px;
-  
-    border: none;
-    border-radius: 22px;
-  
-    background-color: #ef403a;
-    color: white;
-  
-    font-family: "League Spartan", sans-serif;
-    font-size: 16px;
-  
-    cursor: pointer;
-  }
-  
-  .login-submit:hover {
-    background-color: #da3530;
-  }
-  
-  /* Divider */
-  
-  .login-divider {
-    display: flex;
-    align-items: center;
-  
-    gap: 10px;
-  
-    margin: 8px 0; 
-  }
-  
-  .login-divider span {
-    flex: 1;
-  
-    height: 1px;
-  
-    background-color: #ddd;
-  }
-  
-  .login-divider p {
-    margin: 0;
-  
-    color: #8a8a8a;
-  
-    font-size: 15px;
-  }
-  
-  /* Social login */
-  
-  .social-login {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
+/* Shared by Login, Register and SocialLogin (inside AuthCard). */
 
-  .google-icon {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    position: relative;
-    top: -2px;
-  }
+.auth-form {
+  display: grid;
+  gap: 16px;
+}
 
-  .facebook-icon {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    position: relative;
-    top: -2px;
-    margin-right: -7px;
-  }
-  
-  .social-button {
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    border: 1px solid #545bd8;
-    border-radius: 22px;
-    background: transparent;
-  
-    color: #4250b7;
-  
-    font-family: "League Spartan", sans-serif;
-    font-size: 15px;
-  
-    cursor: pointer;
-  }
-  
-  .google-icon {
-    color: #4285f4;
-  
-    font-size: 19px;
-    font-weight: 800;
-  }
-  
-  .apple-icon {
-    color: black;
-  
-    font-size: 18px;
-  }
-  
-  /* Registration */
-  
-  .no-account {
-    margin: 28px 0 16px;
-  
-    color: #8a8a8a;
-  
-    font-size: 15px;
-  }
-  
-  .registration-button {
-    width: 100%;
-    height: 44px;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    border: 1px solid #545bd8;
-    border-radius: 22px;
-  
-    color: #4250b7;
-  
-    font-size: 15px;
-  
-    text-decoration: none;
-  }
-  
-  /* Privacy */
-  
-  .privacy-button {
-    width: 165px;
-    height: 45px;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    margin: 20px auto 0;
-  
-    border-radius: 14px;
-  
-    background-color: #35393d;
-    color: white;
-  
-    font-size: 14px;
-    font-weight: 600;
-  
-    text-decoration: none;
-  }
-  
-  /* Mobile */
-  
-  @media (max-width: 600px) {
-    .login-brand {
-      position: static;
-  
-      margin-bottom: 30px;
-  
-      font-size: 36px;
-    }
-  
-    .login-card {
-      margin-top: 0;
-    }
-  
-    .social-login {
-      grid-template-columns: 1fr;
-    }
-  }
-.social-auth-options { margin-top: 20px; }
-.social-auth-options .social-login { grid-template-columns: 1fr; }
-.social-auth-options .social-button { width: 100%; }
-.social-auth-options .social-button:disabled { opacity: .6; cursor: wait; }
+.auth-help-link {
+  justify-self: end;
+  margin-top: -8px;
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border-subtle);
+}
+
+.social-login {
+  display: grid;
+  gap: 10px;
+}
+
+.social-button__icon {
+  display: block;
+  object-fit: contain;
+}
+
+.google-icon { width: 20px; height: 20px; }
+
+/* fbicon.png is a 3:2 canvas with padding around the logo. */
+.facebook-icon { width: 36px; height: 24px; margin: 0 -8px; }
+
+.social-auth-status {
+  margin: 10px 0 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.social-auth-options .ui-alert { margin-top: 10px; }
+
+.auth-footer p { margin: 0; }
+
+.auth-footer__legal {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.ui-auth-card__footer .auth-footer__legal { color: var(--color-muted); font-weight: 600; }

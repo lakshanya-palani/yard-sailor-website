@@ -1,6 +1,23 @@
-import { Link } from "react-router-dom";
-import "./Commerce.css";
+import { PageShell } from "../components/layout/PageShell";
+import { PageHeader } from "../components/layout/PageHeader";
+import { StatusMessage } from "../components/ui/StatusMessage";
+import { Button } from "../components/ui/Button";
 
 export default function PaymentsUnavailable() {
-  return <main className="commerce-page"><div className="commerce-width"><h1>Payments are unavailable</h1><p>You can save items in your cart and message sellers to arrange a purchase.</p><p><Link to="/cart">View your cart</Link> · <Link to="/shop">Browse the shop</Link></p></div></main>;
+  return (
+      <PageShell width="narrow">
+        <PageHeader title="Payments are unavailable" />
+        <StatusMessage
+          kind="empty"
+          action={
+            <>
+              <Button to="/cart">View your cart</Button>
+              <Button to="/shop" variant="secondary">Browse the shop</Button>
+            </>
+          }
+        >
+          <p>You can save items in your cart and message sellers to arrange a purchase.</p>
+        </StatusMessage>
+      </PageShell>
+  );
 }

@@ -4,6 +4,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "../lib/supabase";
 import { calculateDistanceMiles, getPublicLocation, hasValidCoordinates, requestUserLocation } from "../utils/location";
+import { formatDistance, formatSaleStart } from "../lib/format";
 import "./SaleMap.css";
 import { getSaleStatus, saleStatusLabel } from "../utils/saleTime";
 import useSaleClock from "../utils/useSaleClock";
@@ -86,46 +87,33 @@ function SaleMap({
       const latitude = Number(sale.lat);
       const longitude = Number(sale.lng);
 
+      // Imperative DOM for the Mapbox popup (rendered outside React's tree).
       const popupContent = document.createElement("div");
       popupContent.className = "yard-sale-popup";
+      const append = (tag, className, text) => {
+        const element = document.createElement(tag);
+        element.className = className;
+        if (text != null) element.textContent = text;
+        popupContent.appendChild(element);
+        return element;
+      };
       if (sale.images?.[0]) {
-        const image = document.createElement("img");
+        const image = append("img", "yard-sale-popup__img");
         image.src = sale.images[0];
         image.alt = sale.title;
-        popupContent.appendChild(image);
       }
-      const title = document.createElement("strong");
-      title.textContent = sale.title;
-      popupContent.appendChild(title);
+      if (sale.status) append("span", "yard-sale-popup__status", saleStatusLabel(sale, now));
+      append("strong", "yard-sale-popup__title", sale.title);
       if (userLocation) {
-        const distance = calculateDistanceMiles(userLocation.latitude, userLocation.longitude, latitude, longitude);
-        const distanceText = document.createElement("span");
-        if (distance != null) {
-          distanceText.textContent = `${distance.toFixed(1)} miles away`;
-          popupContent.appendChild(distanceText);
-        }
+        const distanceText = formatDistance(calculateDistanceMiles(userLocation.latitude, userLocation.longitude, latitude, longitude));
+        if (distanceText) append("span", "yard-sale-popup__meta yard-sale-popup__distance", distanceText);
       }
-      const address = document.createElement("span");
-      address.textContent = getPublicLocation(sale.address);
-      popupContent.appendChild(address);
-      if (sale.start_time) {
-        const startTime = document.createElement("span");
-        startTime.textContent = new Date(sale.start_time).toLocaleString();
-        popupContent.appendChild(startTime);
-      }
-      if (sale.status) {
-        const status = document.createElement("span");
-        status.textContent = saleStatusLabel(sale, now);
-        popupContent.appendChild(status);
-      }
-      const description = document.createElement("p");
-      description.textContent = sale.description?.slice(0, 140) || "";
-      popupContent.appendChild(description);
-      const button = document.createElement("button");
+      append("span", "yard-sale-popup__meta", getPublicLocation(sale.address));
+      if (sale.start_time) append("span", "yard-sale-popup__meta", formatSaleStart(sale));
+      append("p", "yard-sale-popup__description", sale.description?.slice(0, 140) || "");
+      const button = append("button", "yard-sale-popup__button", "View Yard Sale");
       button.type = "button";
-      button.textContent = "View Yard Sale";
       button.addEventListener("click", () => navigate(`/yard-sale/${sale.id}`));
-      popupContent.appendChild(button);
 
       const pin = document.createElement("button");
       pin.type = "button";

@@ -1,0 +1,47 @@
+.ui-choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  padding: 16px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: border-color var(--dur-fast), background-color var(--dur-fast), color var(--dur-fast);
+}
+.ui-choice:hover { border-color: var(--color-control-border-hover); }
+
+/* The input is visually hidden, so mirror base.css's focus ring onto the card. */
+.ui-choice:has(.ui-choice__input:focus-visible) {
+  outline: 3px solid var(--color-accent-strong);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 2px var(--color-cream);
+}
+
+.ui-choice.is-selected { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-on-dark); }
+.ui-choice.is-selected:hover { background: var(--color-ink-soft); border-color: var(--color-ink-soft); }
+.ui-choice.is-disabled { cursor: not-allowed; background: var(--color-cream-light); border-color: var(--color-border); color: var(--color-muted); }
+
+.ui-choice__icon { display: inline-flex; flex-shrink: 0; }
+.ui-choice__text { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.ui-choice__title { font-size: 16px; font-weight: 700; }
+.ui-choice__description { color: var(--color-muted); font-size: 14px; line-height: 1.4; }
+.ui-choice.is-selected .ui-choice__description { color: var(--color-on-dark); }
+
+.ui-choice__indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+.ui-choice--radio .ui-choice__indicator { border-radius: var(--radius-pill); }
+.ui-choice.is-selected .ui-choice__indicator { border-color: var(--color-on-dark); }

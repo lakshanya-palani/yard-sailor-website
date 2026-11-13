@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 const source = (await readFile(new URL('../src/lib/listingEditor.js', import.meta.url), 'utf8'))
-  .replace(/^import .*;\n/gm, '').replaceAll('export function ', 'function ');
+  .replace(/^import .*;\n/gm, '').replaceAll('export function ', 'function ').replaceAll('export const ', 'const ');
 const { validateProduct, validateSale, validImages } = vm.runInNewContext(`${source}\n({ validateProduct, validateSale, validImages })`);
-const product = { title:'Chair', description:'Good chair', price:'0', brand:'', condition:'Good', pickup:true };
+const product = { title:'Chair', description:'Good chair', price:'0', brand:'', condition:'Good', category:'furniture', pickup:true };
 assert.equal(validateProduct(product), '');
+assert.ok(validateProduct({ ...product, category:'invalid' }));
+assert.ok(validateProduct({ ...product, category:'' }));
 assert.ok(validateProduct({ ...product, price:'' }));
 assert.ok(validateProduct({ ...product, price:'Infinity' }));
 assert.ok(validateProduct({ ...product, title:'x'.repeat(71) }));

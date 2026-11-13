@@ -1,0 +1,198 @@
+/* Shared listing card. Variants: grid (default), row, compact. */
+.listing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  transition: box-shadow var(--dur) ease, border-color var(--dur) ease;
+}
+
+@media (hover: hover) {
+  .listing-card:hover { border-color: var(--color-border); box-shadow: var(--shadow-sm); }
+  .listing-card:hover .listing-card__link { text-decoration: underline; }
+}
+
+/* Media */
+.listing-card__media {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
+  background: var(--color-cream-dark);
+}
+
+.listing-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listing-card__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  background: var(--color-cream-dark);
+  color: var(--color-muted);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Body */
+.listing-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.listing-card__badge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.listing-card__title {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.listing-card__link { color: inherit; text-decoration: none; }
+
+/* Stretched link: the whole card is the click target. */
+.listing-card__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--radius-lg);
+}
+
+.listing-card__price { font-size: 17px; }
+
+.listing-card__meta {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.35;
+  list-style: none;
+}
+
+.listing-card__meta-item { display: flex; align-items: flex-start; gap: 6px; min-width: 0; overflow-wrap: anywhere; }
+.listing-card__meta-icon { display: inline-flex; flex: none; padding-top: 1px; }
+.listing-card__meta-icon svg { width: 14px; height: 14px; }
+
+.listing-card__footer { margin-top: auto; padding-top: 6px; }
+
+/* Controls that sit above the stretched link. */
+.listing-card__overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: var(--z-raised);
+  padding: 10px;
+  pointer-events: none;
+}
+
+.listing-card__overlay > * { pointer-events: auto; }
+
+.listing-card__actions {
+  position: relative;
+  z-index: var(--z-raised);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 14px 14px;
+}
+
+/* Row: 112px thumb left, body right (search results, cart, orders). */
+.listing-card--row {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  grid-template-areas: "media body" "media actions";
+  grid-template-rows: auto 1fr;
+  column-gap: 14px;
+  padding: 12px;
+}
+
+.listing-card--row .listing-card__media {
+  grid-area: media;
+  align-self: start;
+  width: 112px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+}
+
+.listing-card--row .listing-card__body { grid-area: body; gap: 4px; padding: 0; }
+.listing-card--row .listing-card__actions { grid-area: actions; align-self: end; padding: 10px 0 0; }
+.listing-card--row.listing-card--has-overlay .listing-card__body { padding-right: 52px; }
+.listing-card--row .listing-card__overlay { padding: 8px; }
+.listing-card--row .listing-card__footer { margin-top: 4px; padding-top: 0; }
+
+/* Compact: map popups, hero visuals. */
+.listing-card--compact .listing-card__body { gap: 4px; padding: 10px; }
+.listing-card--compact .listing-card__title { font-size: 15px; }
+.listing-card--compact .listing-card__price { font-size: 15px; }
+.listing-card--compact .listing-card__meta { font-size: 13px; }
+.listing-card--compact .listing-card__fallback { font-size: 13px; }
+.listing-card--compact .listing-card__actions { padding: 0 10px 10px; }
+.listing-card--compact .listing-card__overlay { padding: 6px; }
+
+/* Sale map pin number (FindYardSale results). */
+.listing-pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-strong);
+  color: var(--color-on-dark);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.listing-card__note { margin: 0; color: var(--color-accent-strong); font-size: 14px; }
+
+@media (max-width: 480px) {
+  .listing-card--grid .listing-card__body { padding: 11px; }
+  .listing-card--grid .listing-card__actions { padding: 0 11px 11px; }
+  .listing-card--grid .listing-card__title { font-size: 16px; }
+  .listing-card--row { column-gap: 12px; padding: 10px; }
+}
+
+/* Skeleton: reuses the card frame so loading doesn't shift layout. */
+.listing-skeleton .listing-card__media .ui-skeleton { width: 100%; height: 100%; border-radius: 0; }
+.listing-skeleton { pointer-events: none; }
+.listing-skeleton__seller { display: flex; align-items: center; gap: 8px; }
+.listing-skeleton__seller .ui-skeleton:first-child { flex: none; }
+.listing-skeleton-group { margin: 0; }
+.listing-skeleton-group--row { display: grid; gap: 12px; }
+
+.listing-card__description { margin: 0; color: var(--color-muted); font-size: 14px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

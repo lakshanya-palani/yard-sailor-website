@@ -1,0 +1,48 @@
+.ui-auth-card {
+  width: 100%;
+  max-width: 440px;
+  margin: 24px auto 0;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-ink);
+}
+
+.ui-auth-card__header {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.ui-auth-card__title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.ui-auth-card__subtitle {
+  margin: 10px 0 0;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.ui-auth-card__body {
+  display: grid;
+  gap: 16px;
+}
+
+.ui-auth-card__footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border-subtle);
+  color: var(--color-muted);
+  font-size: 15px;
+  text-align: center;
+}
+
+.ui-auth-card__footer a { color: var(--color-ink); font-weight: 700; text-underline-offset: 3px; }
+
+@media (max-width: 480px) {
+  .ui-auth-card { margin-top: 0; padding: 24px; }
+}

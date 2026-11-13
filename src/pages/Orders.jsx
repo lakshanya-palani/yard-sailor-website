@@ -1,3 +1,8 @@
+import { formatDateTime } from "../lib/format";
+import { AccountLayout } from '../components/layout/AccountLayout';
+import { Button } from '../components/ui/Button';
+import { StatusMessage } from '../components/ui/StatusMessage';
+import { FormAlert } from '../components/ui/FormAlert';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { rpc, commerceError, money } from '../lib/commerce';
@@ -21,24 +26,24 @@ function OrdersForUser() {
   },[load,navigate,refresh]);
   const orderId=params.get('order');
   useEffect(()=>{if(params.get('checkout')==='success' && orderId && checked.current!==orderId){checked.current=orderId;act(orderId,'refresh');}},[params,orderId,act]);
-  return <main className="commerce-page"><div className="commerce-width">
-    <Link to="/cart">← Your cart</Link><h1>Your orders</h1>
+  return <AccountLayout title="Your orders" className="commerce-account">
+    <Link to="/cart">← Your cart</Link>
     <p><strong>Test mode.</strong> These records represent test payments only. Sellers do not receive payouts and no real delivery is arranged.</p>
     {params.get('checkout')==='success' && <p role="status">Checking the payment with the server. Returning from Stripe alone does not confirm payment.</p>}
     {params.get('checkout')==='cancelled' && <p role="status">You left Stripe Checkout. Choose Cancel checkout below to release the items, or Resume checkout to continue.</p>}
-    {error && <p role="alert" className="commerce-error">{error} <button onClick={load}>Reload orders</button></p>}
-    {loading ? <p role="status">Loading orders…</p> : !error && !orders.length ? <div className="commerce-panel"><h2>No orders yet</h2><Link to="/shop">Explore the shop →</Link></div> : <div className="order-list">{orders.map(order=><article className="commerce-panel" key={order.id}>
-      <h2>{labels[order.state] || 'Checking order'}</h2><p className="commerce-muted">{order.is_buyer?'Your purchase':'Your items sold'} · {new Date(order.created_at).toLocaleString()} · Order {order.id}</p>
+    {error && <FormAlert onRetry={load} retryLabel="Reload orders">{error}</FormAlert>}
+    {loading ? <StatusMessage kind="loading" title="Loading orders…" /> : !error && !orders.length ? <StatusMessage title="No orders yet" action={<Button to="/shop">Explore the shop →</Button>} /> : <div className="order-list">{orders.map(order=><article className="commerce-panel" key={order.id}>
+      <h2>{labels[order.state] || 'Checking order'}</h2><p className="commerce-muted">{order.is_buyer?'Your purchase':'Your items sold'} · {formatDateTime(order.created_at)} · Order {order.id}</p>
       <div className="order-items">{order.items.map(item=><div className="cart-item" key={item.product_id}>
         <Link className="cart-cover" to={`/products/${item.product_id}`}>{item.image_url?<img src={item.image_url} alt={item.title}/>:<span>No image</span>}</Link>
         <div><h3><Link to={`/products/${item.product_id}`}>{item.title}</Link></h3><p>{money(item.unit_amount/100)} · Quantity 1</p></div>
       </div>)}</div><p><strong>{order.is_buyer?'Total':'Your items total'}: {money(order.amount_total/100)}</strong></p>
       {order.is_buyer && ['creating','open'].includes(order.state) && <><p className="commerce-muted">Reservations release after Stripe confirms cancellation or expiration. If payment or cancellation is delayed, use Check payment status.</p><div className="order-actions">
-        <button disabled={!!busy} className="commerce-primary" onClick={()=>act(order.id,'resume')}>Resume checkout</button>
-        <button disabled={!!busy} onClick={()=>act(order.id,'cancel')}>Cancel checkout</button>
-        <button disabled={!!busy} onClick={()=>act(order.id,'refresh')}>Check payment status</button>
+        <Button variant="primary" disabled={!!busy} onClick={()=>act(order.id,'resume')}>Resume checkout</Button>
+        <Button variant="secondary" disabled={!!busy} onClick={()=>act(order.id,'cancel')}>Cancel checkout</Button>
+        <Button variant="secondary" disabled={!!busy} onClick={()=>act(order.id,'refresh')}>Check payment status</Button>
       </div></>}
       {busy===order.id && <p role="status">Checking with Stripe…</p>}
     </article>)}</div>}
-  </div></main>;
+  </AccountLayout>;
 }

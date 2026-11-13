@@ -1,3 +1,5 @@
+import '../src/styles/tokens.css';
+import '../src/styles/base.css';
 // Local fixture: 35 synthetic sales, no database calls or real geolocation.
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';

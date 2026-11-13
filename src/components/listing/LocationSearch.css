@@ -1,0 +1,25 @@
+/* Location search: input grows, buttons wrap beneath it in narrow containers. */
+.listing-location-search { display: grid; gap: 12px; min-width: 0; }
+
+.listing-location-search__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+}
+
+.listing-location-search__input { flex: 1 1 260px; min-width: 0; }
+
+.listing-location-search__buttons {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.listing-location-search__error { margin: 0; }
+
+@media (max-width: 480px) {
+  .listing-location-search__buttons { flex: 1 1 100%; }
+  .listing-location-search__buttons > * { flex: 1 1 auto; }
+}

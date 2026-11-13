@@ -1,3 +1,4 @@
+import { formatPrice } from "../lib/format";
 import "./SailEntryScene.css";
 
 // Visual slots can later receive components that render GLB models. No model
@@ -34,7 +35,7 @@ export default function SailEntryScene({ products = [], boatVisual, treasureVisu
       {products.slice(0, 3).map((product, index) => (
         <div className={`sail-find sail-find-${index}`} key={product.id}>
           {product.image_urls?.[0] && <img src={product.image_urls[0]} alt="" decoding="async" />}
-          <strong>{product.title}</strong><span>${Number(product.price).toFixed(2)}</span>
+          <strong>{product.title}</strong><span>{formatPrice(product.price)}</span>
         </div>
       ))}
       <span className="sail-marker sail-marker-left">⌖</span>

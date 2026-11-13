@@ -71,14 +71,14 @@ try {
 
   failSettings = true;
   facebook.click();
-  await wait(() => document.querySelector('[role="alert"]').textContent.includes('availability'));
+  await wait(() => document.querySelector('[role="alert"]')?.textContent.includes('availability'));
   check(!google.disabled && !facebook.disabled && busyEvents.at(-1) === false, 'availability failure displays an error and permits retry');
   failSettings = false;
   failNavigation = true;
   google.click();
   await wait(() => starts === 2);
   finishOAuth();
-  await wait(() => document.querySelector('[role="alert"]').textContent.includes('Navigation failed'));
+  await wait(() => document.querySelector('[role="alert"]')?.textContent.includes('Navigation failed'));
   check(!google.disabled && busyEvents.at(-1) === false, 'failed navigation unlocks sign-in for retry');
   document.title = 'Social login checks passed';
 } catch (error) {

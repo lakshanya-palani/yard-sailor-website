@@ -1,3 +1,7 @@
+import { AccountLayout } from '../components/layout/AccountLayout';
+import { Button } from '../components/ui/Button';
+import { StatusMessage } from '../components/ui/StatusMessage';
+import { FormAlert } from '../components/ui/FormAlert';
 import { startCheckout, checkoutDestination, PaymentError } from "../lib/payments";
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -52,23 +56,23 @@ function CartForUser({ checkout }) {
   function toggle(id) { setSelection(current => { const ids = current ?? items.filter(item => item.available).map(item => item.product_id); return ids.includes(id) ? ids.filter(value => value !== id) : [...ids,id]; }); }
   const unavailable = selected.length === 0;
   const subtotal = selected.reduce((sum, item) => sum + Number(item.price), 0);
-  return <main className="commerce-page"><div className="commerce-width">
+  return <AccountLayout title={checkout ? "Review your items" : "Your cart"} className="commerce-account">
     <Link to={checkout ? '/cart' : '/shop'}>{checkout ? '← Your cart' : '← Shop'}</Link>
-    <h1>{checkout ? 'Review your items' : 'Your cart'}</h1>{PAYMENTS_ENABLED && <p><Link to="/orders">Your orders and pending checkouts →</Link></p>}
-    {error && <div className="commerce-error" role="alert">{error} <button onClick={load}>Try again</button></div>}
-    {loading ? <p role="status">Loading your items…</p> : error && items.length === 0 ? null : items.length === 0 ? <div className="commerce-panel"><h2>{checkout ? 'No items to review' : 'Your cart is empty'}</h2><p>Find something worth bringing home.</p><Link to="/shop">Explore the shop ↗</Link></div> : <div className="cart-layout">
+    {PAYMENTS_ENABLED && <p><Link to="/orders">Your orders and pending checkouts →</Link></p>}
+    {error && <FormAlert onRetry={load}>{error}</FormAlert>}
+    {loading ? <StatusMessage kind="loading" title="Loading your items…" /> : error && items.length === 0 ? null : items.length === 0 ? <StatusMessage title={checkout ? "No items to review" : "Your cart is empty"} action={<Button to="/shop">Explore the shop ↗</Button>}>Find something worth bringing home.</StatusMessage> : <div className="cart-layout">
       <div className="cart-items">{items.map(item => <article className="cart-item commerce-panel" key={item.product_id}>
         {item.available ? <Link to={`/products/${item.product_id}`} className="cart-cover">{item.image_url ? <img src={item.image_url} alt={item.title} /> : <span>No image</span>}</Link> : <div className="cart-cover">Unavailable</div>}
         <div>{item.available && !productId && <label className="cart-select"><input type="checkbox" checked={selected.some(row => row.product_id === item.product_id)} onChange={() => toggle(item.product_id)} disabled={!!busy} /> Select {item.title}</label>}<h2>{item.available ? <Link to={`/products/${item.product_id}`}>{item.title}</Link> : 'Listing unavailable'}</h2>
           <p>{item.available ? money(item.price) : 'This item is unavailable.'}</p><p className="commerce-muted">{item.seller_name ? `Sold by ${item.seller_name}` : ''}</p>
-          {(checkout || !PAYMENTS_ENABLED) && item.available && <button disabled={!!busy} onClick={() => act(item,'message')}>Message Seller</button>} {!checkout && <button disabled={!!busy} onClick={() => act(item,'remove')}>{busy === item.product_id ? 'Removing…' : 'Remove'}</button>}
+          {(checkout || !PAYMENTS_ENABLED) && item.available && <Button variant="secondary" disabled={!!busy} onClick={() => act(item,'message')}>Message Seller</Button>} {!checkout && <Button variant="secondary" disabled={!!busy} onClick={() => act(item,'remove')}>{busy === item.product_id ? 'Removing…' : 'Remove'}</Button>}
         </div>
       </article>)}</div>
       <aside className="commerce-panel cart-summary"><h2>{checkout ? 'Order review' : 'Summary'}</h2><p className="cart-subtotal"><span>Subtotal</span><strong>{money(subtotal)}</strong></p><p className="commerce-muted">Shipping and any applicable taxes are not included.</p>
         {PAYMENTS_ENABLED ? <><p role="status"><strong>Stripe test mode only.</strong> Use a Stripe test card. No real purchase, delivery, or seller payout. Taxes and shipping are not charged in this test flow.</p>
-        <button className="commerce-primary" disabled={!!busy || unavailable} onClick={pay}>{busy === 'checkout' ? 'Opening Stripe…' : 'Continue to test checkout'}</button></> : <p>Message a seller to arrange a purchase.</p>}
+        <Button variant="primary" disabled={!!busy || unavailable} onClick={pay}>{busy === 'checkout' ? 'Opening Stripe…' : 'Continue to test checkout'}</Button></> : <p>Message a seller to arrange a purchase.</p>}
 
       </aside>
     </div>}
-  </div></main>;
+  </AccountLayout>;
 }

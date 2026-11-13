@@ -1,0 +1,13 @@
+.ui-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.ui-field__label { font-size: 16px; font-weight: 700; color: var(--color-ink); }
+.ui-field__required { color: var(--color-danger); }
+
+.ui-field__hint { margin: 0; color: var(--color-muted); font-size: 14px; line-height: 1.4; }
+
+.ui-field__footer { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+/* Kept in the DOM so the live region exists before an error appears; collapse the gap when empty. */
+.ui-field__footer:not(:has(.ui-field__error, .ui-field__count)) { margin-top: -6px; }
+.ui-field__error-region { flex: 1; min-width: 0; }
+.ui-field__error { margin: 0; color: var(--color-danger); font-size: 14px; line-height: 1.4; }
+.ui-field__count { margin-left: auto; color: var(--color-muted); font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }

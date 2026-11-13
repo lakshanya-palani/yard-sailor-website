@@ -1,250 +1,50 @@
-.find-yard-sale-page {
-  min-height: calc(100vh - 178px);
-  padding: 46px 24px 75px;
-  background: #fff3df;
-  color: #1c2a39;
-  font-family: "League Spartan", sans-serif;
-}
+.find-yard-sale-page .ui-page-header { margin-bottom: 20px; }
 
-.find-yard-sale-header,
-.yard-sale-filters,
-.find-yard-sale-layout {
-  width: min(1400px, 100%);
-  margin-inline: auto;
-}
+.yard-sale-filters { margin-block: 22px; }
 
-.find-yard-sale-header h1 {
-  margin: 0 0 22px;
-  font-size: clamp(36px, 5vw, 54px);
-}
+.yard-sale-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.yard-sale-summary p { margin: 0; color: var(--color-muted); }
+.yard-sale-view-toggle { display: none; }
 
-.yard-sale-search-form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 10px;
-}
-
-.yard-sale-search-form input {
-  min-width: 0;
-  padding: 14px 16px;
-  border: 1px solid #cbc8c2;
-  border-radius: 10px;
-  font: 16px "League Spartan", sans-serif;
-}
-
-.yard-sale-search-form button,
-.yard-sale-filters button {
-  padding: 12px 17px;
-  border: 1px solid #1c2a39;
-  border-radius: 9px;
-  background: #1c2a39;
-  color: white;
-  font: 700 15px "League Spartan", sans-serif;
-  cursor: pointer;
-}
-
-.yard-sale-search-form .use-location-button {
-  background: white;
-  color: #1c2a39;
-}
-
-.find-yard-sale-error {
-  margin: 12px 0 0;
-  color: #c93631;
-}
-
-.yard-sale-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-block: 22px;
-}
-
-.yard-sale-filters button {
-  padding: 9px 14px;
-  background: white;
-  color: #1c2a39;
-}
-
-.yard-sale-filters button.selected {
-  border-color: #ef403a;
-  background: #ef403a;
-  color: white;
-}
+.yard-sale-map-hint { margin: 0 0 14px; color: var(--color-muted); font-size: 15px; line-height: 1.4; }
 
 .find-yard-sale-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr) 400px;
   gap: 20px;
   align-items: start;
 }
 
-.sale-map.find-yard-sale-map {
-  width: 100%;
-  height: 720px;
-  margin: 0;
-}
+.yard-sale-map-container { min-width: 0; scroll-margin-top: 16px; }
+
+.sale-map.find-yard-sale-map { width: 100%; height: 720px; margin: 0; border-radius: var(--radius-lg); }
 
 .yard-sale-results {
   height: 720px;
   box-sizing: border-box;
   overflow-y: auto;
   padding: 16px;
-  border-radius: 16px;
-  background: #f8f5ef;
-  box-shadow: 0 5px 18px rgb(0 0 0 / 8%);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-cream-light);
 }
 
-.yard-sale-results-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
+.yard-sale-results .ui-section-header { margin-bottom: 14px; }
+
+.yard-sale-result-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+
+.yard-sale-result.is-selected { border-color: var(--color-accent-strong); box-shadow: 0 0 0 1px var(--color-accent-strong); }
+
+@media (max-width: 900px) {
+  .find-yard-sale-layout { grid-template-columns: 1fr; }
+  .sale-map.find-yard-sale-map { height: 520px; }
+  .yard-sale-results { height: auto; padding: 0; border: 0; background: none; }
+  .yard-sale-view-toggle { display: inline-flex; }
+  .view-list .yard-sale-map-container,
+  .view-map .yard-sale-results,
+  .yard-sale-map-hint.is-list { display: none; }
 }
 
-.yard-sale-results-heading h2 {
-  margin: 0;
-  font-size: 23px;
-}
-
-.yard-sale-results-heading span {
-  padding: 5px 9px;
-  border-radius: 20px;
-  background: #1c2a39;
-  color: white;
-}
-
-.yard-sale-result-card {
-  display: grid;
-  grid-template-columns: 105px minmax(0, 1fr);
-  gap: 12px;
-  overflow: hidden;
-  margin-bottom: 12px;
-  padding: 10px;
-  border: 2px solid transparent;
-  border-radius: 12px;
-  background: white;
-  cursor: pointer;
-}
-
-.yard-sale-result-card.selected {
-  border-color: #ef403a;
-}
-
-.yard-sale-result-image {
-  height: 105px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: 9px;
-  background: #eee9df;
-  color: #777;
-  font-size: 13px;
-}
-
-.yard-sale-result-image img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.yard-sale-result-info h3 {
-  margin: 0 0 4px;
-  font-size: 17px;
-}
-
-.yard-sale-result-info p,
-.yard-sale-result-info time,
-.yard-sale-result-status {
-  display: block;
-  margin: 3px 0;
-  color: #687078;
-  font-size: 13px;
-}
-
-.yard-sale-result-info strong {
-  display: block;
-  margin: 4px 0;
-  color: #ef403a;
-  font-size: 14px;
-}
-
-.yard-sale-result-status {
-  text-transform: capitalize;
-}
-
-.yard-sale-result-info button {
-  margin-top: 7px;
-  padding: 7px 10px;
-  border: 0;
-  border-radius: 7px;
-  background: #1c2a39;
-  color: white;
-  font: 700 13px "League Spartan", sans-serif;
-  cursor: pointer;
-}
-
-.yard-sale-results-message {
-  color: #687078;
-}
-
-@media (max-width: 950px) {
-  .find-yard-sale-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .sale-map.find-yard-sale-map {
-    height: 520px;
-  }
-
-  .yard-sale-results {
-    width: 100%;
-    height: auto;
-    max-height: none;
-  }
-}
-
-@media (max-width: 620px) {
-  .find-yard-sale-page {
-    padding: 35px 16px 60px;
-  }
-
-  .yard-sale-search-form {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .yard-sale-search-form input {
-    grid-column: 1 / -1;
-  }
-
-  .sale-map.find-yard-sale-map {
-    height: 420px;
-  }
-
-  .yard-sale-result-card {
-    grid-template-columns: 90px minmax(0, 1fr);
-  }
-
-  .yard-sale-result-image {
-    height: 90px;
-  }
-}
-.yard-sale-map-hint { width: min(1400px, 100%); margin: 0 auto 14px; color: #555f65; font-size: 15px; line-height: 1.4; }
-.yard-sale-result-card { position: relative; }
-.yard-sale-result-number { position: absolute; top: 14px; left: 14px; display: grid; place-items: center; width: 26px; height: 26px; border: 2px solid white; border-radius: 50%; background: #b52c26; color: white; font-size: 13px; font-weight: 800; box-shadow: 0 2px 6px rgb(0 0 0 / 20%); }
-.yard-sale-result-actions { display: flex; flex-wrap: wrap; gap: 6px; }
-.yard-sale-result-info .show-on-map { background: #fff3df; color: #1c2a39; }
-
-.yard-sale-map-container { min-width: 0; scroll-margin-top: 16px; }
-
-.yard-sale-summary { width: min(1400px, 100%); margin: 0 auto 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.yard-sale-summary p { margin: 0; color: #555f65; }
-.yard-sale-view-toggle { display: none; }
-@media (max-width: 950px) {
-  .yard-sale-view-toggle { display: flex; gap: 6px; }
-  .yard-sale-view-toggle button { padding: 9px 16px; border: 1px solid #1c2a39; border-radius: 8px; background: white; color: #1c2a39; font: 700 15px "League Spartan", sans-serif; }
-  .yard-sale-view-toggle button[aria-pressed="true"] { background: #1c2a39; color: white; }
-  .view-list .yard-sale-map-container, .view-map .yard-sale-results { display: none; }
+@media (max-width: 640px) {
+  .sale-map.find-yard-sale-map { height: 420px; }
 }

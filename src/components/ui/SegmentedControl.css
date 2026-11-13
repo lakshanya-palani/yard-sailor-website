@@ -1,0 +1,25 @@
+.ui-segmented { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+
+.ui-segmented__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  height: var(--control-height);
+  padding: 0 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color var(--dur-fast), background-color var(--dur-fast), color var(--dur-fast);
+}
+.ui-segmented--sm .ui-segmented__option { height: var(--control-height-sm); min-height: 44px; padding: 0 14px; font-size: 15px; }
+.ui-segmented__option:hover { border-color: var(--color-ink); background: var(--color-cream-dark); }
+.ui-segmented__option.is-selected { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-on-dark); }
+.ui-segmented__option.is-selected:hover { background: var(--color-ink-soft); border-color: var(--color-ink-soft); }
+.ui-segmented__option:disabled { cursor: not-allowed; color: var(--color-muted); background: var(--color-cream-light); border-color: var(--color-border); }
+.ui-segmented__icon { display: inline-flex; }

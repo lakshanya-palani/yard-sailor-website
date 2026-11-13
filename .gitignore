@@ -30,3 +30,7 @@ dist-ssr
 # Local audit and Supabase CLI state
 .audit/
 supabase/.temp/
+
+# Local worker execution logs
+.opencode-worker-log.jsonl
+.pool-worker-log.jsonl

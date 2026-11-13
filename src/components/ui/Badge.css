@@ -1,0 +1,24 @@
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-sizing: border-box;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.ui-badge__icon { display: inline-flex; flex: none; }
+.ui-badge__icon svg { width: 14px; height: 14px; }
+
+.ui-badge--neutral  { background: var(--color-cream-light); border-color: var(--color-border); color: var(--color-ink); }
+.ui-badge--live     { background: var(--color-success-bg); color: var(--color-success); }
+.ui-badge--success  { background: var(--color-success-bg); color: var(--color-success); }
+.ui-badge--upcoming { background: var(--color-cream-dark); color: var(--color-ink); }
+.ui-badge--ended    { background: var(--color-border-subtle); color: var(--color-muted); }
+.ui-badge--danger   { background: var(--color-cream-light); border-color: var(--color-accent-strong); color: var(--color-accent-strong); }
+.ui-badge--info     { background: var(--color-ink); color: var(--color-on-dark); }

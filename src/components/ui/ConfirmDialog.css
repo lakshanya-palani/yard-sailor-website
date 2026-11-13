@@ -1,0 +1,47 @@
+.ui-confirm {
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-modal);
+}
+.ui-confirm::backdrop { background: var(--color-backdrop); }
+
+.ui-confirm__panel { display: grid; gap: 12px; padding: 24px; }
+.ui-confirm__title { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2; }
+.ui-confirm__body { color: var(--color-muted); font-size: 16px; line-height: 1.45; }
+.ui-confirm__body > :first-child { margin-top: 0; }
+.ui-confirm__body > :last-child { margin-bottom: 0; }
+
+.ui-confirm__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+
+/* Button looks per COMPONENT_CONVENTIONS, kept local to avoid a dependency on Button */
+.ui-confirm__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-height);
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.ui-confirm__btn--secondary { background: var(--color-surface); border-color: var(--color-ink); color: var(--color-ink); }
+.ui-confirm__btn--secondary:hover { background: var(--color-cream-dark); }
+.ui-confirm__btn--primary { background: var(--color-accent-strong); border-color: var(--color-accent-strong); color: var(--color-on-dark); }
+.ui-confirm__btn--primary:hover { background: var(--color-accent-strong-hover); border-color: var(--color-accent-strong-hover); }
+.ui-confirm__btn--danger { background: var(--color-surface); border-color: var(--color-accent-strong); color: var(--color-accent-strong); }
+.ui-confirm__btn--danger:hover { background: var(--color-accent-strong); color: var(--color-on-dark); }
+
+@media (max-width: 480px) {
+  .ui-confirm__panel { padding: 20px; }
+  .ui-confirm__actions { flex-direction: column-reverse; }
+  .ui-confirm__btn { width: 100%; }
+}

@@ -1,246 +1,190 @@
+import { fetchProfilesByIds } from "../lib/profiles";
+import { useAsync } from "../hooks/useAsync";
+import { cancelProductPosting } from "../lib/productActions";
 import SaveButton from "../components/SaveButton";
 import { startCheckout, checkoutDestination, PaymentError } from "../lib/payments";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useCart } from "../context/CartContext";
 import { commerceError, productLogin, startConversation } from "../lib/commerce";
 import { PAYMENTS_ENABLED } from "../lib/features";
+import { Button } from "../components/ui/Button";
+import { Price } from "../components/ui/Price";
+import { FormAlert } from "../components/ui/FormAlert";
+import { StatusMessage } from "../components/ui/StatusMessage";
+import { PageShell } from "../components/layout/PageShell";
+import { DeliveryTags } from "../components/listing/DeliveryTags";
+import { SellerChip } from "../components/listing/SellerChip";
+import { ImageGallery } from "../components/listing/ImageGallery";
+import { OwnerActions } from "../components/listing/OwnerActions";
+import { DetailLayout } from "../components/listing/DetailLayout";
+import { MetaList } from "../components/listing/MetaList";
+import { useToast } from "../hooks/useToast";
+import { categoryLabel } from "../lib/listingOptions";
+import { formatDateTime } from "../lib/format";
 import "./ProductDetail.css";
 
 function ProductDetail() {
   const { id } = useParams();
+  const { userId } = useCart();
+  return <ProductDetailForListing key={`${id}:${userId || "signed-out"}`} id={id} />;
+}
+
+function ProductDetailForListing({ id }) {
   const location = useLocation();
+  const active = useRef(false);
+  useEffect(() => {
+    active.current = true;
+    return () => { active.current = false; };
+  }, []);
   const [saveParams] = useSearchParams();
   const { add } = useCart();
   const [action, setAction] = useState(null);
   const [feedback, setFeedback] = useState("");
   const [actionError, setActionError] = useState("");
   const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
-  const [seller, setSeller] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const toast = useToast();
   const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    async function loadProduct() {
-      setLoading(true);
-      setNotFound(false);
-      setFeedback("");
-      setActionError("");
-
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Unable to load product:", error);
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      if (!data) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      setProduct(data);
-      setCurrentImageIndex(0);
-
-      const [{ data: sellerData, error: sellerError }, { data: authData }] =
-        await Promise.all([
-          supabase
-            .from("profiles")
-            .select("username, avatar_url")
-            .eq("id", data.user_id)
-            .maybeSingle(),
-          supabase.auth.getSession(),
-        ]);
-
-      if (sellerError) {
-        console.error("Unable to load seller profile:", sellerError);
-      }
-
-      setSeller(sellerData || null);
-      setCurrentUserId(authData?.session?.user?.id || null);
-      setLoading(false);
-    }
-
-    loadProduct();
+  const { data: listing, loading, error: loadError, reload } = useAsync(async () => {
+    const { data: product, error } = await supabase.from("products").select("*").eq("id", id).maybeSingle();
+    if (error) throw error;
+    if (!product) return null;
+    const [profiles, { data: authData }] = await Promise.all([
+      fetchProfilesByIds([product.user_id]),
+      supabase.auth.getSession(),
+    ]);
+    return { product, seller: profiles[product.user_id] || null, currentUserId: authData?.session?.user?.id || null };
   }, [id]);
+  const { product = null, seller = null, currentUserId = null } = listing || {};
 
   async function purchaseAction(kind) {
     if (action || (kind === "buy" && !PAYMENTS_ENABLED)) return;
     setAction(kind); setFeedback(""); setActionError("");
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
+      if (!active.current) return;
       if (error && error.name !== "AuthSessionMissingError") throw error;
       if (!user) { navigate(productLogin(id)); return; }
       if (user.id === product.user_id) throw new Error("You cannot buy or message your own listing.");
-      if (kind === 'buy') checkoutDestination(await startCheckout([id], 'buy_now'), navigate);
+      if (kind === 'buy') {
+        const result = await startCheckout([id], 'buy_now');
+        if (active.current) checkoutDestination(result, navigate);
+      }
       else if (kind === 'message') {
         const conversation = await startConversation(id);
-        navigate(`/messages?conversation=${conversation}`);
+        if (active.current) navigate(`/messages?conversation=${conversation}`);
       } else {
         const inserted = await add(id);
-        setFeedback(inserted ? 'Added to your cart.' : 'This item is already in your cart.');
+        if (active.current) setFeedback(inserted ? 'Added to your cart.' : 'This item is already in your cart.');
       }
-    } catch (e) { setActionError(e instanceof PaymentError ? e.message : commerceError(e)); }
-    finally { setAction(null); }
+    } catch (e) { if (active.current) setActionError(e instanceof PaymentError ? e.message : commerceError(e)); }
+    finally { if (active.current) setAction(null); }
   }
 
-  const images = product?.image_urls || [];
-
-  function showPreviousImage() {
-    setCurrentImageIndex((current) =>
-      current === 0 ? images.length - 1 : current - 1
-    );
-  }
-
-  function showNextImage() {
-    setCurrentImageIndex((current) =>
-      current === images.length - 1 ? 0 : current + 1
-    );
-  }
-
+  // Confirmation happens in <OwnerActions> (shared ConfirmDialog) before this runs.
   async function cancelPosting() {
-    if (
-      !currentUserId ||
-      product.user_id !== currentUserId ||
-      !window.confirm("Are you sure you want to cancel this posting?")
-    ) {
+    if (!active.current || !currentUserId || product.user_id !== currentUserId) {
       return;
     }
 
     setDeleting(true);
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", product.id)
-      .eq("user_id", currentUserId);
+    const { error } = await cancelProductPosting(product.id, currentUserId);
+    if (!active.current) return;
     setDeleting(false);
 
     if (error) {
       console.error("Unable to cancel posting:", error);
-      alert(error.message);
+      toast.show(error.message, { tone: "error" });
       return;
     }
 
-    window.dispatchEvent(new Event("yardSailorProductsUpdated"));
+    toast.show("Your posting was cancelled.", { tone: "success" });
     navigate("/");
   }
 
   if (loading) {
-    return <main className="product-detail-page"><p className="product-detail-status">Loading product...</p></main>;
+    return <PageShell><StatusMessage kind="loading" title="Loading product..." /></PageShell>;
   }
 
-  if (notFound || !product) {
-    return <main className="product-detail-page"><div className="product-detail-message"><h1>Product not found</h1><p>This posting may no longer be available.</p><Link to="/">Return home</Link></div></main>;
+  if (loadError) return <PageShell><StatusMessage kind="error" titleAs="h1" title="Unable to load product" onRetry={reload}>Please try again.</StatusMessage></PageShell>;
+
+  if (!product) {
+    return (
+      <PageShell width="narrow">
+        <StatusMessage
+          kind="empty"
+          titleAs="h1"
+          title="Product not found"
+          action={<Button variant="secondary" to="/">Return home</Button>}
+        >
+          <p>This posting may no longer be available.</p>
+        </StatusMessage>
+      </PageShell>
+    );
   }
 
-  const sellerName = seller?.username?.trim() || "Yard Sailor seller";
-  const sellerInitial = seller?.username?.trim()
-    ? seller.username.trim().charAt(0).toUpperCase()
-    : "Y";
   const isOwner = product.user_id === currentUserId;
+  const images = product.image_urls || [];
 
   return (
-    <main className="product-detail-page">
-      <div className="product-detail-layout">
-        <section className="product-gallery" aria-label="Product images">
-          <div className="product-main-image-container">
-            {images.length > 0 ? (
-              <img
-                className="product-detail-main-image"
-                src={images[currentImageIndex]}
-                alt={`${product.title} — image ${currentImageIndex + 1}`}
-              />
-            ) : (
-              <div className="product-no-image">No image available</div>
-            )}
+    <PageShell className="product-detail-page">
+      <DetailLayout media={<ImageGallery images={images} alt={product.title} label="Product images" />}>
+        {location.state?.confirmation === "Your listing was posted." && <FormAlert tone="success">Your listing was posted.</FormAlert>}
 
-            {images.length > 1 && (
-              <>
-                <button className="gallery-arrow gallery-arrow-previous" type="button" onClick={showPreviousImage} aria-label="Previous image">‹</button>
-                <button className="gallery-arrow gallery-arrow-next" type="button" onClick={showNextImage} aria-label="Next image">›</button>
-              </>
-            )}
-          </div>
-
-          {images.length > 1 && (
-            <div className="product-thumbnails">
-              {images.map((image, index) => (
-                <button
-                  className={`product-thumbnail-button ${index === currentImageIndex ? "selected" : ""}`}
-                  type="button"
-                  key={image}
-                  onClick={() => setCurrentImageIndex(index)}
-                  aria-label={`Show image ${index + 1}`}
-                >
-                  <img className="product-thumbnail" src={image} alt={`${product.title} thumbnail ${index + 1}`} />
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="product-detail-information">
-          {location.state?.confirmation === "Your listing was posted." && <p role="status">Your listing was posted.</p>}
+        <header className="product-detail-heading">
           <h1>{product.title}</h1>
-          {saveParams.get("save") === "1" && <p>Use the heart below to finish saving this item. Saving does not reserve it.</p>}
-          <SaveButton productId={product.id} title={product.title} detail />
-          <p className="product-detail-price">${Number(product.price).toFixed(2)}</p>
+          <Price value={product.price} className="product-detail-price" />
+        </header>
 
-          <dl className="product-detail-meta">
-            {product.brand && <><dt>Brand</dt><dd>{product.brand}</dd></>}
-            <dt>Condition</dt><dd>{product.condition || "Not specified"}</dd>
-          </dl>
+        {saveParams.get("save") === "1" && <p className="product-detail-note">Use the heart below to finish saving this item. Saving does not reserve it.</p>}
+        <SaveButton productId={product.id} title={product.title} detail />
 
-          <div className="product-detail-description">
-            <h2>Description</h2>
-            <p>{product.description}</p>
-          </div>
+        <MetaList
+          items={[
+            { label: "Brand", value: product.brand },
+            { label: "Condition", value: product.condition || "Not specified" },
+            { label: "Category", value: categoryLabel(product.category) },
+            { label: "Listed", value: formatDateTime(product.created_at) },
+          ]}
+        />
 
-          <div className="product-detail-tags">
-            {product.pickup && <span>Pickup available</span>}
-            {product.shipping && <span>Shipping available</span>}
-          </div>
-
-          <div className="product-seller">
-            <p>Listed by</p>
-            <div>
-              <span className="product-seller-avatar">
-                {seller?.avatar_url ? <img src={seller.avatar_url} alt="" /> : sellerInitial}
-              </span>
-              <strong>{sellerName}</strong>
-            </div>
-          </div>
-
-          {isOwner ? (
-            <div className="product-owner-actions">
-              <Link to={`/products/${product.id}/edit`}>Edit Posting</Link>
-              <button type="button" onClick={cancelPosting} disabled={deleting}>{deleting ? "Cancelling..." : "Cancel Posting"}</button>
-            </div>
-          ) : (
-            <div className="product-buyer-actions">
-              {PAYMENTS_ENABLED && <><p className="commerce-muted">Checkout is in test mode. No real purchase or seller payout.</p>
-              <button className="product-buy-now" disabled={!!action} onClick={() => purchaseAction('buy')}>{action === 'buy' ? 'Opening…' : 'Buy Now'}</button></>}
-              <button disabled={!!action} onClick={() => purchaseAction('cart')}>{action === 'cart' ? 'Adding…' : 'Add to Cart'}</button>
-              <button disabled={!!action} onClick={() => purchaseAction('message')}>{action === 'message' ? 'Opening…' : 'Message Seller'}</button>
-              {feedback && <p role="status">{feedback} <Link to="/cart">View cart</Link></p>}
-              {actionError && <p role="alert">{actionError}</p>}
-            </div>
-          )}
+        <section className="product-detail-description" aria-labelledby="product-description-heading">
+          <h2 id="product-description-heading">Description</h2>
+          <p>{product.description}</p>
         </section>
-      </div>
-    </main>
+
+        <DeliveryTags pickup={product.pickup} shipping={product.shipping} />
+
+        <SellerChip className="product-detail-seller" profile={seller} label="Listed by" size={42} />
+
+        {isOwner ? (
+          <OwnerActions
+            editTo={`/products/${product.id}/edit`}
+            onCancel={cancelPosting}
+            busy={deleting}
+            confirm={{
+              title: "Cancel this posting?",
+              body: "Are you sure you want to cancel this posting? It will be removed from Yard Sailor.",
+              confirmLabel: "Cancel Posting",
+            }}
+          />
+        ) : (
+          <div className="product-detail-actions">
+            {PAYMENTS_ENABLED && <>
+              <p className="product-detail-note">Checkout is in test mode. No real purchase or seller payout.</p>
+              <Button block disabled={!!action} loading={action === 'buy'} onClick={() => purchaseAction('buy')}>{action === 'buy' ? 'Opening…' : 'Buy Now'}</Button>
+            </>}
+            <div className="product-detail-actions__row">
+              <Button variant={PAYMENTS_ENABLED ? "secondary" : "primary"} disabled={!!action} loading={action === 'cart'} onClick={() => purchaseAction('cart')}>{action === 'cart' ? 'Adding…' : 'Add to Cart'}</Button>
+              <Button variant="secondary" disabled={!!action} loading={action === 'message'} onClick={() => purchaseAction('message')}>{action === 'message' ? 'Opening…' : 'Message Seller'}</Button>
+            </div>
+            {feedback && <FormAlert tone="success">{feedback} <Link to="/cart">View cart</Link></FormAlert>}
+            {actionError && <FormAlert tone="error">{actionError}</FormAlert>}
+          </div>
+        )}
+      </DetailLayout>
+    </PageShell>
   );
 }
 

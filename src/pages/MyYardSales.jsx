@@ -1,85 +1,111 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
+import { useState } from "react";
+import { CalendarDays, MapPin } from "lucide-react";
+import { AccountLayout } from "../components/layout/AccountLayout";
+import { CardGrid } from "../components/layout/CardGrid";
+import { ListingCard } from "../components/listing/ListingCard";
+import { SaleStatusBadge } from "../components/listing/SaleStatusBadge";
+import { OwnerActions } from "../components/listing/OwnerActions";
+import { ListingSkeletonGroup } from "../components/listing/ListingSkeleton";
+import { StatusMessage } from "../components/ui/StatusMessage";
+import { Button } from "../components/ui/Button";
+import { useOwnedRows } from "../hooks/useOwnedRows";
+import { useToast } from "../hooks/useToast";
 import { supabase } from "../lib/supabase";
+import { formatDateTime } from "../lib/format";
 import "./AccountPages.css";
-import { saleStatusLabel } from "../utils/saleTime";
 
 function MyYardSales() {
-  const [sales, setSales] = useState([]);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  return <MyYardSalesForUser key={user?.id || "signed-out"} />;
+}
 
-  useEffect(() => {
-    async function loadSales() {
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData.user) {
-        console.error("Unable to load yard sale host:", authError);
-        setLoading(false);
-        return;
-      }
-      setUser(authData.user);
+function MyYardSalesForUser() {
+  const { user, rows: sales, loading, error, reload, setRows: setSales } = useOwnedRows({
+    table: "sales",
+    ownerColumn: "host_id",
+    ownerLog: "Unable to load yard sale host:",
+    rowsLog: "Unable to load yard sales:",
+  });
+  const [cancellingId, setCancellingId] = useState(null);
+  const toast = useToast();
 
-      const { data, error } = await supabase
-        .from("sales")
-        .select("*")
-        .eq("host_id", authData.user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Unable to load yard sales:", error);
-        alert(error.message);
-      } else {
-        setSales(data || []);
-      }
-      setLoading(false);
-    }
-    loadSales();
-  }, []);
-
+  // Confirmation happens in <OwnerActions> (shared ConfirmDialog) before this runs.
   async function cancelYardSale(sale) {
-    if (!user || !window.confirm("Are you sure you want to cancel this yard sale?")) return;
+    if (!user) return;
 
-    const { error } = await supabase
+    setCancellingId(sale.id);
+    const { error: cancelError } = await supabase
       .from("sales")
       .update({ status: "cancelled" })
       .eq("id", sale.id)
       .eq("host_id", user.id);
+    setCancellingId(null);
 
-    if (error) {
-      console.error("Unable to cancel yard sale:", error);
-      alert(error.message);
+    if (cancelError) {
+      console.error("Unable to cancel yard sale:", cancelError);
+      toast.show(cancelError.message, { tone: "error" });
       return;
     }
     setSales((items) => items.map((item) => item.id === sale.id ? { ...item, status: "cancelled" } : item));
   }
 
   return (
-    <main className="account-page">
-      <div className="account-container">
-        <div className="account-heading"><h1>My Yard Sale Listings</h1><p>Manage the yard sale events you host.</p><Link className="account-button" to="/post-yard-sale">Post a Yard Sale</Link></div>
-        {loading ? <p className="account-status">Loading your yard sales...</p> : sales.length === 0 ? (
-          <div className="account-placeholder-card"><h2>No yard sales yet</h2><p className="account-empty">Your hosted yard sale events will appear here.</p></div>
-        ) : (
-          <div className="account-grid">
-            {sales.map((sale) => (
-              <article className="account-card" key={sale.id}>
-                <div className="account-card-body">
-                  <h2>{sale.title}</h2>
-                  <p><strong>{sale.address}</strong></p>
-                  <p className="account-card-meta">{sale.start_time ? new Date(sale.start_time).toLocaleString() : "Date not set"}</p>
-                  <p className="account-card-meta">Status: {saleStatusLabel(sale)}</p>
-                  <p>{sale.description}</p>
-                  <div className="account-actions">
-                    <Link className="account-button-secondary" to={`/yard-sales/${sale.id}/edit`}>Edit</Link>
-                    {sale.status !== "cancelled" && <button className="account-button-danger" type="button" onClick={() => cancelYardSale(sale)}>Cancel Yard Sale</button>}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+    <AccountLayout
+      title="My Yard Sale Listings"
+      subtitle="Manage the yard sale events you host."
+      actions={<Button to="/post-yard-sale">Post a Yard Sale</Button>}
+    >
+      {loading ? (
+        <ListingSkeletonGroup variant="row" count={3} seller={false} label="Loading your yard sales..." />
+      ) : error ? (
+        <StatusMessage kind="error" title="Your yard sales could not be loaded" onRetry={reload}>
+          <p>{error.message}</p>
+        </StatusMessage>
+      ) : sales.length === 0 ? (
+        <StatusMessage title="No yard sales yet">
+          <p>Your hosted yard sale events will appear here.</p>
+        </StatusMessage>
+      ) : (
+        <CardGrid columns={{ base: 1, lg: 2 }}>
+          {sales.map((sale) => (
+            // ListingCard directly (not SaleListingCard) so the host sees the full
+            // address and description, which SaleListingCard can't show.
+            <ListingCard
+              key={sale.id}
+              variant="row"
+              to={`/yard-sale/${sale.id}`}
+              image={sale.images?.[0]}
+              fallbackLabel="Yard Sale"
+              title={sale.title}
+              headingLevel={2}
+              badge={<SaleStatusBadge sale={sale} />}
+              meta={[
+                { icon: <CalendarDays />, text: formatDateTime(sale.start_time, "Date not set") },
+                sale.address && { icon: <MapPin />, text: sale.address },
+              ]}
+              actions={
+                <OwnerActions
+                  size="sm"
+                  editTo={`/yard-sales/${sale.id}/edit`}
+                  editLabel="Edit Yard Sale"
+                  onCancel={sale.status !== "cancelled" ? () => cancelYardSale(sale) : undefined}
+                  cancelLabel="Cancel Yard Sale"
+                  busy={cancellingId === sale.id}
+                  confirm={{
+                    title: "Cancel this yard sale?",
+                    body: "Are you sure you want to cancel this yard sale? It will be marked as cancelled.",
+                    confirmLabel: "Cancel Yard Sale",
+                  }}
+                />
+              }
+            >
+              {sale.description && <p className="account-sale-description">{sale.description}</p>}
+            </ListingCard>
+          ))}
+        </CardGrid>
+      )}
+    </AccountLayout>
   );
 }
 

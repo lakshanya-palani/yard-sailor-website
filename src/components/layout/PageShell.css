@@ -1,0 +1,20 @@
+.ui-page-shell {
+  min-height: var(--page-min-height);
+  padding: 52px 24px 85px;
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+.ui-page-shell__inner {
+  width: 100%;
+  margin-inline: auto;
+}
+
+.ui-page-shell__inner--narrow { max-width: 640px; }
+.ui-page-shell__inner--default { max-width: 1180px; }
+.ui-page-shell__inner--wide { max-width: 1400px; }
+.ui-page-shell__inner--full { max-width: none; }
+
+@media (max-width: 640px) {
+  .ui-page-shell { padding: 36px 16px 64px; }
+}

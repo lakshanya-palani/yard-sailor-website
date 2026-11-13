@@ -1,0 +1,66 @@
+/*
+ * The <input> fills the whole wrapper so the base :focus-visible ring (drawn on
+ * the input) wraps the entire control; icon and trailing node sit on top of it.
+ */
+.ui-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--control-height);
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.ui-input--sm { height: var(--control-height-sm); }
+.ui-input:hover { border-color: var(--color-control-border-hover); }
+.ui-input:focus-within { border-color: var(--color-ink); box-shadow: var(--ring); }
+.ui-input.is-invalid { border-color: var(--color-danger); }
+.ui-input.is-disabled { background: var(--color-cream-light); border-color: var(--color-border); }
+
+.ui-input__control {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 14px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 16px;
+  outline-offset: 4px;
+}
+.ui-input__control:disabled { color: var(--color-muted); cursor: not-allowed; }
+.ui-input--sm .ui-input__control { padding: 0 12px; font-size: 15px; }
+.ui-input--has-leading .ui-input__control { padding-left: 42px; }
+.ui-input--sm.ui-input--has-leading .ui-input__control { padding-left: 36px; }
+.ui-input--has-trailing .ui-input__control { padding-right: 48px; }
+
+.ui-input__leading {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  color: var(--color-muted);
+  font-size: 16px;
+  font-weight: 600;
+  pointer-events: none;
+}
+.ui-input--sm .ui-input__leading { left: 12px; }
+
+.ui-input__trailing {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Hide number spinners (PriceInput). */
+.ui-input__control[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+.ui-input__control[type="number"]::-webkit-inner-spin-button,
+.ui-input__control[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }

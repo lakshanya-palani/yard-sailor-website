@@ -1,3 +1,7 @@
+import { AccountLayout } from '../components/layout/AccountLayout';
+import { Button } from '../components/ui/Button';
+import { StatusMessage } from '../components/ui/StatusMessage';
+import { FormAlert } from '../components/ui/FormAlert';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -5,8 +9,10 @@ import { useCart } from '../context/CartContext';
 import { commerceError, rpc } from '../lib/commerce';
 import './Commerce.css';
 
-const time = value => value ? new Date(value).toLocaleString([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) : '';
-function Avatar({ src, name }) { return <span className="dm-avatar">{src ? <img src={src} alt="" /> : name?.charAt(0).toUpperCase() || 'Y'}</span>; }
+import { formatMessageTime as time } from '../lib/format';
+import { Avatar } from '../components/ui/Avatar';
+import { Field } from '../components/ui/Field';
+import { TextArea } from '../components/ui/TextArea';
 export default function Messages() {
   const { userId } = useCart();
   const [params] = useSearchParams();
@@ -117,29 +123,29 @@ function MessagesForUser({ userId }) {
     } catch(e) { if (mounted.current && currentConversation.current === conversation) setSendError(commerceError(e)); }
     finally { if (mounted.current) { sendingRef.current = false; setSending(false); } }
   }
-  return <main className="commerce-page"><div className="commerce-width"><h1>Direct Messages</h1>
-    {error && <p role="alert" className="commerce-error">{error} <button onClick={loadList}>Try again</button></p>}
+  return <AccountLayout title="Direct Messages" className="commerce-account">
+    {error && <FormAlert onRetry={loadList}>{error}</FormAlert>}
     <div className={`dm-layout ${activeId ? 'has-conversation' : ''}`}>
       <aside className="dm-list commerce-panel" aria-label="Conversations"><h2>Conversations</h2>
-        {loading ? <p role="status">Loading conversations…</p> : error && conversations.length === 0 ? <p>Conversations could not be loaded.</p> : conversations.length === 0 ? <p>No conversations yet. Open a product and choose Message Seller.</p> : conversations.map(c => <button className={`dm-conversation ${activeId === c.id ? 'selected' : ''}`} key={c.id} onClick={() => setParams({conversation:c.id})} aria-current={activeId === c.id ? 'true' : undefined}>
-          <Avatar src={c.other_avatar} name={c.other_name} /><span className="dm-conversation-copy"><strong>{c.other_name}</strong><span>{c.last_body || `About ${c.product_title || 'a removed listing'}`}</span><time dateTime={c.last_at}>{time(c.last_at)}</time></span>
+        {loading ? <StatusMessage compact kind="loading" title="Loading conversations…" /> : error && conversations.length === 0 ? <p>Conversations could not be loaded.</p> : conversations.length === 0 ? <p>No conversations yet. Open a product and choose Message Seller.</p> : conversations.map(c => <button type="button" className={`dm-conversation ${activeId === c.id ? 'selected' : ''}`} key={c.id} onClick={() => setParams({conversation:c.id})} aria-current={activeId === c.id ? 'true' : undefined}>
+          <Avatar size={38} alt="" src={c.other_avatar} name={c.other_name} /><span className="dm-conversation-copy"><strong>{c.other_name}</strong><span>{c.last_body || `About ${c.product_title || 'a removed listing'}`}</span><time dateTime={c.last_at}>{time(c.last_at)}</time></span>
           {c.product_image && <img className="dm-product-thumb" src={c.product_image} alt="" />}{Number(c.unread_count)>0 && <span className="dm-unread" aria-label={`${c.unread_count} unread messages`}>{c.unread_count}</span>}
         </button>)}
       </aside>
       <section className="dm-active commerce-panel" aria-label="Active conversation">
-        <button className="dm-back" onClick={() => setParams({})}>← Conversations</button>
-        {!activeId ? <div className="dm-empty"><h2>A conversation starts with a find.</h2><p>Select a conversation or message a seller from their listing.</p><Link to="/shop">Explore the shop ↗</Link></div> : loading ? <p role="status">Loading conversation…</p> : !selected ? <div className="dm-empty"><h2>Conversation unavailable</h2><p>It may have been removed, or you may not have access.</p><button onClick={loadList}>Try again</button></div> : <>
-          <header className="dm-header"><Avatar src={selected.other_avatar} name={selected.other_name} /><div><h2>{selected.other_name}</h2><p className="commerce-muted">{realtime ? 'Updates live' : 'Checking for updates periodically'}</p></div></header>
+        <Button variant="secondary" className="dm-back" onClick={() => setParams({})}>← Conversations</Button>
+        {!activeId ? <div className="dm-empty"><h2>A conversation starts with a find.</h2><p>Select a conversation or message a seller from their listing.</p><Link to="/shop">Explore the shop ↗</Link></div> : loading ? <StatusMessage compact kind="loading" title="Loading conversation…" /> : !selected ? <div className="dm-empty"><h2>Conversation unavailable</h2><p>It may have been removed, or you may not have access.</p><Button variant="secondary" onClick={loadList}>Try again</Button></div> : <>
+          <header className="dm-header"><Avatar size={38} alt="" src={selected.other_avatar} name={selected.other_name} /><div><h2>{selected.other_name}</h2><p className="commerce-muted">{realtime ? 'Updates live' : 'Checking for updates periodically'}</p></div></header>
           {selected.product_id ? <Link className="dm-product" to={`/products/${selected.product_id}`}>{selected.product_image && <img src={selected.product_image} alt="" />}<span>{selected.product_title || 'View listing'} ↗</span></Link> : <p className="commerce-muted">This listing has been removed. Your conversation is still available.</p>}
           <div className="dm-history" role="log" aria-live="polite" aria-relevant="additions" aria-label="Message history" aria-busy={historyLoading}>
-            {hasOlder && <button onClick={() => setLimit(value => value + 100)}>Load earlier messages</button>}
-            {historyLoading ? <p role="status">Loading messages…</p> : history.length === 0 ? <p>Say hello or ask a question about this item.</p> : history.map(m => <article className={`dm-message ${m.sender_id === userId ? 'mine' : ''}`} key={m.id}><span className="dm-sender">{m.sender_id === userId ? 'You' : selected.other_name}</span><p>{m.body}</p><time dateTime={m.created_at}>{time(m.created_at)}</time></article>)}<div ref={end} />
+            {hasOlder && <Button variant="secondary" onClick={() => setLimit(value => value + 100)}>Load earlier messages</Button>}
+            {historyLoading ? <StatusMessage compact kind="loading" title="Loading messages…" /> : history.length === 0 ? <p>Say hello or ask a question about this item.</p> : history.map(m => <article className={`dm-message ${m.sender_id === userId ? 'mine' : ''}`} key={m.id}><span className="dm-sender">{m.sender_id === userId ? 'You' : selected.other_name}</span><p>{m.body}</p><time dateTime={m.created_at}>{time(m.created_at)}</time></article>)}<div ref={end} />
           </div>
-          {historyError && <p className="commerce-error" role="alert">{historyError} <button onClick={loadHistory}>Reload history</button></p>}
-          {sendError && <p className="commerce-error" role="alert">{sendError} Your draft is still here. Use Send to retry.</p>}
-          <form className="dm-compose" onSubmit={send}><label htmlFor="message-body">Message {selected.other_name}</label><textarea id="message-body" value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={3} disabled={sending} placeholder="Ask about this item…" /><button className="commerce-primary" disabled={sending || !draft.trim()}>{sending ? 'Sending…' : 'Send'}</button></form>
+          {historyError && <FormAlert onRetry={loadHistory} retryLabel="Reload history">{historyError}</FormAlert>}
+          {sendError && <FormAlert>{sendError} Your draft is still here. Use Send to retry.</FormAlert>}
+          <form className="dm-compose" onSubmit={send}><Field label={`Message ${selected.other_name}`} id="message-body" count={draft.length} max={4000}><TextArea id="message-body" value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={3} disabled={sending} placeholder="Ask about this item…" /></Field><Button variant="primary" type="submit" disabled={sending || !draft.trim()}>{sending ? 'Sending…' : 'Send'}</Button></form>
         </>}
       </section>
     </div>
-  </div></main>;
+  </AccountLayout>;
 }

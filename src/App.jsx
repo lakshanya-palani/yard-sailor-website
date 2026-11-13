@@ -7,6 +7,8 @@ import RouteAccessibility from "./components/RouteAccessibility";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { CartProvider } from "./context/CartContext";
+import { ToastProvider } from "./components/ui/Toast";
+import { ConfirmProvider } from "./components/ui/ConfirmDialog";
 const Cart = lazy(() => import("./pages/Cart"));
 const Messages = lazy(() => import("./pages/Messages"));
 const SaleDetail = lazy(() => import("./pages/SaleDetail"));
@@ -37,11 +39,11 @@ import PaymentsUnavailable from "./pages/PaymentsUnavailable";
 import NotFound from "./pages/NotFound";
 const About = lazy(() => import("./pages/About"));
 
-import "./App.css";
-
 function App() {
   return (
     <BrowserRouter>
+      <ToastProvider>
+      <ConfirmProvider>
       <CartProvider>
       <SavedProvider>
       <RouteAccessibility />
@@ -128,6 +130,8 @@ function App() {
       <Footer />
     </SavedProvider>
     </CartProvider>
+    </ConfirmProvider>
+    </ToastProvider>
     </BrowserRouter>
   );
 }

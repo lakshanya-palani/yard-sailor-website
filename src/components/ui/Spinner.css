@@ -1,0 +1,11 @@
+.ui-spinner { display: inline-flex; align-items: center; justify-content: center; color: inherit; }
+
+.ui-spinner__ring {
+  box-sizing: border-box;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ui-spinner-spin calc(var(--dur-slow) * 2) linear infinite;
+}
+
+@keyframes ui-spinner-spin { to { transform: rotate(360deg); } }

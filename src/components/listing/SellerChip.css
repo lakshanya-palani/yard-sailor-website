@@ -1,0 +1,4 @@
+.listing-seller { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.listing-seller__text { display: grid; min-width: 0; }
+.listing-seller__label { color: var(--color-muted); font-size: 13px; }
+.listing-seller__name { overflow: hidden; color: var(--color-ink); font-size: 15px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }

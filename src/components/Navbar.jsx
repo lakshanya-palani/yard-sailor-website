@@ -1,30 +1,42 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, UserRound, Menu, ShoppingCart, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, ShoppingCart, UserRound, X } from "lucide-react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import "./Navbar.css";
 import { useCart } from "../context/CartContext";
-import LanguageDropdown from "./LanguageDropdown";
 import { useAuth } from "../context/useAuth";
 import { returnPath } from "../lib/authFlow";
+import { visibleAccountLinks } from "../lib/accountLinks";
+import { useDismissable } from "../hooks/useDismissable";
+import { useToast } from "../hooks/useToast";
+import { Avatar } from "./ui/Avatar";
+import { DropdownMenu } from "./ui/DropdownMenu";
 import SearchBar from "./SearchBar";
-import { PAYMENTS_ENABLED } from "../lib/features";
+
+const SELL_ITEMS = [
+  { label: "Post an item", to: "/post-sale" },
+  { label: "Post a yard sale", to: "/post-yard-sale" },
+];
+const MORE_ITEMS = [
+  { label: "About", to: "/about" },
+  { label: "Contact", to: "/contact" },
+];
+const DESKTOP_QUERY = "(min-width: 1024px)";
 
 function Navbar() {
   const { count } = useCart();
   const { user, loading: authLoading } = useAuth();
+  const toast = useToast();
   const location = useLocation();
-  const [failedAvatar, setFailedAvatar] = useState(null);
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-  const [navOpen, setNavOpen] = useState(false);
+  // The drawer is open only for the location it was opened on, so any route
+  // change (including re-clicking the current page) closes it.
+  const [navOpenKey, setNavOpenKey] = useState(null);
+  const navOpen = navOpenKey !== null && navOpenKey === location.key;
   const navRef = useRef(null);
-  const [desktopMenu, setDesktopMenu] = useState(null);
-  const desktopMenuRef = useRef(null);
   const navButtonRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     let active = true;
@@ -44,58 +56,60 @@ function Navbar() {
     };
   }, [user]);
 
+  const closeNav = () => setNavOpenKey(null);
+
+  useDismissable(navRef, navOpen, (reason) => {
+    closeNav();
+    if (reason === "escape") navButtonRef.current?.focus();
+  }, { ignoreRefs: [navButtonRef] });
+
+  // The backdrop makes this a modal drawer: keep keyboard and assistive
+  // technology focus on its links and close button until it is dismissed.
   useEffect(() => {
-    function handleOutsideClick(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setProfileMenuOpen(false);
-      }
-    }
-
-    function handleEscape(event) {
-      if (event.key === "Escape" && menuRef.current?.contains(document.activeElement)) {
-        menuRef.current.querySelector("button")?.focus();
-        setProfileMenuOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("keydown", handleEscape);
+    if (!navOpen) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const background = Array.from(document.querySelectorAll("main, footer, .navbar-logo, .navbar-search, .navbar-account"));
+    const inertBefore = background.map(element => element.inert);
+    background.forEach(element => { element.inert = true; });
+    const controls = () => [
+      ...Array.from(navRef.current?.querySelectorAll("a[href], button:not(:disabled)") || [])
+        .filter(element => element.getClientRects().length > 0),
+      navButtonRef.current,
+    ].filter(Boolean);
+    controls()[0]?.focus();
+    const keepFocus = event => {
+      if (!navRef.current?.contains(event.target) && event.target !== navButtonRef.current) controls()[0]?.focus();
     };
-  }, []);
-
-  useEffect(() => {
-    function closeOnOutside(event) {
-      if (navRef.current && !navRef.current.contains(event.target) && !event.target.closest(".ui-select-menu")) setNavOpen(false);
-    }
-    function closeOnEscape(event) {
-      if (event.key === "Escape" && navOpen) { setNavOpen(false); navButtonRef.current?.focus(); }
-    }
-    document.addEventListener("mousedown", closeOnOutside);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => { document.removeEventListener("mousedown", closeOnOutside); document.removeEventListener("keydown", closeOnEscape); };
+    const handleTab = event => {
+      if (event.key !== "Tab") return;
+      const items = controls();
+      const index = items.indexOf(document.activeElement);
+      if (index < 0 || (event.shiftKey && index === 0) || (!event.shiftKey && index === items.length - 1)) {
+        event.preventDefault();
+        (event.shiftKey ? items.at(-1) : items[0])?.focus();
+      }
+    };
+    document.addEventListener("focusin", keepFocus);
+    document.addEventListener("keydown", handleTab);
+    return () => {
+      document.body.style.overflow = previous;
+      background.forEach((element, index) => { element.inert = inertBefore[index]; });
+      document.removeEventListener("focusin", keepFocus);
+      document.removeEventListener("keydown", handleTab);
+    };
   }, [navOpen]);
 
+  // The drawer only exists below the desktop breakpoint; close it if the window grows past it.
   useEffect(() => {
-    function outside(event) {
-      if (desktopMenuRef.current && !desktopMenuRef.current.contains(event.target) && !event.target.closest(".ui-select-menu")) setDesktopMenu(null);
-    }
-    function escape(event) {
-      if (event.key === "Escape" && desktopMenu && !event.target.closest(".ui-select-menu")) {
-        document.getElementById(`nav-${desktopMenu}-button`)?.focus();
-        setDesktopMenu(null);
-      }
-    }
-    document.addEventListener("mousedown", outside);
-    document.addEventListener("keydown", escape);
-    return () => { document.removeEventListener("mousedown", outside); document.removeEventListener("keydown", escape); };
-  }, [desktopMenu]);
+    if (!navOpen || typeof window.matchMedia !== "function") return undefined;
+    const query = window.matchMedia(DESKTOP_QUERY);
+    const handleChange = (event) => { if (event.matches) setNavOpenKey(null); };
+    query.addEventListener("change", handleChange);
+    return () => query.removeEventListener("change", handleChange);
+  }, [navOpen]);
 
   async function handleLogout() {
-    setProfileMenuOpen(false);
     setLoggingOut(true);
     let error;
     try { ({ error } = await supabase.auth.signOut()); }
@@ -104,7 +118,7 @@ function Navbar() {
 
     if (error) {
       console.error("Unable to log out:", error);
-      alert("Unable to sign out. Please try again.");
+      toast.show("Unable to sign out. Please try again.", { tone: "error" });
       return;
     }
 
@@ -117,123 +131,87 @@ function Navbar() {
   const displayName = [ownProfile?.username, metadata?.full_name, metadata?.name]
     .find(value => typeof value === "string" && value.trim())?.trim() || "My Profile";
   const candidateAvatar = ownProfile?.avatar_url || metadata?.avatar_url || metadata?.picture;
-  const avatar = typeof candidateAvatar === 'string' && /^https:\/\//.test(candidateAvatar) && candidateAvatar !== failedAvatar ? candidateAvatar : null;
-  const fallbackLetter = displayName.charAt(0).toUpperCase();
+  const avatar = typeof candidateAvatar === "string" && /^https:\/\//.test(candidateAvatar) ? candidateAvatar : null;
+
+  const accountItems = [
+    ...visibleAccountLinks().map(({ to, label, icon: Icon }) => ({
+      to,
+      label,
+      icon: <Icon size={18} strokeWidth={2} />,
+    })),
+    { divider: true },
+    {
+      label: loggingOut ? "Signing out…" : "Sign out",
+      icon: <LogOut size={18} strokeWidth={2} />,
+      onSelect: handleLogout,
+      disabled: loggingOut,
+      danger: true,
+    },
+  ];
+
+  const isCurrent = (paths) => (paths.includes(location.pathname) ? " is-current" : "");
 
   return (
     <>
-      <header className="navbar" ref={navRef}>
-        <Link to="/" className="navbar-logo" aria-label="Yard Sailor home" onClick={() => setNavOpen(false)}>
+      {navOpen && <div className="navbar-backdrop" aria-hidden="true" />}
+      <header className={`navbar${navOpen ? " is-nav-open" : ""}`} role={navOpen ? "dialog" : undefined} aria-modal={navOpen || undefined} aria-label={navOpen ? "Main menu" : undefined}>
+        <Link to="/" className="navbar-logo" aria-label="Yard Sailor home" onClick={closeNav}>
           <img src="/images/logo_bubble_green.png" alt="" />
         </Link>
 
-        <SearchBar onFocus={() => setNavOpen(false)} />
+        <SearchBar className="navbar-search" onFocus={closeNav} />
 
-        <nav id="main-navigation" className={`navbar-center${navOpen ? " is-open" : ""}`} aria-label="Main navigation">
-          <NavLink to="/shop" onClick={() => setNavOpen(false)}>Shop</NavLink>
-          <NavLink to="/find-yard-sale" onClick={() => setNavOpen(false)}>Yard Sales</NavLink>
-          {user && <><NavLink to="/saved" onClick={() => setNavOpen(false)}>Saved</NavLink><NavLink to="/messages" onClick={() => setNavOpen(false)}>Messages</NavLink></>}
-          <div className="desktop-nav-menus" ref={desktopMenuRef}>
-            <div className="nav-menu-group">
-              <button id="nav-post-button" className={`nav-menu-trigger${["/post-sale", "/post-yard-sale"].includes(location.pathname) ? " is-current" : ""}`} type="button" aria-expanded={desktopMenu === "post"} aria-controls="nav-post-menu" onClick={() => setDesktopMenu(current => current === "post" ? null : "post")}>Sell <ChevronDown size={16} aria-hidden="true" /></button>
-              {desktopMenu === "post" && <div id="nav-post-menu" className="nav-menu-panel"><NavLink to="/post-sale" onClick={() => setDesktopMenu(null)}>Post an item</NavLink><NavLink to="/post-yard-sale" onClick={() => setDesktopMenu(null)}>Post a yard sale</NavLink></div>}
-            </div>
-            <div className="nav-menu-group">
-              <button id="nav-more-button" className={`nav-menu-trigger${["/about", "/contact"].includes(location.pathname) ? " is-current" : ""}`} type="button" aria-expanded={desktopMenu === "more"} aria-controls="nav-more-menu" onClick={() => setDesktopMenu(current => current === "more" ? null : "more")}>More <ChevronDown size={16} aria-hidden="true" /></button>
-              {desktopMenu === "more" && <div id="nav-more-menu" className="nav-menu-panel"><NavLink to="/about" onClick={() => setDesktopMenu(null)}>About</NavLink><NavLink to="/contact" onClick={() => setDesktopMenu(null)}>Contact</NavLink><div className="nav-menu-language"><LanguageDropdown /></div></div>}
-            </div>
+        <nav ref={navRef} id="main-navigation" className={`navbar-center${navOpen ? " is-open" : ""}`} aria-label="Main navigation">
+          <NavLink to="/shop" onClick={closeNav}>Shop</NavLink>
+          <NavLink to="/find-yard-sale" onClick={closeNav}>Yard Sales</NavLink>
+          {user && <><NavLink to="/saved" onClick={closeNav}>Saved</NavLink><NavLink to="/messages" onClick={closeNav}>Messages</NavLink></>}
+          <div className="desktop-nav-menus">
+            <DropdownMenu
+              label={<>Sell <ChevronDown size={16} aria-hidden="true" /></>}
+              triggerClassName={`nav-menu-trigger${isCurrent(["/post-sale", "/post-yard-sale"])}`}
+              items={SELL_ITEMS}
+              menuLabel="Sell"
+            />
+            <DropdownMenu
+              label={<>More <ChevronDown size={16} aria-hidden="true" /></>}
+              triggerClassName={`nav-menu-trigger${isCurrent(["/about", "/contact"])}`}
+              items={MORE_ITEMS}
+              menuLabel="More"
+            />
           </div>
           <div className="mobile-nav-links">
-            <NavLink to="/post-sale" onClick={() => setNavOpen(false)}>Post an item</NavLink>
-            <NavLink to="/post-yard-sale" onClick={() => setNavOpen(false)}>Post a yard sale</NavLink>
-            <NavLink to="/about" onClick={() => setNavOpen(false)}>About</NavLink>
-            <NavLink to="/contact" onClick={() => setNavOpen(false)}>Contact</NavLink>
+            <NavLink to="/post-sale" onClick={closeNav}>Post an item</NavLink>
+            <NavLink to="/post-yard-sale" onClick={closeNav}>Post a yard sale</NavLink>
+            <NavLink to="/about" onClick={closeNav}>About</NavLink>
+            <NavLink to="/contact" onClick={closeNav}>Contact</NavLink>
           </div>
-          <div className="mobile-language"><LanguageDropdown /></div>
         </nav>
 
         <div className="navbar-account">
-          {authLoading ? <span role="status">Loading account…</span> : user ? (
-            <div className="profile-menu-container" ref={menuRef}>
-              <button
-                type="button"
-                className="profile-menu-trigger"
-                aria-label={`Account menu for ${displayName}`}
-                onClick={() => setProfileMenuOpen((open) => !open)}
-                aria-expanded={profileMenuOpen}
-                aria-controls="account-links"
-              >
-                <span className="navbar-avatar" aria-hidden="true">
-                  {avatar ? (
-                    <img
-                      src={avatar} onError={() => setFailedAvatar(avatar)}
-                      alt=""
-                    />
-                  ) : (
-                    fallbackLetter
-                  )}
+          {authLoading ? <span className="navbar-account-loading" role="status">Loading account…</span> : user ? (
+            <DropdownMenu
+              className="nav-account-menu"
+              align="end"
+              triggerClassName="nav-account-trigger"
+              triggerLabel={`Account menu for ${displayName}`}
+              menuLabel="Account"
+              label={<>
+                <span aria-hidden="true"><Avatar className="navbar-avatar" src={avatar} name={displayName} size={32} alt="" /></span>
+                <span className="nav-account-name">{displayName}</span>
+                <ChevronDown className="nav-account-chevron" size={16} strokeWidth={2} aria-hidden="true" />
+              </>}
+              header={<div className="nav-account-header">
+                <span aria-hidden="true"><Avatar className="navbar-avatar" src={avatar} name={displayName} size={42} alt="" /></span>
+                <span className="nav-account-header__text">
+                  <strong>{displayName}</strong>
+                  <span>{user.email}</span>
                 </span>
-                <span>{displayName}</span>
-                <span className="profile-menu-arrow" aria-hidden="true">
-                  <ChevronDown size={16} strokeWidth={2} className={profileMenuOpen ? "icon-rotated" : ""} />
-                </span>
-              </button>
-
-              {profileMenuOpen && (
-                <div className="profile-dropdown" id="account-links">
-                  <div className="profile-dropdown-header">
-                    <span className="dropdown-avatar" aria-hidden="true">
-                      {avatar ? (
-                        <img src={avatar} onError={() => setFailedAvatar(avatar)} alt="" />
-                      ) : (
-                        fallbackLetter
-                      )}
-                    </span>
-                    <div>
-                      <strong>{displayName}</strong>
-                      <span>{user.email}</span>
-                    </div>
-                  </div>
-
-                  <div className="profile-dropdown-links">
-                    <Link to="/profile" onClick={() => setProfileMenuOpen(false)}>
-                      Edit Profile
-                    </Link>
-                    <Link to="/my-postings" onClick={() => setProfileMenuOpen(false)}>
-                      My Postings
-                    </Link>
-                    <Link to="/my-yard-sales" onClick={() => setProfileMenuOpen(false)}>
-                      My Yard Sale Listings
-                    </Link>
-                    {PAYMENTS_ENABLED && <Link to="/orders" onClick={() => setProfileMenuOpen(false)}>Orders</Link>}
-                    <Link to="/messages" onClick={() => setProfileMenuOpen(false)}>Direct Messages</Link>
-                    <Link to="/saved" onClick={() => setProfileMenuOpen(false)}>
-                      Saved Items
-                    </Link>
-                    <Link to="/settings" onClick={() => setProfileMenuOpen(false)}>
-                      Account Settings
-                    </Link>
-                    <Link to="/help" onClick={() => setProfileMenuOpen(false)}>
-                      Help &amp; Support
-                    </Link>
-                  </div>
-
-                  <div className="profile-dropdown-footer">
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      disabled={loggingOut}
-                    >
-                      {loggingOut ? "Logging Out..." : "Log Out"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>}
+              items={accountItems}
+            />
           ) : (
-            <Link to={`/login?redirect=${encodeURIComponent(returnPath(`${location.pathname}${location.search}${location.hash}`))}`} className="login-link" aria-label="Sign in or sign up" onClick={() => setNavOpen(false)}>
+            <Link to={`/login?redirect=${encodeURIComponent(returnPath(`${location.pathname}${location.search}${location.hash}`))}`} className="login-link" aria-label="Sign in or sign up" onClick={closeNav}>
               <UserRound size={22} strokeWidth={2} aria-hidden="true" />
-
               <span>Sign in</span>
             </Link>
           )}
@@ -242,13 +220,21 @@ function Navbar() {
             className="cart-button"
             type="button"
             aria-label={`Shopping cart${count ? `, ${count} items` : ""}`}
-            onClick={() => { setNavOpen(false); navigate("/cart"); }}
+            onClick={() => { closeNav(); navigate("/cart"); }}
           >
             <ShoppingCart size={22} strokeWidth={2} aria-hidden="true" />
             {count > 0 && <span className="cart-count">{count}</span>}
           </button>
         </div>
-        <button ref={navButtonRef} className="navbar-menu-button" type="button" aria-label={navOpen ? "Close menu" : "Open menu"} aria-expanded={navOpen} aria-controls="main-navigation" onClick={() => setNavOpen(open => !open)}>
+        <button
+          ref={navButtonRef}
+          className="navbar-menu-button"
+          type="button"
+          aria-label={navOpen ? "Close menu" : "Open menu"}
+          aria-expanded={navOpen}
+          aria-controls="main-navigation"
+          onClick={() => setNavOpenKey(navOpen ? null : location.key)}
+        >
           {navOpen ? <X size={22} strokeWidth={2} aria-hidden="true" /> : <Menu size={22} strokeWidth={2} aria-hidden="true" />}
         </button>
       </header>

@@ -1,113 +1,89 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { supabase } from "../lib/supabase";
-import "./AccountPages.css";
+import { useAuth } from "../context/useAuth";
+import { useState } from "react";
+import { AccountLayout } from "../components/layout/AccountLayout";
+import { CardGrid } from "../components/layout/CardGrid";
+import { ProductCard } from "../components/listing/ProductCard";
+import { OwnerActions } from "../components/listing/OwnerActions";
+import { ListingSkeletonGroup } from "../components/listing/ListingSkeleton";
+import { StatusMessage } from "../components/ui/StatusMessage";
+import { Button } from "../components/ui/Button";
+import { useOwnedRows } from "../hooks/useOwnedRows";
+import { useToast } from "../hooks/useToast";
+import { cancelProductPosting } from "../lib/productActions";
 
 function MyPostings() {
-  const [products, setProducts] = useState([]);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  return <MyPostingsForUser key={user?.id || "signed-out"} />;
+}
 
-  useEffect(() => {
-    async function loadPostings() {
-      const { data: authData, error: authError } = await supabase.auth.getUser();
+function MyPostingsForUser() {
+  const { user, rows: products, loading, error, reload, setRows: setProducts } = useOwnedRows({
+    table: "products",
+    ownerColumn: "user_id",
+    ownerLog: "Unable to load posting owner:",
+    rowsLog: "Unable to load postings:",
+  });
+  const [cancellingId, setCancellingId] = useState(null);
+  const toast = useToast();
 
-      if (authError || !authData.user) {
-        console.error("Unable to load posting owner:", authError);
-        setLoading(false);
-        return;
-      }
-
-      setUser(authData.user);
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("user_id", authData.user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Unable to load postings:", error);
-        alert(error.message);
-      } else {
-        setProducts(data || []);
-      }
-      setLoading(false);
-    }
-
-    loadPostings();
-  }, []);
-
+  // Confirmation happens in <OwnerActions> (shared ConfirmDialog) before this runs.
   async function cancelPosting(product) {
-    if (!user || !window.confirm("Are you sure you want to cancel this posting?")) {
-      return;
-    }
+    if (!user) return;
 
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", product.id)
-      .eq("user_id", user.id);
+    setCancellingId(product.id);
+    const { error: cancelError } = await cancelProductPosting(product.id, user.id);
+    setCancellingId(null);
 
-    if (error) {
-      console.error("Unable to cancel posting:", error);
-      alert(error.message);
+    if (cancelError) {
+      toast.show(cancelError.message, { tone: "error" });
       return;
     }
 
     setProducts((items) => items.filter((item) => item.id !== product.id));
-    window.dispatchEvent(new Event("yardSailorProductsUpdated"));
   }
 
   return (
-    <main className="account-page">
-      <div className="account-container">
-        <div className="account-heading">
-          <h1>My Postings</h1>
-          <p>Manage the individual marketplace items you have posted.</p>
-        </div>
-
-        {loading ? (
-          <p className="account-status">Loading your postings...</p>
-        ) : products.length === 0 ? (
-          <div className="account-placeholder-card">
-            <h2>No postings yet</h2>
-            <p className="account-empty">Your marketplace products will appear here.</p>
-            <Link className="account-button" to="/post-sale">Post an Item</Link>
-          </div>
-        ) : (
-          <div className="account-grid">
-            {products.map((product) => (
-              <article className="account-card" key={product.id}>
-                <img
-                  className="account-card-image"
-                  src={product.image_urls?.[0]}
-                  alt={product.title}
+    <AccountLayout title="My Postings" subtitle="Manage the individual marketplace items you have posted.">
+      {loading ? (
+        <ListingSkeletonGroup count={3} seller={false} label="Loading your postings..." />
+      ) : error ? (
+        <StatusMessage kind="error" title="Your postings could not be loaded" onRetry={reload}>
+          <p>{error.message}</p>
+        </StatusMessage>
+      ) : products.length === 0 ? (
+        <StatusMessage
+          title="No postings yet"
+          action={<Button to="/post-sale">Post an Item</Button>}
+        >
+          <p>Your marketplace products will appear here.</p>
+        </StatusMessage>
+      ) : (
+        <CardGrid columns={3}>
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              showSeller={false}
+              showSave={false}
+              headingLevel={2}
+              actions={
+                <OwnerActions
+                  size="sm"
+                  editTo={`/products/${product.id}/edit`}
+                  onCancel={() => cancelPosting(product)}
+                  busy={cancellingId === product.id}
+                  confirm={{
+                    title: "Cancel this posting?",
+                    body: "Are you sure you want to cancel this posting? It will be removed from Yard Sailor.",
+                    confirmLabel: "Cancel Posting",
+                  }}
                 />
-                <div className="account-card-body">
-                  <h2>{product.title}</h2>
-                  <p className="account-price">${Number(product.price).toFixed(2)}</p>
-                  <p className="account-card-meta">
-                    {[product.brand, product.condition].filter(Boolean).join(" · ")}
-                  </p>
-                  <div className="account-tags">
-                    {product.pickup && <span>Pickup</span>}
-                    {product.shipping && <span>Shipping</span>}
-                  </div>
-                  <div className="account-actions">
-                    <Link className="account-button-secondary" to={`/products/${product.id}/edit`}>
-                      Edit
-                    </Link>
-                    <button className="account-button-danger" type="button" onClick={() => cancelPosting(product)}>
-                      Cancel Posting
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+              }
+            />
+          ))}
+        </CardGrid>
+      )}
+    </AccountLayout>
   );
 }
 

@@ -1,0 +1,42 @@
+.ui-card-grid {
+  --card-gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--card-min, 220px)), 1fr));
+  gap: var(--card-gap);
+}
+
+.ui-card-grid--gap-sm { --card-gap: 12px; }
+.ui-card-grid--gap-md { --card-gap: 20px; }
+.ui-card-grid--gap-lg { --card-gap: 28px; }
+
+.ui-card-grid--fixed {
+  --cols: var(--cols-base, 1);
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+}
+
+.ui-card-grid--list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-card-grid__item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.ui-card-grid__item > * { flex: 1 1 auto; }
+
+@media (max-width: 480px) {
+  .ui-card-grid--gap-md { --card-gap: 14px; }
+  .ui-card-grid--gap-lg { --card-gap: 20px; }
+}
+
+@media (min-width: 640px) {
+  .ui-card-grid--fixed { --cols: var(--cols-md, var(--cols-base, 1)); }
+}
+
+@media (min-width: 1024px) {
+  .ui-card-grid--fixed { --cols: var(--cols-lg, var(--cols-md, var(--cols-base, 1))); }
+}

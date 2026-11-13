@@ -1,0 +1,74 @@
+.ui-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 24px;
+  border-radius: var(--radius-lg);
+  background: var(--color-cream-light);
+  color: var(--color-ink);
+  text-align: center;
+}
+.ui-status--compact { padding: 20px 16px; gap: 6px; }
+
+.ui-status__icon { display: inline-flex; color: var(--color-muted); margin-bottom: 4px; }
+.ui-status--error .ui-status__icon { color: var(--color-danger); }
+
+.ui-status__title { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2; }
+.ui-status--compact .ui-status__title { font-size: 17px; }
+.ui-status--error .ui-status__title { color: var(--color-danger); }
+
+.ui-status__body { max-width: 52ch; color: var(--color-muted); font-size: 16px; line-height: 1.45; }
+.ui-status__body > :first-child { margin-top: 0; }
+.ui-status__body > :last-child { margin-bottom: 0; }
+.ui-status--compact .ui-status__body { font-size: 14px; }
+
+.ui-status__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
+
+/* Secondary-button look; kept local so StatusMessage doesn't depend on Button. */
+.ui-status__retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-height-sm);
+  min-width: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease;
+}
+.ui-status__retry:hover { background: var(--color-cream-dark); }
+
+/* Loading: inline ring + text, no panel */
+.ui-status--loading {
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: none;
+  color: var(--color-muted);
+  font-size: 16px;
+}
+.ui-status--loading .ui-status__body { flex-basis: 100%; }
+.ui-status__ring {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-ink);
+  border-radius: 50%;
+  animation: ui-status-spin .8s linear infinite;
+}
+.ui-status--compact .ui-status__ring { width: 18px; height: 18px; border-width: 2px; }
+
+@keyframes ui-status-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  /* base.css zeroes durations; keep a static, still-legible ring */
+  .ui-status__ring { animation: none; }
+}

@@ -1,0 +1,99 @@
+/*
+ * Design tokens. Every color, radius, shadow, z-index and motion value in the
+ * app should come from here. Breakpoints can't be custom properties inside
+ * @media, so the agreed set is documented instead:
+ *   --bp-sm 480px · --bp-md 640px · --bp-lg 900px · --bp-xl 1024px · --bp-2xl 1440px
+ * Paired boundaries 639/1023/901 are allowed only to complement a 640/1024/900 rule.
+ */
+:root {
+  /* Ink (text, dark surfaces) */
+  --color-ink: #1c2a39;
+  --color-ink-soft: #304356;
+  --color-ink-deep: #0d1b2a;
+
+  /* Brand red. accent-strong passes contrast on cream/white; accent is decorative only. */
+  --color-accent: #ef403a;
+  --color-accent-strong: #b52c26;
+  --color-accent-strong-hover: #9a241f;
+  --color-danger: #b52c26;
+
+  /* Surfaces */
+  --color-cream: #fff3df;
+  --color-cream-light: #fffcf5;
+  --color-cream-dark: #f7ebd8;
+  --color-cream-hover: #f8e2bf;
+  --color-surface: #fff;
+  --color-paper: #f7f5ef;
+  --color-image-placeholder: #ececec;
+
+  /* Lines */
+  --color-border-subtle: #ece7df;
+  --color-border: #ded4c5;
+  --color-control-border: #cbc8c2;
+  --color-control-border-hover: #8d989e;
+
+  /* Text tones */
+  --color-muted: #687078;
+  --color-subtle: #8a8a8a;
+  --color-on-dark: #fff;
+  --color-on-dark-soft: #e5e9e8;
+
+  /* Secondary accents */
+  --color-lime: #b7e35a;
+  --color-lime-dark: #7fa92e;
+  --color-lime-ink: #55751d;
+  --color-link: #5145b0;
+  --color-success: #2e7d32;
+  --color-success-bg: #e8f5e9;
+
+  /* Decorative scenes and overlays */
+  --color-marketplace-bg: #dce9c7;
+  --color-sea: #0861a0;
+  --color-hero-rule: #b5b4a6;
+  --color-progress-track: #d8c9b5;
+  --color-map-border: #000;
+  --color-mask: #000;
+  --color-accent-glow: rgb(239 64 58 / 80%);
+  --color-backdrop: rgb(28 42 57 / 55%);
+  --color-overlay-ink: rgb(12 26 40 / 75%);
+  --color-on-dark-border: rgb(255 255 255 / 70%);
+  --color-on-dark-wash: rgb(255 255 255 / 12%);
+  --color-surface-wash: rgb(255 255 255 / 45%);
+  --color-grid-line: rgb(28 42 57 / 6%);
+
+  /* Type */
+  --font-sans: "League Spartan", sans-serif;
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* Elevation */
+  --shadow-sm: 0 5px 18px rgb(0 0 0 / 10%);
+  --shadow-md: 0 8px 22px rgb(0 0 0 / 16%);
+  --shadow-lg: 0 12px 28px rgb(28 42 57 / 18%);
+  --shadow-finder: 0 12px 36px rgb(28 42 57 / 12%);
+  --shadow-map-pin: 0 3px 10px rgb(0 0 0 / 30%);
+  --ring: 0 0 0 3px rgb(28 42 57 / 10%);
+
+  /* Layering */
+  --z-raised: 2;
+  --z-dropdown: 100;
+  --z-header: 1000;
+  --z-modal: 2000;
+  --z-popover: 4000;
+  --z-skip-link: 10000;
+
+  /* Motion */
+  --dur-fast: .15s;
+  --dur: .2s;
+  --dur-slow: .35s;
+
+  /* Controls */
+  --control-height: 46px;
+  --control-height-sm: 38px;
+  --page-min-height: calc(100vh - 178px);
+}

@@ -1,7 +1,15 @@
 import { useState } from "react";
-import "./Contact.css";
+import { PageShell } from "../components/layout/PageShell";
+import { PageHeader } from "../components/layout/PageHeader";
+import { FormCard, FormSection, FormActions } from "../components/layout/FormLayout";
+import { Field } from "../components/ui/Field";
+import { TextInput } from "../components/ui/TextInput";
+import { TextArea } from "../components/ui/TextArea";
+import { Button } from "../components/ui/Button";
+import { FormAlert } from "../components/ui/FormAlert";
 
 const CONTACT_EMAIL = "app.yardsailor@gmail.com";
+const MESSAGE_MAX = 4000;
 
 function Contact() {
   const [form, setForm] = useState({
@@ -93,127 +101,90 @@ function Contact() {
   }
 
   return (
-    <main className="contact-page">
-      <div className="contact-brand">
-        Yard Sailor
-      </div>
+      <PageShell width="narrow">
+        <PageHeader
+          title="Contact us"
+          subtitle="Questions, feedback or a problem with a listing? Send us a message and we'll get back to you by email."
+        />
 
-      <h1 className="contact-title">
-        CONTACT US
-      </h1>
-
-      <section className="contact-card">
-        <div className="contact-form-section">
-          <h2>Get in touch with us</h2>
-
+        <FormCard title="Get in touch with us">
           <form
             className="contact-form"
             onSubmit={handleSubmit}
             noValidate
           >
-            <label htmlFor="contact-name">
-              Name
-            </label>
+            <FormSection>
+              <Field label="Name" error={errors.name ? "Please enter your name." : undefined}>
+                <TextInput
+                  id="contact-name"
+                  maxLength={100}
+                  type="text"
+                  name="name"
+                  autoComplete="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Full name"
+                />
+              </Field>
 
-            <input
-              id="contact-name" maxLength={100} aria-invalid={!!errors.name} aria-describedby={errors.name ? "contact-name-error" : undefined}
-              className={errors.name ? "input-error" : ""}
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Full name"
-            />
+              <Field label="Email" error={errors.email ? "Please enter a valid email." : undefined}>
+                <TextInput
+                  id="contact-email"
+                  maxLength={254}
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="email@domain.com"
+                />
+              </Field>
 
-            {errors.name && (
-              <p id="contact-name-error" className="contact-error">
-                Please enter your name.
-              </p>
-            )}
+              <Field label="Subject" error={errors.subject ? "Please enter a subject." : undefined}>
+                <TextInput
+                  id="contact-subject"
+                  maxLength={200}
+                  type="text"
+                  name="subject"
+                  value={form.subject}
+                  onChange={handleChange}
+                  placeholder="Tell your subject here..."
+                />
+              </Field>
 
-            <label htmlFor="contact-email">
-              Email
-            </label>
+              <Field
+                label="Message"
+                error={errors.message ? "Please enter a message." : undefined}
+                count={form.message.length}
+                max={MESSAGE_MAX}
+              >
+                <TextArea
+                  id="contact-message"
+                  maxLength={MESSAGE_MAX}
+                  name="message"
+                  value={form.message}
+                  onChange={handleChange}
+                  placeholder="Type your query here..."
+                />
+              </Field>
 
-            <input
-              id="contact-email" maxLength={254} aria-invalid={!!errors.email} aria-describedby={errors.email ? "contact-email-error" : undefined}
-              className={errors.email ? "input-error" : ""}
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="email@domain.com"
-            />
+              {status === "success" && (
+                <FormAlert tone="success">Message sent!</FormAlert>
+              )}
 
-            {errors.email && (
-              <p id="contact-email-error" className="contact-error">
-                Please enter a valid email.
-              </p>
-            )}
+              {status === "failure" && (
+                <FormAlert tone="error">Something went wrong. Please try again.</FormAlert>
+              )}
+            </FormSection>
 
-            <label htmlFor="contact-subject">
-              Subject
-            </label>
-
-            <input
-              id="contact-subject" maxLength={200} aria-invalid={!!errors.subject} aria-describedby={errors.subject ? "contact-subject-error" : undefined}
-              className={errors.subject ? "input-error" : ""}
-              type="text"
-              name="subject"
-              value={form.subject}
-              onChange={handleChange}
-              placeholder="Tell your subject here..."
-            />
-
-            {errors.subject && (
-              <p id="contact-subject-error" className="contact-error">
-                Please enter a subject.
-              </p>
-            )}
-
-            <label htmlFor="contact-message">
-              Message
-            </label>
-
-            <textarea
-              id="contact-message" maxLength={4000} aria-invalid={!!errors.message} aria-describedby={errors.message ? "contact-message-error" : undefined}
-              className={errors.message ? "input-error" : ""}
-              name="message"
-              value={form.message}
-              onChange={handleChange}
-              placeholder="Type your query here..."
-            />
-
-            {errors.message && (
-              <p id="contact-message-error" className="contact-error">
-                Please enter a message.
-              </p>
-            )}
-
-            <button
-              className="contact-send"
-              type="submit"
-              disabled={status === "sending"}
-            >
-              {status === "sending" ? "Sending..." : "Send"}
-            </button>
-
-            {status === "success" && (
-              <p role="status" className="contact-status success">
-                Message sent!
-              </p>
-            )}
-
-            {status === "failure" && (
-              <p role="alert" className="contact-status failure">
-                Something went wrong. Please try again.
-              </p>
-            )}
+            <FormActions>
+              <Button type="submit" loading={status === "sending"}>
+                {status === "sending" ? "Sending..." : "Send"}
+              </Button>
+            </FormActions>
           </form>
-        </div>
-
-      </section>
-    </main>
+        </FormCard>
+      </PageShell>
   );
 }
 

@@ -1,0 +1,19 @@
+.ui-select { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-width: 0; min-height: 46px; padding: 12px 15px; border: 1px solid var(--color-control-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-ink); font: 500 16px var(--font-sans); text-align: left; cursor: pointer; }
+.ui-select:hover { border-color: var(--color-control-border-hover); }
+.ui-select:focus-visible { outline: 2px solid var(--color-accent-strong); outline-offset: 2px; }
+.ui-select[data-state="open"] { border-color: var(--color-ink); box-shadow: var(--ring); }
+.ui-select[data-placeholder] { color: var(--color-muted); }
+.ui-select-chevron { display: block; transition: transform var(--dur-fast) ease; }
+.ui-select[data-state="open"] .ui-select-chevron { transform: rotate(180deg); }
+.ui-select-menu { z-index: var(--z-popover); width: var(--radix-select-trigger-width); min-width: max(var(--radix-select-trigger-width), 180px); max-width: calc(100vw - 24px); max-height: var(--radix-select-content-available-height); overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-cream-light); box-shadow: var(--shadow-lg); color: var(--color-ink); font: 500 16px var(--font-sans); }
+.ui-select-options { padding: 5px; }
+.ui-select-option { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 44px; padding: 10px 12px; border-radius: var(--radius-sm); outline: none; cursor: pointer; }
+.ui-select-option[data-highlighted], .ui-select-option:focus-visible { background: var(--color-cream-dark); outline: none; }
+.ui-select-option[data-state="checked"] { color: var(--color-accent-strong); font-weight: 700; }
+.ui-select-option[data-disabled] { opacity: .45; cursor: default; }
+.ui-select-check { display: flex; flex-shrink: 0; }
+.ui-select-menu[data-state="open"] { animation: ui-select-in .14s ease-out; transform-origin: var(--radix-select-content-transform-origin); }
+@keyframes ui-select-in { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ui-select-menu[data-state="open"] { animation: none; } }
+/* The highlighted background is the focus indicator inside an open menu; skip the global focus ring. */
+.ui-select-option:focus-visible { outline: none !important; box-shadow: none; }

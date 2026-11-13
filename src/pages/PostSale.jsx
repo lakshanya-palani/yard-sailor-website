@@ -1,18 +1,17 @@
-import SelectField from "../components/SelectField";
-import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { supabase } from "../lib/supabase";
-import "./PostSale.css";
+import { ListingFormPage, ListingFormStatus } from "../components/listing/ListingFormPage";
+import { ProductFormFields } from "../components/listing/ProductFormFields";
 import { validateProduct, validImages, useListingDraft, useUnsavedChanges } from "../lib/listingEditor";
 import { uploadImage } from "../lib/uploads";
 
 
 function PostSale() {
   const { user, loading } = useAuth();
-  if (loading) return <main className="post-sale-page">Loading…</main>;
-  if (!user) return <main className="post-sale-page">Please log in to post a listing.</main>;
+  if (loading) return <ListingFormStatus kind="loading">Loading…</ListingFormStatus>;
+  if (!user) return <ListingFormStatus>Please log in to post a listing.</ListingFormStatus>;
   return <PostSaleForm key={user.id} ownerId={user.id} />;
 }
 
@@ -42,6 +41,9 @@ function PostSaleForm({ ownerId }) {
   const { ready: draftReady, clear: clearDraft } = useListingDraft("product", ownerId, draft, (saved) => {setTitle(saved.title || ""); setPrice(saved.price || ""); setBrand(saved.brand || ""); setCategory(saved.category || ""); setCondition(saved.condition || ""); setDescription(saved.description || ""); setPickup(saved.pickup !== false); setShipping(Boolean(saved.shipping));});
   
   useUnsavedChanges(Boolean(title || price || brand || category || condition || description || images.length));
+
+  const setters = { title: setTitle, price: setPrice, brand: setBrand, category: setCategory, condition: setCondition, description: setDescription, pickup: setPickup, shipping: setShipping };
+  const updateValue = (name, value) => setters[name](value);
 
   const handleImageUpload = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -162,263 +164,29 @@ function PostSaleForm({ ownerId }) {
     }
   };
 
+  const imageItems = images.map((image) => ({ key: image.id, src: image.src }));
+
   return (
-    <main className="post-sale-page">
-      <div className="post-sale-container">
-        <div className="post-sale-heading">
-          <p className="post-sale-eyebrow">YARD SAILOR</p>
-
-          <h1>Post an Item</h1>
-
-          <p>
-            Give your treasure a new home. Add photos and details
-            so nearby sailors can discover it.
-          </p>
-        </div>
-
-        <form className="post-sale-form" onSubmit={handleSubmit}>
-          <fieldset disabled={!draftReady} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
-          {message && <p role="alert" className="listing-message">{message}</p>}
-          <div className="form-section">
-            <div className="section-heading">
-              <h2>Photos</h2>
-              <span>{images.length}/8</span>
-            </div>
-
-            <p className="section-description">
-              Add up to 8 photos. Your first photo will be used as
-              the main listing image.
-            </p>
-
-            <div className="image-grid">
-              {images.map((image, index) => (
-                <div className="image-preview" key={image.id}>
-                  <img
-                    src={image.src}
-                    alt={`Product preview ${index + 1}`}
-                  />
-
-                  {index === 0 && (
-                    <span className="cover-label">Cover</span>
-                  )}
-
-                  <button
-                    type="button"
-                    className="remove-image"
-                    onClick={() => removeImage(image.id)}
-                    aria-label="Remove image"
-                  >
-                    <X size={18} aria-hidden="true" />
-                  </button>
-                </div>
-              ))}
-
-              {images.length < 8 && (
-                <label className="image-upload-box">
-                  <span className="upload-plus">+</span>
-                  <span>Add Photo</span>
-
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                    onChange={handleImageUpload}
-                  />
-                </label>
-              )}
-            </div>
-          </div>
-
-          <div className="sale-details-grid form-section">
-            <div>
-              <label className="input-label" htmlFor="sale-price">
-                Price
-              </label>
-
-              <input
-                id="sale-price"
-                className="sale-input"
-                type="number"
-                name="price"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="input-label" htmlFor="sale-brand">
-                Brand
-              </label>
-
-              <input
-                id="sale-brand"
-                className="sale-input"
-                type="text"
-                name="brand"
-                placeholder="Brand (optional)"
-                value={brand}
-                maxLength={100}
-                onChange={(e) => setBrand(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="input-label" htmlFor="sale-condition">
-                Condition
-              </label>
-
-              <SelectField
-                id="sale-condition"
-                className="sale-input sale-select"
-                name="condition"
-                value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-                required
-              >
-                <option value="">Select condition</option>
-                <option value="New">New</option>
-                <option value="Like New">Like New</option>
-                <option value="Good">Good</option>
-                <option value="Fair">Fair</option>
-                <option value="Poor">Poor</option>
-              </SelectField>
-            </div>
-
-            {/* NEW CATEGORY FIELD — ADD HERE */}
-            <div>
-              <label className="input-label" htmlFor="sale-category">
-                Category
-              </label>
-
-              <SelectField
-                id="sale-category"
-                className="sale-input sale-select"
-                name="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-              >
-                <option value="">Select category</option>
-                <option value="furniture">Furniture</option>
-                <option value="clothing">Clothing & Accessories</option>
-                <option value="electronics">Electronics</option>
-                <option value="collectibles">Collectibles</option>
-                <option value="home & kitchen">Home & Kitchen</option>
-                <option value="sports & outdoors">Sports & Outdoors</option>
-                <option value="books & media">Books & Media</option>
-                <option value="other">Other</option>
-              </SelectField>
-            </div>
-
-          </div>
-
-          <div className="form-section">
-            <label className="input-label" htmlFor="sale-title">
-              Title
-            </label>
-
-            <input
-              id="sale-title"
-              className="sale-input"
-              type="text"
-              placeholder="What are you selling?"
-              value={title}
-              maxLength={70}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-
-            <div className="character-count">
-              {title.length}/70
-            </div>
-          </div>
-
-          <div className="form-section">
-            <label
-              className="input-label"
-              htmlFor="sale-description"
-            >
-              Description
-            </label>
-
-            <textarea
-              id="sale-description"
-              className="sale-textarea"
-              placeholder="Tell buyers about the item, condition, size, or anything else they should know..."
-              value={description}
-              maxLength={500}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-
-            <div className="character-count">
-              {description.length}/500
-            </div>
-          </div>
-
-          <div className="form-section">
-            <h2>How can buyers get it?</h2>
-
-            <div className="delivery-options">
-              <button
-                type="button"
-                className={`delivery-option ${
-                  pickup ? "selected" : ""
-                }`}
-                onClick={() => setPickup((value) => !value)}
-              >
-                <div>
-                  <strong>Local Pickup</strong>
-                  <span>Buyer picks it up from you</span>
-                </div>
-
-                <div className="delivery-check">
-                  {pickup && "✓"}
-                </div>
-              </button>
-
-              <button
-                type="button"
-                className={`delivery-option ${
-                  shipping ? "selected" : ""
-                }`}
-                onClick={() => setShipping((value) => !value)}
-              >
-                <div>
-                  <strong>Shipping</strong>
-                  <span>Ship the item to the buyer</span>
-                </div>
-
-                <div className="delivery-check">
-                  {shipping && "✓"}
-                </div>
-              </button>
-            </div>
-          </div>
-
-          <div className="post-sale-actions">
-            <button
-              type="button"
-              className="cancel-post-button"
-              onClick={() => navigate("/")}
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="publish-sale-button"
-              disabled={submitting}
-            >
-              {submitting ? "Posting..." : "Post Sale"}
-            </button>
-          </div>
-          </fieldset>
-        </form>
-      </div>
-    </main>
+    <ListingFormPage
+      title="Post an Item"
+      subtitle="Give your treasure a new home. Add photos and details so nearby sailors can discover it."
+      onSubmit={handleSubmit}
+      locked={!draftReady}
+      message={message}
+      submitting={submitting}
+      submitLabel="Post Item"
+      submittingLabel="Posting..."
+      onCancel={() => navigate("/")}
+    >
+      <ProductFormFields
+        values={draft}
+        onChange={updateValue}
+        images={imageItems}
+        maxImages={8}
+        onSelectImages={handleImageUpload}
+        onRemoveImage={(index) => removeImage(images[index].id)}
+      />
+    </ListingFormPage>
   );
 }
 

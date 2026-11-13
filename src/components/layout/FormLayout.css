@@ -1,0 +1,117 @@
+/* Card */
+.ui-form-card {
+  width: 100%;
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-ink);
+}
+
+.ui-form-card--capped {
+  max-width: var(--form-card-width);
+  margin-inline: auto;
+}
+
+.ui-form-card__header { margin-bottom: 28px; }
+
+.ui-form-card__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.ui-form-card__subtitle {
+  margin: 6px 0 0;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+/* Section */
+.ui-form-section {
+  display: grid;
+  gap: 16px;
+}
+
+.ui-form-section + .ui-form-section {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.ui-form-section__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ui-form-section__title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.ui-form-section__aside {
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.ui-form-section__description {
+  margin: 6px 0 0;
+  color: var(--color-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.ui-form-section__fields {
+  display: grid;
+  min-width: 0;
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .ui-form-section:not(.ui-form-section--stacked, .ui-form-section--bare) {
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 40px;
+  }
+  .ui-form-section:not(.ui-form-section--stacked, .ui-form-section--bare) .ui-form-section__heading { display: block; }
+  .ui-form-section:not(.ui-form-section--stacked, .ui-form-section--bare) .ui-form-section__aside { display: block; margin-top: 4px; }
+}
+
+/* Grid */
+.ui-form-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--form-cols, 2), minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .ui-form-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Actions */
+.ui-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.ui-form-actions--end { justify-content: flex-end; }
+.ui-form-actions--between { justify-content: space-between; }
+.ui-form-actions--stretch > * { flex: 1 1 0; }
+
+@media (max-width: 640px) {
+  .ui-form-card { padding: 25px 20px; }
+}
+
+@media (max-width: 480px) {
+  .ui-form-actions { flex-direction: column-reverse; align-items: stretch; }
+  .ui-form-actions > * { flex: none; width: 100%; }
+}

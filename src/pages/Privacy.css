@@ -1,70 +1,42 @@
-.privacy-page {
-    min-height: calc(100vh - 178px);
-    padding: 60px 24px 80px;
-  
-    background-color: #fff3df;
-  
-    font-family: "League Spartan", sans-serif;
-    color: #1c2a39;
+/* Long-form reading styles shared by the Privacy and Accessibility pages. */
+.prose-page {
+  max-width: 70ch;
+  color: var(--color-ink);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.prose-page section + section {
+  margin-top: 36px;
+}
+
+.prose-page h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.prose-page p {
+  margin: 0;
+}
+
+.prose-page p + p {
+  margin-top: 14px;
+}
+
+.prose-page a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .prose-page {
+    font-size: 16px;
   }
-  
-  .privacy-container {
-    width: min(850px, 100%);
-    margin: 0 auto;
+
+  .prose-page h2 {
+    font-size: 20px;
   }
-  
-  .privacy-container h1 {
-    margin: 0 0 8px;
-  
-    font-size: 42px;
-    font-weight: 800;
-  
-    color: #ef403a;
-  }
-  
-  .privacy-updated {
-    margin: 0 0 100px;
-  
-    color: #777;
-    font-size: 15px;
-  }
-  
-  .privacy-container section {
-    margin-bottom: 32px;
-  }
-  
-  .privacy-container h2 {
-    margin: 0 0 10px;
-  
-    font-size: 22px;
-    font-weight: 700;
-  
-    color: #1c2a39;
-  }
-  
-  .privacy-container p {
-    margin: 0;
-  
-    font-size: 17px;
-    line-height: 1.6;
-  
-    color: #444;
-  }
-  
-  @media (max-width: 600px) {
-    .privacy-page {
-      padding: 40px 20px 60px;
-    }
-  
-    .privacy-container h1 {
-      font-size: 34px;
-    }
-  
-    .privacy-container h2 {
-      font-size: 20px;
-    }
-  
-    .privacy-container p {
-      font-size: 16px;
-    }
-  }
+}

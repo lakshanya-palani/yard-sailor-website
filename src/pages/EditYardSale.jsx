@@ -5,7 +5,11 @@ import { supabase } from "../lib/supabase";
 import { geocodeAddress } from "../utils/location";
 import { validateSale, validImages, useUnsavedChanges } from "../lib/listingEditor";
 import { uploadImage } from "../lib/uploads";
-import "./AccountPages.css";
+import { ListingFormPage, ListingFormStatus } from "../components/listing/ListingFormPage";
+import { YardSaleFormFields } from "../components/listing/YardSaleFormFields";
+
+// YardSaleFormFields uses the create form's keys; this page stores the database columns.
+const FIELD_COLUMNS = { startTime: "start_time", endTime: "end_time" };
 
 function toLocalInput(value) {
   if (!value) return "";
@@ -17,13 +21,24 @@ function toLocalInput(value) {
 function EditYardSale() {
   const { id } = useParams();
   const { user, loading } = useAuth();
-  if (loading) return <main className="account-page"><p role="status">Loading…</p></main>;
-  if (!user) return <main className="account-page"><p role="status">Please log in to edit this listing.</p></main>;
+  if (loading) return <ListingFormStatus kind="loading">Loading…</ListingFormStatus>;
+  if (!user) return <ListingFormStatus>Please log in to edit this listing.</ListingFormStatus>;
   return <EditYardSaleForm key={`${id}:${user.id}`} id={id} ownerId={user.id} />;
 }
 
 function EditYardSaleForm({ id, ownerId }) {
   const navigate = useNavigate();
+  const previewUrls = useRef(new Set());
+  useEffect(() => {
+    const urls = previewUrls.current;
+    return () => { urls.forEach(url => URL.revokeObjectURL(url)); urls.clear(); };
+  }, []);
+  function createPreview(file) {
+    const url = URL.createObjectURL(file);
+    previewUrls.current.add(url);
+    return url;
+  }
+
   const routeIdRef = useRef(id);
   useEffect(() => { routeIdRef.current = id; return () => { routeIdRef.current = null; }; }, [id]);
   const [hostId, setHostId] = useState(null);
@@ -66,19 +81,35 @@ function EditYardSaleForm({ id, ownerId }) {
     return () => { active = false; };
   }, [id, ownerId]);
 
-  function updateField(event) {
+  function updateValue(name, value) {
     setDirty(true);
-    const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+    setForm((current) => ({ ...current, [FIELD_COLUMNS[name] || name]: value }));
   }
 
   function selectImages(event) {
     const files = Array.from(event.target.files || []);
     if (!validImages(files)) { setMessage("Each image must be a JPEG, PNG, or WebP file no larger than 5 MB."); event.target.value = ""; return; }
     const remaining = 8 - (form.images || []).length - newImages.length;
-    setNewImages((current) => [...current, ...files.slice(0, Math.max(0, Math.min(remaining, 8 - (form.images || []).length - current.length)))]);
+    const additions = files.map((file) => ({ id: crypto.randomUUID(), file, preview: createPreview(file) }));
+    setNewImages((current) => {
+      const accepted = additions.slice(0, Math.max(0, Math.min(remaining, 8 - (form.images || []).length - current.length)));
+      additions.slice(accepted.length).forEach((image) => URL.revokeObjectURL(image.preview));
+      return [...current, ...accepted];
+    });
     setDirty(true);
     event.target.value = "";
+  }
+
+  function removeImage(index) {
+    const existingCount = (form.images || []).length;
+    if (index < existingCount) {
+      setForm((current) => ({ ...current, images: current.images.filter((_, i) => i !== index) }));
+    } else {
+      const image = newImages[index - existingCount];
+      URL.revokeObjectURL(image.preview);
+      setNewImages((current) => current.filter((item) => item.id !== image.id));
+    }
+    setDirty(true);
   }
 
   async function handleSubmit(event) {
@@ -93,7 +124,7 @@ function EditYardSaleForm({ id, ownerId }) {
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || authData.user?.id !== hostId || String(routeIdRef.current) !== String(id)) throw new Error("Your session has changed. Please log in again.");
       const imageUrls = [...(form.images || [])];
-      for (const file of newImages) {
+      for (const { file } of newImages) {
         const { data: uploadAuth, error: uploadAuthError } = await supabase.auth.getUser();
         if (uploadAuthError || uploadAuth.user?.id !== hostId || String(routeIdRef.current) !== String(id)) throw new Error("Your session or listing has changed. Please reopen the editor.");
         imageUrls.push(await uploadImage(file, "yard-sales"));
@@ -134,31 +165,35 @@ function EditYardSaleForm({ id, ownerId }) {
     }
   }
 
-  if (!form || String(form.id) !== String(id)) return <main className="account-page"><p className="account-status" role="status">{message || "Loading yard sale..."}</p></main>;
+  if (!form || String(form.id) !== String(id)) return <ListingFormStatus kind={message ? "error" : "loading"}>{message || "Loading yard sale..."}</ListingFormStatus>;
+
+  const imageItems = [
+    ...(form.images || []).map((url, index) => ({ key: `${url}-${index}`, src: url })),
+    ...newImages.map((image) => ({ key: image.id, src: image.preview })),
+  ];
 
   return (
-    <main className="account-page">
-      <div className="account-container">
-        <div className="account-heading"><h1>Edit Yard Sale</h1><p>Update your hosted event details.</p></div>
-        <section className="account-form-card">
-          <form className="account-form" onSubmit={handleSubmit}>
-            {message && <p role="alert" className="listing-message">{message}</p>}
-            <fieldset><legend>Photos ({(form.images || []).length + newImages.length}/8)</legend>
-              {(form.images || []).map((url, index) => <div key={`${url}-${index}`}><img src={url} alt={`Listing photo ${index + 1}`} width="100" /><button type="button" onClick={() => { setForm((current) => ({ ...current, images: current.images.filter((_, i) => i !== index) })); setDirty(true); }}>Remove photo</button></div>)}
-              {newImages.map((file, index) => <div key={`${file.name}-${index}`}>{file.name} <button type="button" onClick={() => { setNewImages((current) => current.filter((_, i) => i !== index)); setDirty(true); }}>Remove photo</button></div>)}
-              {(form.images || []).length + newImages.length < 8 && <label>Add photos<input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={selectImages} /></label>}
-            </fieldset>
-            <label>Title<input name="title" maxLength={80} value={form.title || ""} onChange={updateField} /></label>
-            <label>Description<textarea name="description" maxLength={1000} value={form.description || ""} onChange={updateField} /></label>
-            <label>Address<input name="address" maxLength={500} value={form.address || ""} onChange={updateField} /></label>
-            <label>Start time<input name="start_time" type="datetime-local" value={form.start_time} onChange={updateField} /></label>
-            <label>End time<input name="end_time" type="datetime-local" value={form.end_time} onChange={updateField} /></label>
-            <p>Times use your device’s time zone. The sale status updates automatically from these dates.</p>
-            <div className="account-actions"><button className="account-button" disabled={saving}>{saving ? "Saving..." : "Save Yard Sale"}</button><button className="account-button-secondary" type="button" onClick={() => navigate("/my-yard-sales")}>Cancel</button></div>
-          </form>
-        </section>
-      </div>
-    </main>
+    <ListingFormPage
+      title="Edit Yard Sale"
+      subtitle="Update your hosted event details."
+      backTo="/my-yard-sales"
+      backLabel="My yard sales"
+      onSubmit={handleSubmit}
+      message={message}
+      submitting={saving}
+      submitLabel="Save Yard Sale"
+      submittingLabel="Saving..."
+      onCancel={() => navigate("/my-yard-sales")}
+    >
+      <YardSaleFormFields
+        values={{ title: form.title, description: form.description, address: form.address, startTime: form.start_time, endTime: form.end_time }}
+        onChange={updateValue}
+        images={imageItems}
+        maxImages={8}
+        onSelectImages={selectImages}
+        onRemoveImage={removeImage}
+      />
+    </ListingFormPage>
   );
 }
 
