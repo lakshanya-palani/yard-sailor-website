@@ -40,3 +40,19 @@
   .advertisement-sidebar {position: sticky; top: 100px; align-self: start;}
   .advertisement-placeholder {min-height: 0; height: min(600px, calc(100vh - 180px));}
 }
+
+/* Narrow advertisement columns */
+@media (min-width: 1301px) {
+  .advertisement-layout {grid-template-columns: 100px minmax(0, 1fr) 100px;}
+}
+
+@media (min-width: 1101px) and (max-width: 1300px) {
+  .advertisement-layout {grid-template-columns: 80px minmax(0, 1fr) 80px;}
+}
+
+@media (min-width: 1101px) {
+  .advertisement-placeholder {padding: 6px; overflow-wrap: anywhere;}
+  .advertisement-placeholder span {font-size: 12px;}
+  .advertisement-placeholder small {display: none;}
+  .advertisement-label {font-size: 8px; letter-spacing: 0;}
+}
