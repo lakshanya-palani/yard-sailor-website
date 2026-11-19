@@ -111,3 +111,9 @@
 @media (max-width: 480px) {
   .home-page .products-grid {grid-template-columns: minmax(0, 1fr);}
 }
+
+/* Sticky desktop advertisement columns */
+@media (min-width: 1101px) {
+  .home-ad-sidebar {position: sticky; top: 100px; align-self: start;}
+  .home-ad-placeholder {min-height: 0; height: min(600px, calc(100vh - 180px));}
+}

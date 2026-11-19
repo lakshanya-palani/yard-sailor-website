@@ -34,3 +34,9 @@
 @media (max-width: 640px) {
   .advertisement-layout {width: calc(100% - 32px); grid-template-columns: minmax(0, 1fr); grid-template-areas: "main" "left" "right";}
 }
+
+/* Sticky desktop advertisement columns */
+@media (min-width: 1101px) {
+  .advertisement-sidebar {position: sticky; top: 100px; align-self: start;}
+  .advertisement-placeholder {min-height: 0; height: min(600px, calc(100vh - 180px));}
+}
