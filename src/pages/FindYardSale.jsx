@@ -9,6 +9,7 @@ import { LocationSearch } from "../components/listing/LocationSearch";
 import { SaleListingCard } from "../components/listing/SaleListingCard";
 import { ListingSkeletonGroup } from "../components/listing/ListingSkeleton";
 import { Button } from "../components/ui/Button";
+import { SelectField } from "../components/ui/SelectField";
 import { SegmentedControl } from "../components/ui/SegmentedControl";
 import { StatusMessage } from "../components/ui/StatusMessage";
 import { getSaleStatus, saleOverlapsLocalWindow } from "../utils/saleTime";
@@ -26,7 +27,24 @@ import "./FindYardSale.css";
 const DATE_FILTERS = [
   { value: "all", label: "All Yard Sales" },
   { value: "today", label: "Today" },
+  { value: "tomorrow", label: "Tomorrow" },
   { value: "weekend", label: "This Weekend" },
+  { value: "week", label: "Next 7 Days" },
+  { value: "custom", label: "Custom Date" },
+];
+
+const DISTANCE_FILTERS = [
+  { value: "all", label: "Any Distance" },
+  { value: "5", label: "5 miles" },
+  { value: "10", label: "10 miles" },
+  { value: "25", label: "25 miles" },
+  { value: "50", label: "50 miles" },
+];
+
+const SORT_OPTIONS = [
+  { value: "nearest", label: "Nearest" },
+  { value: "soonest", label: "Soonest Upcoming" },
+  { value: "farthest", label: "Farthest" },
 ];
 
 const VIEWS = [
@@ -48,6 +66,9 @@ function FindYardSale() {
   const [selectionRequest, setSelectionRequest] = useState(0);
   const [query, setQuery] = useState(initialSearch);
   const [filter, setFilter] = useState("all");
+  const [distanceFilter, setDistanceFilter] = useState("all");
+  const [sort, setSort] = useState("nearest");
+  const [customDate, setCustomDate] = useState("");
   const [view, setView] = useState("list");
   const [locationLabel, setLocationLabel] = useState("");
   const [loading, setLoading] = useState(true);
@@ -137,11 +158,34 @@ function FindYardSale() {
     return () => window.removeEventListener("yardSailorYardSalesUpdated", loadSales);
   }, [salesRetry]);
 
+  
   const displayedSales = useMemo(() => {
     const filtered = sales.filter((sale) => {
       if (!["upcoming", "live"].includes(getSaleStatus(sale, now))) return false;
+
       if (filter === "today") return saleOverlapsLocalWindow(sale, "today", now);
       if (filter === "weekend") return saleOverlapsLocalWindow(sale, "weekend", now);
+
+      if (filter === "tomorrow" || filter === "week" || (filter === "custom" && customDate)) {
+        const start = new Date(now);
+        start.setHours(0, 0, 0, 0);
+
+        if (filter === "tomorrow") {
+          start.setDate(start.getDate() + 1);
+        }
+
+        if (filter === "custom") {
+          const [year, month, day] = customDate.split("-").map(Number);
+          start.setFullYear(year, month - 1, day);
+        }
+
+        const end = new Date(start);
+        end.setDate(end.getDate() + (filter === "week" ? 7 : 1));
+
+        return new Date(sale.start_time) < end &&
+          new Date(sale.end_time) > start;
+      }
+
       return true;
     });
 
@@ -152,11 +196,25 @@ function FindYardSale() {
         : null,
     }));
 
-    if (origin) {
-      withDistance.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+    const withinDistance = origin && distanceFilter !== "all"
+      ? withDistance.filter((sale) =>
+          sale.distance !== null &&
+          sale.distance <= Number(distanceFilter)
+        )
+      : withDistance;
+
+    if (sort === "nearest" && origin) {
+      withinDistance.sort((a, b) => a.distance - b.distance);
+    } else if (sort === "farthest" && origin) {
+      withinDistance.sort((a, b) => b.distance - a.distance);
+    } else {
+      withinDistance.sort((a, b) =>
+        new Date(a.start_time) - new Date(b.start_time)
+      );
     }
-    return withDistance;
-  }, [filter, origin, sales, now]);
+
+    return withinDistance;
+  }, [filter, distanceFilter, sort, customDate, origin, sales, now]);
 
   async function searchLocation(event) {
     event.preventDefault();
@@ -259,7 +317,54 @@ function FindYardSale() {
           error={error}
         />
 
-        <SegmentedControl className="yard-sale-filters" label="Yard sale date filters" options={DATE_FILTERS} value={filter} onChange={setFilter} />
+        <div className="yard-sale-filter-controls">
+          <label>
+            Date
+            <SelectField value={filter} onChange={event => setFilter(event.target.value)}>
+              {DATE_FILTERS.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </SelectField>
+          </label>
+
+          <label>
+            Distance
+            <SelectField disabled={!origin} value={distanceFilter} onChange={event => setDistanceFilter(event.target.value)}>
+              {DISTANCE_FILTERS.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </SelectField>
+          </label>
+
+          <label>
+            Sort
+            <SelectField value={origin ? sort : "soonest"} onChange={event => setSort(event.target.value)}>
+              {SORT_OPTIONS.map(option => (
+                <option key={option.value} value={option.value} disabled={!origin && option.value !== "soonest"}>{option.label}</option>
+              ))}
+            </SelectField>
+          </label>
+
+          <Button type="button" variant="secondary" onClick={() => {
+            setFilter("all");
+            setDistanceFilter("all");
+            setSort("nearest");
+            setCustomDate("");
+          }}>
+            Reset
+          </Button>
+
+          {filter === "custom" && (
+            <label className="yard-sale-custom-date">
+              Choose a date
+              <input type="date" value={customDate} onChange={event => setCustomDate(event.target.value)} />
+            </label>
+          )}
+
+          {!origin && (
+            <small className="yard-sale-filter-hint">Search for a location to enable distance filtering.</small>
+          )}
+        </div>
 
         <div className="yard-sale-summary">
           <p role="status">{loading ? "Loading yard sales…" : `${displayedSales.length} ${displayedSales.length === 1 ? "yard sale" : "yard sales"}`} {locationLabel && `near ${locationLabel}`}</p>
