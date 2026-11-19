@@ -1,0 +1,36 @@
+
+/* Shared Advertisement Layout */
+
+.advertisement-layout {display: grid; grid-template-columns: 160px minmax(0, 1fr) 160px; grid-template-areas: "left main right"; gap: 24px; width: min(1600px, calc(100% - 48px)); margin: 0 auto; align-items: start;}
+.advertisement-main {grid-area: main; min-width: 0;}
+.advertisement-left {grid-area: left;}
+.advertisement-right {grid-area: right;}
+
+/* Advertisement columns */
+
+.advertisement-sidebar {display: flex; flex-direction: column; padding-top: 48px; min-width: 0;}
+.advertisement-label {display: block; font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--color-muted); margin-bottom: 10px; text-align: center;}
+.advertisement-placeholder {display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; min-height: 600px; padding: 12px; box-sizing: border-box; border: 2px dashed var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-wash); color: var(--color-ink);}
+.advertisement-placeholder span {font-size: 14px; font-weight: 700;}
+.advertisement-placeholder small {font-size: 12px; line-height: 1.5; color: var(--color-muted);}
+
+/* Smaller desktop screens */
+
+@media (max-width: 1300px) {
+  .advertisement-layout {grid-template-columns: 120px minmax(0, 1fr) 120px; gap: 18px;}
+  .advertisement-label {font-size: 9px; letter-spacing: 0;}
+}
+
+/* Tablet */
+
+@media (max-width: 1100px) {
+  .advertisement-layout {grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "main main" "left right";}
+  .advertisement-sidebar {padding-top: 0; padding-bottom: 40px;}
+  .advertisement-placeholder {min-height: 180px;}
+}
+
+/* Mobile */
+
+@media (max-width: 640px) {
+  .advertisement-layout {width: calc(100% - 32px); grid-template-columns: minmax(0, 1fr); grid-template-areas: "main" "left" "right";}
+}

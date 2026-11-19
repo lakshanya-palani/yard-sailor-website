@@ -13,6 +13,7 @@ import { PriceInput } from "../components/ui/PriceInput";
 import { Button } from "../components/ui/Button";
 import { StatusMessage } from "../components/ui/StatusMessage";
 import { ListingSkeletonGroup } from "../components/listing/ListingSkeleton";
+import AdvertisementLayout from "../components/AdvertisementLayout";
 import "./Shop.css";
 
 function Shop() {
@@ -85,8 +86,9 @@ function Shop() {
   }, [search, sort, condition, category, min, max, page, retry]);
 
   return (
-    <PageShell>
-      <PageHeader title="Shop" subtitle="Discover secondhand items from the community." />
+      <AdvertisementLayout>
+        <PageShell>
+          <PageHeader title="Shop" subtitle="Discover secondhand items from the community." />
       {search && <p>Search results for “{search}”</p>}
       <div className="shop-controls">
         <label>Sort <SelectField value={sort} onChange={event => updateFilter("sort", event.target.value)}><option value="newest">Newest</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></SelectField></label>
@@ -103,7 +105,8 @@ function Shop() {
         </CardGrid>
       )}
       {!loading && !error && products.length < count && <Button className="shop-load-more" variant="secondary" onClick={() => setPagination({ key: queryKey, page: page + 1 })}>Load more</Button>}
-    </PageShell>
+          </PageShell>
+      </AdvertisementLayout>
   );
 }
 

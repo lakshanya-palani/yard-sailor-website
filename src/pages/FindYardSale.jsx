@@ -20,6 +20,7 @@ import {
   hasValidCoordinates,
   requestUserLocation,
 } from "../utils/location";
+import AdvertisementLayout from "../components/AdvertisementLayout";
 import "./FindYardSale.css";
 
 const DATE_FILTERS = [
@@ -242,35 +243,45 @@ function FindYardSale() {
     );
   }
 
+  
   return (
-    <PageShell width="wide" className="find-yard-sale-page">
-      <PageHeader title="Find a Yard Sale" />
-      <LocationSearch
-        value={query}
-        onChange={setQuery}
-        onSubmit={searchLocation}
-        onUseLocation={useMyLocation}
-        searching={searching}
-        locating={locating}
-        error={error}
-      />
+    <AdvertisementLayout>
+      <PageShell width="wide" className="find-yard-sale-page">
+        <PageHeader title="Find a Yard Sale" />
 
-      <SegmentedControl className="yard-sale-filters" label="Yard sale date filters" options={DATE_FILTERS} value={filter} onChange={setFilter} />
+        <LocationSearch
+          value={query}
+          onChange={setQuery}
+          onSubmit={searchLocation}
+          onUseLocation={useMyLocation}
+          searching={searching}
+          locating={locating}
+          error={error}
+        />
 
-      <div className="yard-sale-summary">
-        <p role="status">{loading ? "Loading yard sales…" : `${displayedSales.length} ${displayedSales.length === 1 ? "yard sale" : "yard sales"}`} {locationLabel && `near ${locationLabel}`}</p>
-        <SegmentedControl className="yard-sale-view-toggle" size="sm" label="Results view" options={VIEWS} value={view} onChange={setView} />
-      </div>
-      <p className={`yard-sale-map-hint is-${view}`}>Choose a numbered pin or select “Show on map” to explore a sale. The list includes all matching sales, even outside the current map view.</p>
-      <div className={`find-yard-sale-layout view-${view}`}>
-        <div className="yard-sale-map-container" ref={mapSectionRef}><SaleMap sales={displayedSales} selectedSaleId={selectedSaleId} selectionRequest={selectionRequest} onSelectSale={setSelectedSaleId} center={mapCenter} className="find-yard-sale-map" /></div>
-        <section className="yard-sale-results" aria-labelledby="yard-sale-results-title">
-          <SectionHeader title={<span id="yard-sale-results-title">Yard Sale Results</span>} count={displayedSales.length} />
-          {results}
-        </section>
-      </div>
-    </PageShell>
+        <SegmentedControl className="yard-sale-filters" label="Yard sale date filters" options={DATE_FILTERS} value={filter} onChange={setFilter} />
+
+        <div className="yard-sale-summary">
+          <p role="status">{loading ? "Loading yard sales…" : `${displayedSales.length} ${displayedSales.length === 1 ? "yard sale" : "yard sales"}`} {locationLabel && `near ${locationLabel}`}</p>
+          <SegmentedControl className="yard-sale-view-toggle" size="sm" label="Results view" options={VIEWS} value={view} onChange={setView} />
+        </div>
+
+        <p className={`yard-sale-map-hint is-${view}`}>Choose a numbered pin or select “Show on map” to explore a sale. The list includes all matching sales, even outside the current map view.</p>
+
+        <div className={`find-yard-sale-layout view-${view}`}>
+          <div className="yard-sale-map-container" ref={mapSectionRef}>
+            <SaleMap sales={displayedSales} selectedSaleId={selectedSaleId} selectionRequest={selectionRequest} onSelectSale={setSelectedSaleId} center={mapCenter} className="find-yard-sale-map" />
+          </div>
+
+          <section className="yard-sale-results" aria-labelledby="yard-sale-results-title">
+            <SectionHeader title={<span id="yard-sale-results-title">Yard Sale Results</span>} count={displayedSales.length} />
+            {results}
+          </section>
+        </div>
+      </PageShell>
+    </AdvertisementLayout>
   );
 }
 
 export default FindYardSale;
+

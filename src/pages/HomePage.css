@@ -55,8 +55,10 @@
 
 /* Homepage Advertisement Sidebar */
 
-.home-page-layout {display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 28px; width: min(1600px, calc(100% - 48px)); margin: 0 auto; align-items: start;}
-.home-main-content {min-width: 0;}
+.home-page-layout {display: grid; grid-template-columns: 160px minmax(0, 1fr) 160px; grid-template-areas: "left main right"; gap: 24px; width: min(1600px, calc(100% - 48px)); margin: 0 auto; align-items: start;}
+.home-main-content {grid-area: main; min-width: 0;}
+.home-ad-left {grid-area: left;}
+.home-ad-right {grid-area: right;}
 
 /* Keep existing homepage content within the main column */
 .home-main-content .home-yard-sale-finder {width: 100%; grid-template-columns: minmax(0, 42%) minmax(0, 58%); padding: 48px 0 64px;}
@@ -67,26 +69,45 @@
 .home-main-content .home-finder-content h1 {font-size: clamp(32px, 3.2vw, 52px);}
 .home-main-content .home-finder-map .homepage-sale-map {height: 440px;}
 
-/* Advertisement column */
-.home-ad-sidebar {display: flex; flex-direction: column; gap: 24px; padding-top: 48px; min-width: 0;}
+/* Advertisement columns */
+.home-ad-sidebar {display: flex; flex-direction: column; padding-top: 48px; min-width: 0;}
 .home-ad-slot {width: 100%;}
-.home-ad-label {display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--color-muted); margin-bottom: 10px;}
-.home-ad-placeholder {display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; min-height: 260px; padding: 20px; box-sizing: border-box; border: 2px dashed var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-wash); color: var(--color-ink);}
-.home-ad-placeholder span {font-size: 16px; font-weight: 700;}
-.home-ad-placeholder small {font-size: 13px; line-height: 1.5; color: var(--color-muted);}
+.home-ad-label {display: block; font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--color-muted); margin-bottom: 10px; text-align: center;}
+.home-ad-placeholder {display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; min-height: 600px; padding: 12px; box-sizing: border-box; border: 2px dashed var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-wash); color: var(--color-ink);}
+.home-ad-placeholder span {font-size: 14px; font-weight: 700;}
+.home-ad-placeholder small {font-size: 12px; line-height: 1.5; color: var(--color-muted);}
 
-/* Tablet and mobile */
-@media (max-width: 1024px) {
-  .home-page-layout {grid-template-columns: minmax(0, 1fr);}
-  .home-ad-sidebar {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 0; padding-bottom: 40px;}
+/* Smaller desktop screens */
+@media (max-width: 1300px) {
+  .home-page-layout {grid-template-columns: 120px minmax(0, 1fr) 120px; gap: 18px;}
+  .home-page .products-grid {grid-template-columns: repeat(4, minmax(0, 1fr));}
+  .home-page .products-grid > .listing-card:nth-of-type(n + 5) {display: none;}
+  .home-ad-label {font-size: 9px; letter-spacing: 0;}
+}
+
+/* Tablet */
+@media (max-width: 1100px) {
+  .home-page-layout {grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "main main" "left right";}
+  .home-ad-sidebar {padding-top: 0; padding-bottom: 40px;}
   .home-ad-placeholder {min-height: 180px;}
 }
 
+@media (max-width: 900px) {
+  .home-main-content .home-yard-sale-finder {grid-template-columns: 1fr;}
+  .home-main-content .home-finder-content {padding: 0 0 32px;}
+  .home-main-content .home-finder-map .homepage-sale-map {height: 400px;}
+  .home-page .products-grid {grid-template-columns: repeat(3, minmax(0, 1fr));}
+}
 
+/* Mobile */
 @media (max-width: 640px) {
-  .home-page-layout {width: calc(100% - 32px);}
+  .home-page-layout {width: calc(100% - 32px); grid-template-columns: minmax(0, 1fr); grid-template-areas: "main" "left" "right";}
   .home-main-content .home-yard-sale-finder {grid-template-columns: 1fr; padding: 32px 0 48px;}
   .home-main-content .home-finder-content {padding: 0 0 28px;}
   .home-main-content .home-finder-map .homepage-sale-map {height: 320px;}
-  .home-ad-sidebar {grid-template-columns: 1fr; gap: 20px;}
+  .home-page .products-grid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+}
+
+@media (max-width: 480px) {
+  .home-page .products-grid {grid-template-columns: minmax(0, 1fr);}
 }
