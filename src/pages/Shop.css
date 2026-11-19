@@ -1,8 +1,13 @@
-.shop-controls { display: grid; grid-template-columns: repeat(3, minmax(130px, 1fr)) repeat(2, minmax(100px, 140px)) auto; align-items: end; gap: 12px; margin: 28px 0 30px; }
-.shop-controls label { display: grid; gap: 6px; font-weight: 700; }
+.shop-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) repeat(2, minmax(0, 140px)) auto; align-items: end; gap: 12px; margin: 28px 0 30px; }
+.shop-controls label { display: grid; gap: 6px; font-weight: 700; min-width: 0; }
+.shop-controls input,
+.shop-controls select { width: 100%; min-width: 0; box-sizing: border-box; }
 .shop-count { color: var(--color-muted); }
 .shop-load-more { display: block; margin: 28px auto 0; }
 .saved-items-status { margin-top: 28px; }
+
+/* Shop advertisement layout */
+.advertisement-main .shop-controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 /* SavedItems' unavailable fallback still renders this card shell. */
 .shop-card { min-width: 0; overflow: hidden; border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); cursor: default; transition: transform var(--dur) ease, box-shadow var(--dur) ease; }
@@ -11,10 +16,12 @@
 .shop-card-info { padding: 14px; }
 
 @media (max-width: 640px) {
-  .shop-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shop-controls,
+  .advertisement-main .shop-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 480px) {
-  .shop-controls { grid-template-columns: 1fr; }
+  .shop-controls,
+  .advertisement-main .shop-controls { grid-template-columns: 1fr; }
   .shop-card-info { padding: 11px; }
 }

@@ -59,7 +59,23 @@ function HomePage() {
   return (
     <main className="home-page">
       <div className="home-page-layout">
+
+        {/* Left advertisement column */}
+        <aside
+          className="home-ad-sidebar home-ad-left"
+          aria-label="Left advertisement space"
+        >
+          <div className="home-ad-slot">
+            <span className="home-ad-label">ADVERTISEMENT</span>
+            <div className="home-ad-placeholder">
+              <span>Advertisement Space</span>
+              <small>Local businesses and promotions</small>
+            </div>
+          </div>
+        </aside>
+
         <div className="home-main-content">
+
       
         {/* Homepage yard sale finder */}
         <section className="home-yard-sale-finder">
@@ -110,19 +126,12 @@ function HomePage() {
 
         </div>
 
-        {/* Advertisement sidebar */}
+        
+        {/* Right advertisement column */}
         <aside
-          className="home-ad-sidebar"
-          aria-label="Future advertisement spaces"
+          className="home-ad-sidebar home-ad-right"
+          aria-label="Right advertisement space"
         >
-          <div className="home-ad-slot">
-            <span className="home-ad-label">ADVERTISEMENT</span>
-            <div className="home-ad-placeholder">
-              <span>Advertisement Space</span>
-              <small>Local businesses and promotions</small>
-            </div>
-          </div>
-
           <div className="home-ad-slot">
             <span className="home-ad-label">ADVERTISEMENT</span>
             <div className="home-ad-placeholder">
@@ -131,7 +140,7 @@ function HomePage() {
             </div>
           </div>
         </aside>
-      
+
       </div>
     </main>
   );

@@ -1,50 +1,35 @@
 .find-yard-sale-page .ui-page-header { margin-bottom: 20px; }
-
 .yard-sale-filters { margin-block: 22px; }
-
 .yard-sale-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .yard-sale-summary p { margin: 0; color: var(--color-muted); }
 .yard-sale-view-toggle { display: none; }
-
 .yard-sale-map-hint { margin: 0 0 14px; color: var(--color-muted); font-size: 15px; line-height: 1.4; }
-
-.find-yard-sale-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
-  gap: 20px;
-  align-items: start;
-}
-
+.find-yard-sale-layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 20px; align-items: start; }
 .yard-sale-map-container { min-width: 0; scroll-margin-top: 16px; }
-
 .sale-map.find-yard-sale-map { width: 100%; height: 720px; margin: 0; border-radius: var(--radius-lg); }
-
-.yard-sale-results {
-  height: 720px;
-  box-sizing: border-box;
-  overflow-y: auto;
-  padding: 16px;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  background: var(--color-cream-light);
-}
-
+.yard-sale-results { height: 720px; min-width: 0; box-sizing: border-box; overflow-y: auto; padding: 16px; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); background: var(--color-cream-light); }
 .yard-sale-results .ui-section-header { margin-bottom: 14px; }
-
 .yard-sale-result-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
-
 .yard-sale-result.is-selected { border-color: var(--color-accent-strong); box-shadow: 0 0 0 1px var(--color-accent-strong); }
 
+/* Yard sale advertisement layout */
+.advertisement-main .find-yard-sale-layout { grid-template-columns: minmax(0, 1fr) minmax(280px, 34%); gap: 16px; }
+.advertisement-main .yard-sale-results { padding: 12px; }
+
+/* Tablet */
 @media (max-width: 900px) {
-  .find-yard-sale-layout { grid-template-columns: 1fr; }
+  .find-yard-sale-layout,
+  .advertisement-main .find-yard-sale-layout { grid-template-columns: 1fr; }
   .sale-map.find-yard-sale-map { height: 520px; }
-  .yard-sale-results { height: auto; padding: 0; border: 0; background: none; }
+  .yard-sale-results,
+  .advertisement-main .yard-sale-results { height: auto; padding: 0; border: 0; background: none; }
   .yard-sale-view-toggle { display: inline-flex; }
   .view-list .yard-sale-map-container,
   .view-map .yard-sale-results,
   .yard-sale-map-hint.is-list { display: none; }
 }
 
+/* Mobile */
 @media (max-width: 640px) {
   .sale-map.find-yard-sale-map { height: 420px; }
 }
