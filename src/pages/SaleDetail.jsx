@@ -1,3 +1,4 @@
+import ReportYardSale from "../components/ReportYardSale";
 import { fetchProfilesByIds } from "../lib/profiles";
 import { useAsync } from "../hooks/useAsync";
 import { useParams, useLocation } from "react-router-dom";
@@ -77,6 +78,7 @@ function SaleDetailForListing({ id }) {
         </section>
 
         <SellerChip className="yard-sale-detail-host" profile={seller} label="Hosted by" fallbackName="Yard Sailor host" size={44} />
+        <ReportYardSale saleId={sale.id} hostId={sale.host_id} />
       </DetailLayout>
     </PageShell>
   );
