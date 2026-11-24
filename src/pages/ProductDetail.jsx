@@ -1,3 +1,5 @@
+import ReportSeller from "../components/ReportSeller";
+import ReportListing from "../components/ReportListing";
 import { fetchProfilesByIds } from "../lib/profiles";
 import { useAsync } from "../hooks/useAsync";
 import { cancelProductPosting } from "../lib/productActions";
@@ -157,7 +159,7 @@ function ProductDetailForListing({ id }) {
         <DeliveryTags pickup={product.pickup} shipping={product.shipping} />
 
         <SellerChip className="product-detail-seller" profile={seller} label="Listed by" size={42} />
-
+        
         {isOwner ? (
           <OwnerActions
             editTo={`/products/${product.id}/edit`}
@@ -181,6 +183,12 @@ function ProductDetailForListing({ id }) {
             </div>
             {feedback && <FormAlert tone="success">{feedback} <Link to="/cart">View cart</Link></FormAlert>}
             {actionError && <FormAlert tone="error">{actionError}</FormAlert>}
+            
+            <div className="product-report-actions">
+              <ReportSeller sellerId={product.user_id} />
+              <ReportListing listingId={product.id} listingType="product" ownerId={product.user_id}/>
+            </div>
+            
           </div>
         )}
       </DetailLayout>

@@ -8,3 +8,12 @@
 .yard-sale-detail-description p { margin: 0; color: var(--color-muted); line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .yard-sale-detail-host { padding-top: 18px; border-top: 1px solid var(--color-border-subtle); }
+
+/* Report Yard Sale */
+.yard-sale-detail-page .report-listing {margin-top: 24px;}
+.yard-sale-detail-page .report-listing-form {display: grid; gap: 14px; margin-top: 16px; padding: 20px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-wash);}
+.yard-sale-detail-page .report-listing-form label {display: grid; gap: 8px; font-weight: 700;}
+.yard-sale-detail-page .report-listing-form select,
+.yard-sale-detail-page .report-listing-form textarea {width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); color: var(--color-ink); font: inherit;}
+.yard-sale-detail-page .report-listing-form textarea {resize: vertical;}
+.yard-sale-detail-page .report-listing-form p[role="alert"] {color: #b42318; margin: 0;}
